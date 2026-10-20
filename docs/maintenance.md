@@ -120,7 +120,7 @@ swiftc -typecheck -sdk "$SDK" -swift-version 5 -target arm64-apple-macosx14.0 \
 
 | 现象 | 原因 | 处理 |
 |---|---|---|
-| `swift-plugin-server produced malformed response`（158+ 报错） | Xcode 27 的宏服务进程状态异常 | `pkill -9 -f swift-plugin-server` → `rm -rf build-sim*` → `-jobs 4` 重编 |
+| `swift-plugin-server produced malformed response`（158+ 报错） | Xcode 27 的宏服务两类故障：① 进程僵死；② 宏服务自身要再套一层 sandbox-exec，在已受沙箱约束的终端里 `sandbox_apply: Operation not permitted` | ① `pkill -9 -f swift-plugin-server` → `-jobs 4` 重编；② 根治：`OTHER_SWIFT_FLAGS="-disable-sandbox"`（build.sh 已内置，swiftc 不再为宏服务套沙箱） |
 | `xcrun: You have not agreed to the Xcode license` | 许可证未同意 | `sudo xcodebuild -license accept`；或用 `defaults write com.apple.dt.Xcode IDELicenseAgreementVersion -int 999999` |
 | `cannot execute tool 'metal' due to missing Metal Toolchain` | Xcode 26+ Metal 编译器为独立组件 | 本项目已改为运行时编译 shader，不需要该组件；如需 `xcodebuild -downloadComponent MetalToolchain` |
 | 模拟器 `Unable to create a device ... Incompatible device` | 该 runtime 不支持所选设备类型 | 换一个已存在的设备，或 `xcodebuild -downloadPlatform iOS` |

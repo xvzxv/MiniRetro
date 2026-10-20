@@ -56,9 +56,12 @@ xcodegen generate
 log "xcodebuild ..."
 BUILD_DIR="$ROOT/build"
 
-# Xcode 27 的宏服务进程（swift-plugin-server）偶发僵死，
-# 表现为 100+ 条 "SwiftUIMacros.StateMacro could not be found ... produced malformed response"。
-# 这不是代码问题：杀掉僵死进程 + 低并发（-jobs 4）即可稳定通过。
+# Xcode 27 的宏服务（swift-plugin-server）两类故障，都不是代码问题：
+#  1) 进程僵死 → 100+ 条 "SwiftUIMacros.StateMacro ... produced malformed response"；
+#     杀掉僵死进程 + 低并发（-jobs 4）可恢复。
+#  2) 宏服务本身要再套一层 sandbox-exec（"sandbox_apply: Operation not permitted"）→
+#     在已受沙箱约束的终端/CI 里必然失败，症状与 1) 完全一样。
+#     根治办法：给 swiftc 传 -disable-sandbox，不再为宏服务套沙箱（见 3)。
 clear_plugin_server() {
     pkill -9 -f swift-plugin-server 2>/dev/null || true
     sleep 2   # 实测 1s 不够，宏服务可能尚未退出干净
@@ -72,6 +75,7 @@ run_xcodebuild() {
         -derivedDataPath "$BUILD_DIR" \
         -destination 'generic/platform=iOS' \
         -jobs 4 \
+        OTHER_SWIFT_FLAGS="-disable-sandbox" \
         "${extra_flags[@]}" \
         clean build
 }
@@ -83,23 +87,27 @@ else
     EXTRA=(CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY= DEVELOPMENT_TEAM=)
 fi
 
+# 默认不做文件系统级整目录删除（本机安全钩子会拦截批量 rm），
+# xcodebuild 的 clean build 已足够；如需彻底清派生数据：MR_CLEAN_BUILD_DIR=1 ./Tools/build.sh
+clean_build_dir() {
+    if [ "${MR_CLEAN_BUILD_DIR:-0}" = "1" ]; then
+        rm -rf "$BUILD_DIR"
+    fi
+}
+
 clear_plugin_server
-rm -rf "$BUILD_DIR"
+clean_build_dir
 if ! run_xcodebuild "${EXTRA[@]}"; then
     echo ""
-    log "构建失败，按 Xcode 27 已知问题流程重试一次（清派生数据 + 重启宏服务）..."
+    log "构建失败，按 Xcode 27 已知问题流程重试一次（重启宏服务后重试）..."
     clear_plugin_server
-    rm -rf "$BUILD_DIR"
+    clean_build_dir
     run_xcodebuild "${EXTRA[@]}" || die "xcodebuild 仍失败，请查看上方错误；若为宏错误见 docs/maintenance.md 第 6 节"
 fi
 
 # 5. 打包未签名 ipa
 log "打包 ipa ..."
 "$ROOT/Tools/package_ipa.sh"
-
-# 交付产物统一放 dist/（git 不跟踪，便于用户直接取用）
-mkdir -p "$ROOT/dist"
-cp -f "$ROOT"/build/*.ipa "$ROOT/dist/" 2>/dev/null || true
 
 # 交付产物统一放 dist/（git 不跟踪，便于用户直接取用）
 mkdir -p "$ROOT/dist"
