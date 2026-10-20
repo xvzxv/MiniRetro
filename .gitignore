@@ -1,26 +1,38 @@
-# 构建产物
+# ===== 构建产物 =====
 build/
-Cores/artifacts/
-Cores/.build/
+build-sim/
+build-sim-release/
+derive/
 DerivedData/
+Cores/.build/
+*.dSYM/
+*.xcresult/
+*.xcarchive/
 
-# 本地 vendor（cmake / rgbds 二进制，按需下载，不入库）
+# 交付产物（ipa 在本地 dist/ 保留，不入库）
+dist/
+
+# ===== 本地工具（按需下载，可重新获取）=====
 Tools/vendor/
 
-# Xcode 用户数据
+# ===== Xcode 用户数据 =====
 *.xcuserstate
 xcuserdata/
 *.xcscmblueprint
 
-# macOS
+# ===== macOS / 编辑器 =====
 .DS_Store
+*.swp
+.idea/
 
-# Python
+# ===== Python =====
 __pycache__/
 *.pyc
 
-# 日志
+# ===== 日志 / 临时 =====
 *.log
+*.tmp
+*.bak
 
-# 注意：*.xcodeproj 不忽略——XcodeGen 生成物提交入库，
-# 保证没有 XcodeGen 的环境也能直接打开工程（见计划书 M0 任务 1）
+# 说明：*.xcodeproj 不忽略——XcodeGen 生成物提交入库，
+# 保证没有 XcodeGen 的环境也能直接打开工程

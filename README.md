@@ -3,6 +3,8 @@
 FC/NES、GB/GBC、GBA 三格式原生模拟器。SwiftUI + Metal + libretro 内核（mGBA / SameBoy / fceumm）。
 侧载自签名安装，不上 App Store。**不含任何 ROM**——游戏数据由你自行导入。
 
+当前版本 **1.4**（build 5）　·　改动流程与发版清单见 [`docs/maintenance.md`](docs/maintenance.md)
+
 - 部署目标：iOS / iPadOS **17.0+**（iPad 6 起，向上兼容当前系统）
 - 架构：App（SwiftUI）→ CoreBridge（C/ObjC++ 唯一内核入口）→ libretro core（动态 framework）
 - 构建：XcodeGen 单源工程 + `Tools/build.sh` 一键产出未签名 `.ipa`
@@ -32,6 +34,12 @@ brew install xcodegen cmake rgbds
 
 ```bash
 ./Tools/build.sh --skip-cores
+```
+
+### 改完代码先自检（不需要设备）
+
+```bash
+./Tools/run_e2e.sh        # 三 core 真实加载/运行/存档，各 15 项断言
 ```
 
 ### 无 iOS SDK 时的端到端自检（macOS）
@@ -91,13 +99,26 @@ Cores/
   libretro.h               libretro API 头文件（固定版本）
   build_cores.sh           交叉编译三 core → artifacts/*.xcframework
 Tools/
-  build.sh                 一键构建
+  build.sh                 一键构建（core → xcframework → App → ipa）
   package_ipa.sh           打包未签名 ipa
+  run_e2e.sh               macOS 端到端验证（三 core 各 15 项断言）
+  run_simulator.sh         模拟器安装/启动/截图
+  make_xcframework.sh      纯 shell 打包 xcframework（xcodebuild 不可用时的回退）
   fetch_cmake.sh           备用获取 cmake
   fetch_rgbds.sh           备用获取 rgbds
-Tests/                   单元测试（ROM 识别 / 布局持久化 / 存档往返）
-docs/                    里程碑、测试用例、用户确认清单、ADR 记录、阻塞清单
-specs/                   联机设计文档（本期只设计不实现）
+  vendor/                  本地工具（cmake / rgbds / xcodegen，git 不跟踪）
+Tests/                   单元测试（ROM 识别 / 布局几何 / 存档往返）+ e2e_test.mm
+docs/
+  maintenance.md           **维护指南：目录职责、验证方式、发版清单、常见问题**
+  milestones.md            里程碑执行记录
+  testing.md               测试用例表
+  adr-log.md               架构决策与实测修订（ADR-001 ~ 010）
+  blockers.md              阻塞项与环境实测记录
+  user-confirm.md          真机确认清单
+  progress-log.md          进度日志
+  screenshots/             模拟器实拍
+specs/                   联机设计文档（只设计不实现）
+dist/                    交付产物 ipa（本地保留，git 不跟踪）
 ```
 
 ---
@@ -133,5 +154,5 @@ specs/                   联机设计文档（本期只设计不实现）
 | mgba / SameBoy / fceumm | ✅ 三 core 均在 macOS 上编译通过 |
 | **端到端运行**（加载 → 60fps → 抓帧 → 存档往返） | ✅ 三 core 全部通过，各 15 项断言（`./Tools/run_e2e.sh`） |
 | ROM 识别逻辑 | ✅ 13 条用例运行时全部通过 |
-| **iOS 完整构建** | ✅ `xcodebuild` Release 成功，产出 `build/MiniRetro-1.0-1-unsigned.ipa`（1.5MB，arm64 / iOS 17.0，三个 core 全部嵌入） |
+| **iOS 完整构建** | ✅ `xcodebuild` Release 成功，产出 `dist/MiniRetro-1.4-5-unsigned.ipa`（1.6MB，arm64 / iOS 17.0，三个 core 全部嵌入） |
 | **iOS 模拟器运行** | ✅ iPhone Duo / iOS 27.1 全链路跑通：加载 ROM、60fps 渲染、虚拟按键、中文名识别（截图见 `docs/screenshots/`） |

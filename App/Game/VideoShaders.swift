@@ -6,7 +6,7 @@
 //   MTLDevice.makeLibrary(source:) 编译，构建零外部依赖、可复现。
 //   4 个 fragment shader 的编译开销约几十毫秒，仅首次创建渲染器时一次。
 //
-// 与 App/Resources/VideoShaders.metal 保持一致（该文件保留为源码参考，不参与编译）。
+// 这里是 shader 源码的唯一来源（不要再放 .metal 文件，两份会漂移）。
 import Metal
 
 enum VideoShaderSource {
