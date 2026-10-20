@@ -1,0 +1,18 @@
+# 上游 core 声明（ADR-002 版本锁定）
+#
+# 说明：当前仓库内 Cores/{mgba,sameboy,fceumm} 为**上游 release tag 的源码快照**
+# （经 codeload.github.com tarball 获取），而非 git submodule。原因：部分网络环境下
+# git clone 子模块不可用（需交互式凭证），源码快照可保证仓库自包含、离线可构建。
+#
+# 若你所在环境 git 可用，推荐改为 submodule 以跟踪上游：
+#   git submodule add https://github.com/mgba-emu/mgba Cores/mgba
+#   git submodule add https://github.com/LIJI32/SameBoy Cores/sameboy
+#   git submodule add https://github.com/libretro/libretro-fceumm Cores/fceumm
+# 切换后同步更新本文件与 docs/adr-log.md。
+#
+# 版本锁定（变更需更新 docs/adr-log.md）：
+#   mGBA           mgba-emu/mgba @ 0.10.5      (tag)
+#   SameBoy        LIJI32/SameBoy @ v1.0.4     (tag)
+#   fceumm         libretro/libretro-fceumm @ ac0d00a7fc01166f84c7bac01d1084ebfd2b865e (master)
+#   libretro.h     libretro/libretro-common @ a3194c18ba65ef89734e1898a2f61403c255d368
+#                  (include/libretro.h；libretro/libretro.h 独立仓库已下线)

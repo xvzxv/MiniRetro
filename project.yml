@@ -1,0 +1,80 @@
+name: MiniRetro
+options:
+  bundleIdPrefix: com.miniretro
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+packages:
+  ZIPFoundation:
+    url: https://github.com/weichsel/ZIPFoundation
+    from: 0.9.19
+
+targets:
+  MiniRetro:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: App
+        excludes:
+          - "**/.DS_Store"
+      - path: CoreBridge
+        excludes:
+          - "**/*.h"
+    dependencies:
+      - package: ZIPFoundation
+        product: ZIPFoundation
+      - framework: CoreBridge/CoreBridge.h
+        embed: false
+        codeSignOnCopy: false
+      # 三个 libretro core（Cores/artifacts 下由 build_cores.sh 产出 xcframework）
+      - framework: Cores/artifacts/mgba-core.xcframework
+        embed: true
+        codeSignOnCopy: false
+      - framework: Cores/artifacts/sameboy-core.xcframework
+        embed: true
+        codeSignOnCopy: false
+      - framework: Cores/artifacts/fceumm-core.xcframework
+        embed: true
+        codeSignOnCopy: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.miniretro.app
+        PRODUCT_NAME: MiniRetro
+        INFOPLIST_FILE: App/Info.plist
+        SWIFT_VERSION: "5.9"
+        SWIFT_OBJC_BRIDGING_HEADER: App/MiniRetro-Bridging-Header.h
+        SWIFT_OBJC_INTERFACE_HEADER_NAME: MiniRetro-Swift.h
+        GENERATE_INFOPLIST_FILE: NO
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_STRICT_CONCURRENCY: minimal
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        CLANG_ENABLE_MODULES: YES
+        # 模拟器构建时需要允许未签名/adhoc（Tools/build.sh 控制）
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGN_IDENTITY: ""
+        DEVELOPMENT_TEAM: ""
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+        # Metal shader 随 App 编译
+        MTLLINKER_ENABLED: NO
+
+  # 桥接层单测（M1 验证 save/load 往返）
+  MiniRetroTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Tests/MiniRetroTests
+    dependencies:
+      - target: MiniRetro
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.miniretro.app.tests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGN_IDENTITY: ""
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/MiniRetro.app/MiniRetro"
