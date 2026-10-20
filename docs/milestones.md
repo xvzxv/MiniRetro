@@ -147,7 +147,13 @@
 - [x] 1. Metal shader 四档：整数倍（最近邻）、平滑（线性）、CRT（扫描线+暗角+色差）、GB LCD 点阵
 - [x] 2. 震动开关（`Haptics`，按键轻触 / 存档成功；受 `hapticsEnabled` 控制）
 - [x] 3. 设置页：快进倍率、自动暂停/自动存档、滤镜、音量、皮肤、低性能模式、FPS 显示
-- [x] 4. 关于页：LICENSE 汇总（mGBA/SameBoy/fceumm/libretro/ZIPFoundation/XcodeGen）
+- [x] 4. 关于页：LICENSE 汇总（mGBA/SameBoy/fceumm/libretro/XcodeGen）
+- [x] 5. **画面比例**（v1.2）：MTLViewport aspect-fit，设置项「保持游戏原始比例」默认开启，
+      关闭则全屏拉伸；按键层仍按屏幕布局（不跟画面收缩）
+- [x] 6. **快进增强**（v1.2）：倍率上限 4× → 8×（2/3/4/6/8 可选）；
+      主界面 HUD 增加快进快捷开关（绿色高亮表示激活），无需进菜单
+- [x] 7. **快进音频修复**（v1.2）：原实现快进时直接丢弃音频（静音）；
+      改为按倍率抽取后写入，输出速率恒定、音调随倍率升高，音乐可辨
 
 **验收**
 - [~] 滤镜实时切换不卡顿 —— 运行时按 shader 名切换 pipeline，待实测

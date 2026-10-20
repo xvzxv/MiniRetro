@@ -150,6 +150,33 @@ final class EmulatorRenderer: NSObject, MTKViewDelegate {
                     memcpy(buffer.contents(), &uniforms, MemoryLayout<FilterUniforms>.stride)
                 }
                 encoder.setRenderPipelineState(pipeline)
+
+                // 保持游戏原始宽高比：按纹理比例收缩 viewport，多余区域留黑边
+                // （关闭该选项则铺满整屏，会被拉伸）
+                if SettingsStore.shared.preserveAspectRatio,
+                   frameWidth > 0, frameHeight > 0,
+                   view.drawableSize.width > 0, view.drawableSize.height > 0 {
+                    let texAspect = CGFloat(frameWidth) / CGFloat(frameHeight)
+                    let viewAspect = view.drawableSize.width / view.drawableSize.height
+                    let vp: MTLViewport
+                    if texAspect > viewAspect {
+                        // 纹理更宽 → 宽度撑满，上下黑边
+                        let h = view.drawableSize.width / texAspect
+                        vp = MTLViewport(originX: 0,
+                                         originY: (view.drawableSize.height - h) / 2,
+                                         width: view.drawableSize.width, height: h,
+                                         znear: 0, zfar: 1)
+                    } else {
+                        // 纹理更高 → 高度撑满，左右黑边
+                        let w = view.drawableSize.height * texAspect
+                        vp = MTLViewport(originX: (view.drawableSize.width - w) / 2,
+                                         originY: 0,
+                                         width: w, height: view.drawableSize.height,
+                                         znear: 0, zfar: 1)
+                    }
+                    encoder.setViewport(vp)
+                }
+
                 encoder.setFragmentTexture(texture, index: 0)
                 if shaderName == "video_filter_smooth" {
                     encoder.setFragmentSamplerState(samplerState, index: 0)

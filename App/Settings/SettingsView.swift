@@ -12,7 +12,10 @@ struct SettingsView: View {
                 Section("核心") {
                     Picker("快进倍率", selection: $settings.fastForwardMultiplier) {
                         Text("2×").tag(2)
+                        Text("3×").tag(3)
                         Text("4×").tag(4)
+                        Text("6×").tag(6)
+                        Text("8×").tag(8)
                     }
                     Toggle("进后台自动暂停", isOn: $settings.autoPauseOnBackground)
                     Toggle("进后台自动即时存档", isOn: $settings.autoSaveOnBackground)
@@ -24,6 +27,10 @@ struct SettingsView: View {
                             Text(mode.displayName).tag(mode)
                         }
                     }
+                    Toggle("保持游戏原始比例", isOn: $settings.preserveAspectRatio)
+                    Text("开启：按游戏原生比例显示，多余区域留黑边；关闭：全屏拉伸填满（画面会变形）。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     Toggle("显示 FPS", isOn: $settings.showFPS)
                     Toggle("低性能模式（老机型降级）", isOn: $settings.lowPerformanceMode)
                 }

@@ -759,9 +759,6 @@ static void *mr_run_loop(void *ctx) {
     atomic_store(&_fastForward, enabled);
     atomic_store(&_fastForwardMultiplier, multiplier > 0 ? multiplier : 2);
     self.fastForwardActive = enabled;
-    if (enabled) {
-        [self.audioRingBuffer reset];
-    }
 }
 
 - (NSInteger)fastForwardMultiplierValue {
@@ -797,13 +794,36 @@ static void mr_audio_sample(int16_t left, int16_t right) {
     [self.audioRingBuffer writeSamples:pair frameCount:1];
 }
 
+/// 快进时的音频抽取缓冲（单实例预分配，避免回调内 malloc）
+static int16_t s_audioFastForwardScratch[8192 * 2];
+
 static size_t mr_audio_sample_batch(const int16_t *data, size_t frames) {
     RetroCore *self = s_environmentOwner;
-    if (self == nil) {
+    if (self == nil || data == NULL || frames == 0) {
         return frames;
     }
-    if (!self.fastForwardActive) {
+
+    NSInteger decimation = self.fastForwardActive ? self.fastForwardMultiplierValue : 1;
+    if (decimation <= 1) {
         [self.audioRingBuffer writeSamples:data frameCount:frames];
+        return frames;
+    }
+
+    // 快进：每 decimation 帧取 1 帧写入。
+    // 输出速率因此与正常播放一致（不再让环形缓冲被 8 倍数据灌爆），
+    // 内容仍按倍率跳跃 → 音调升高，但"快进时完全没有声音"的问题消失。
+    size_t step = (size_t)decimation;
+    size_t outCount = frames / step;
+    if (outCount > 8192) {
+        outCount = 8192;
+    }
+    for (size_t i = 0; i < outCount; i++) {
+        size_t src = i * step * 2;
+        s_audioFastForwardScratch[i * 2] = data[src];
+        s_audioFastForwardScratch[i * 2 + 1] = data[src + 1];
+    }
+    if (outCount > 0) {
+        [self.audioRingBuffer writeSamples:s_audioFastForwardScratch frameCount:outCount];
     }
     return frames;
 }

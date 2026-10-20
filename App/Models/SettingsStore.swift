@@ -86,6 +86,10 @@ final class SettingsStore: ObservableObject {
     @Published var turboRate: Int {
         didSet { defaults.set(turboRate, forKey: Keys.turboRate) }
     }
+    /// 保持游戏原始宽高比（关闭则全屏拉伸填满）
+    @Published var preserveAspectRatio: Bool {
+        didSet { defaults.set(preserveAspectRatio, forKey: Keys.preserveAspect) }
+    }
 
     private enum Keys {
         static let ffMultiplier = "settings.ffMultiplier"
@@ -99,6 +103,7 @@ final class SettingsStore: ObservableObject {
         static let lowPerf = "settings.lowPerformanceMode"
         static let controlOpacity = "settings.controlOpacity"
         static let turboRate = "settings.turboRate"
+        static let preserveAspect = "settings.preserveAspect"
     }
 
     private init() {
@@ -121,6 +126,7 @@ final class SettingsStore: ObservableObject {
         lowPerformanceMode = defaults.object(forKey: Keys.lowPerf) as? Bool ?? false
         controlOpacity = defaults.object(forKey: Keys.controlOpacity) as? Double ?? 0.6
         turboRate = defaults.object(forKey: Keys.turboRate) as? Int ?? 10
+        preserveAspectRatio = defaults.object(forKey: Keys.preserveAspect) as? Bool ?? true
     }
 
     /// 低端机自动降级：CRT 等重滤镜强制关闭

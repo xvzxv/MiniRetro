@@ -52,6 +52,24 @@ struct GameView: View {
 
                     Spacer()
 
+                    // 快进快捷开关（不用进菜单）
+                    Button {
+                        viewModel.setFastForward(!viewModel.isFastForwarding)
+                        Haptics.tap()
+                    } label: {
+                        Image(systemName: "forward.fill")
+                            .font(.title3)
+                            .padding(10)
+                            .foregroundStyle(viewModel.isFastForwarding ? Color.black : Color.white)
+                            .background(
+                                viewModel.isFastForwarding
+                                    ? Color.green
+                                    : Color.black.opacity(0.5),
+                                in: Circle()
+                            )
+                    }
+                    .accessibilityLabel(viewModel.isFastForwarding ? "关闭快进" : "开启快进")
+
                     if viewModel.isFastForwarding {
                         Label("快进 \(settings.fastForwardMultiplier)×", systemImage: "forward.fill")
                             .font(.caption)
