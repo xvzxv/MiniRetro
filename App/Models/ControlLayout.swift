@@ -166,18 +166,20 @@ struct ControlLayout: Codable, Equatable {
 
 enum ControlLayouts {
     /// 当前布局算法版本（改坐标体系时递增，旧 JSON 自动作废）
-    static let currentVersion = 3
+    static let currentVersion = 4
 
-    // 统一基准：所有尺寸/间距都是「短边倍数」，保证任何宽高比下比例一致
-    private static let sideMargin: CGFloat = 0.050       // 最外侧按键边缘到屏幕边缘
+    // 统一基准：所有尺寸/间距都是「短边倍数」，保证任何宽高比下比例一致。
+    // 左右两组尺寸完全一致（dpadSize == actionSize），边距由同一个 sideMargin 推导，
+    // 因此两组占用面积对称。
+    private static let sideMargin: CGFloat = 0.115       // 最外侧按键边缘到屏幕边缘（留出拇指落点）
     private static let dpadSize: CGFloat = 0.125
-    private static let dpadPitch: CGFloat = 0.140        // 十字中心距 = 直径 × 1.12
+    private static let dpadPitch: CGFloat = 0.140        // 相邻键中心距 = 直径 × 1.12（不是半距）
     private static let dpadCenterY: CGFloat = 0.720
-    private static let actionSize: CGFloat = 0.112
-    private static let actionPitch: CGFloat = 0.129      // A/B 中心距 = 直径 × 1.15
+    private static let actionSize: CGFloat = 0.125       // 与方向键同尺寸
+    private static let actionPitch: CGFloat = 0.144      // A/B 中心距 = 直径 × 1.15
     private static let actionY: CGFloat = 0.720          // 与方向键同高
-    private static let turboSize: CGFloat = 0.095
-    private static let turboPitchY: CGFloat = 0.140      // 连发键到 A/B 的垂直中心距
+    private static let turboSize: CGFloat = 0.106        // = actionSize × 0.85
+    private static let turboPitchY: CGFloat = 0.132      // 连发键到 A/B 的垂直中心距
     private static let systemButtonSize: CGFloat = 0.070
     private static let systemButtonAspect: CGFloat = 1.9
     private static let systemButtonGap: CGFloat = 0.048  // SELECT/START 之间的间隙（短边倍数）
@@ -185,8 +187,8 @@ enum ControlLayouts {
 
     // 组锚点（左右镜像：都由 sideMargin 推导）
     private static var dpadLeftX: CGFloat { sideMargin + dpadSize / 2 }
-    private static var dpadCenterX: CGFloat { dpadLeftX + dpadPitch }
-    private static var dpadRightX: CGFloat { dpadLeftX + dpadPitch * 2 }
+    private static var dpadCenterX: CGFloat { dpadLeftX + dpadPitch / 2 }
+    private static var dpadRightX: CGFloat { dpadLeftX + dpadPitch }
     private static var bX: CGFloat { 1 - (sideMargin + actionSize / 2) }
     private static var aX: CGFloat { bX - actionPitch }
     /// SELECT/START 相对屏幕中心的短边偏移（负值左、正值右）
@@ -197,9 +199,9 @@ enum ControlLayouts {
     /// 十字方向键（左下角，间距统一）
     private static func dpad(opacity: CGFloat) -> [ControlButton] {
         [
-            ControlButton(button: .up, relativeX: dpadCenterX, relativeY: dpadCenterY - dpadPitch,
+            ControlButton(button: .up, relativeX: dpadCenterX, relativeY: dpadCenterY - dpadPitch / 2,
                           relativeSize: dpadSize, opacity: opacity, anchor: .leading),
-            ControlButton(button: .down, relativeX: dpadCenterX, relativeY: dpadCenterY + dpadPitch,
+            ControlButton(button: .down, relativeX: dpadCenterX, relativeY: dpadCenterY + dpadPitch / 2,
                           relativeSize: dpadSize, opacity: opacity, anchor: .leading),
             ControlButton(button: .left, relativeX: dpadLeftX, relativeY: dpadCenterY,
                           relativeSize: dpadSize, opacity: opacity, anchor: .leading),

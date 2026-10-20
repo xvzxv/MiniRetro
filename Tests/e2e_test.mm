@@ -137,7 +137,21 @@ int main(int argc, const char *argv[]) {
         [core flushBatterySave];
         check("flushBatterySave 不崩溃", YES, @"");
 
-        // 6. 停止
+        // 7. 快进倍率：设定 4× 时，每秒渲染帧数应约 4×60=240
+        [core setFastForwardEnabled:YES multiplier:4];
+        uint64_t ffStart = core.renderedFrameCount;
+        CFAbsoluteTime ffT0 = CFAbsoluteTimeGetCurrent();
+        [NSThread sleepForTimeInterval:1.0];
+        double ffElapsed = CFAbsoluteTimeGetCurrent() - ffT0;
+        uint64_t ffFrames = core.renderedFrameCount - ffStart;
+        double ffRatio = (double)ffFrames / (ffElapsed * 60.0);
+        check("快进 4× 倍率符合设定", ffRatio > 3.0 && ffRatio < 5.0,
+              [NSString stringWithFormat:@"实测 %.2f×（%llu 帧 / %.2fs）",
+                                           ffRatio, (unsigned long long)ffFrames, ffElapsed]);
+        [core setFastForwardEnabled:NO multiplier:4];
+        [NSThread sleepForTimeInterval:0.2];
+
+        // 8. 停止
         [core stop];
         check("stop 干净退出", !core.isRunning, @"线程已回收");
 

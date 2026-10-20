@@ -124,6 +124,50 @@ mGBA 的 RGB565 实测确认了 FramePipeline 的 16bpp → BGRA 转换路径正
 
 ---
 
+## ADR-009 补充 2：布局 v4（2026-10-23，用户第三次调布局）
+
+用户要求：方向键整体右移约 5mm、A/B 与方向键同尺寸、两组在画布上对称。
+
+1. `sideMargin` 0.050 → **0.115**：方向键左边距由 22pt 增至 50.6pt（iPhone 18 PM 上约 4.6mm）
+2. `actionSize` 0.112 → **0.125**（= `dpadSize`）：两组按键直径完全一致，
+   左右边距因此严格相等 → 视觉重量对称
+3. 修正 `dpadPitch` **语义错误**：原代码把「相邻键中心距」当成「半距」用
+   （`up = centerY - pitch`、`right = leftX + pitch * 2`），导致十字间距是设计值的 2 倍。
+   现明确 `dpadPitch` = 相邻键中心距（= 直径 × 1.12），上下键用 ±pitch/2、左右键差一个 pitch。
+4. `turboSize` 0.106（= actionSize × 0.85）、`turboPitchY` 0.132
+
+`currentVersion` → **4**，旧布局 JSON 自动作废。
+
+---
+
+## ADR-011：快进倍率失准（2026-10-23，用户反馈「2×/4× 快太多了」）
+
+**根因**：`runLoopBody` 里限速被 `if (!fast)` 包住 —— **快进时完全不休眠**：
+
+```objc
+NSInteger frames = fast ? MAX(1, multiplier) : 1;
+for (i = 0; i < frames; i++) p_retro_run();   // 一次跑 N 帧
+if (!fast) { ...nanosleep(frameInterval)... }  // 只有非快进才等
+```
+
+快进时每轮跑 N 帧后立刻进入下一轮，**循环速度取决于 CPU 跑多快**，
+实测可达设定值的数十倍（用户的直观感受就是"快得没法玩"）。
+
+**修复**：每轮循环都推进「一个显示帧」的时长，与是否快进无关：
+
+```objc
+nextFrame += frameInterval;   // 固定 16.67ms/轮
+nanosleep(...);               // 唯一区别是这一轮里跑了 frames 帧 → 恰好 frames 倍速
+```
+
+**验证**（macOS e2e，`./Tools/run_e2e.sh`）：
+设定 4× → 实测 **4.00×（240 帧 / 1.00s）**，已加入 e2e 断言防回归。
+
+> 若某 core 单帧耗时 × N 超过 16.67ms，实机达不到设定倍率（受 CPU 限制）——
+> 这是物理上限，不是 bug；`nextFrame = now` 的追赶保护会避免积压。
+
+---
+
 ## ADR-010：画面比例与快进音频（2026-10-20，用户反馈）
 
 **问题 1：画面被拉伸**

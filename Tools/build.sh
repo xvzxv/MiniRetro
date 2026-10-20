@@ -61,7 +61,7 @@ BUILD_DIR="$ROOT/build"
 # 这不是代码问题：杀掉僵死进程 + 低并发（-jobs 4）即可稳定通过。
 clear_plugin_server() {
     pkill -9 -f swift-plugin-server 2>/dev/null || true
-    sleep 1
+    sleep 2   # 实测 1s 不够，宏服务可能尚未退出干净
 }
 
 run_xcodebuild() {

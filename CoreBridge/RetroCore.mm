@@ -474,7 +474,12 @@ static void *mr_run_loop(void *ctx) {
         }
         pthread_mutex_unlock(&_coreMutex);
 
-        if (!fast) {
+        // 无论是否快进都必须限速：每轮循环推进「一个显示帧」的时长，
+        // 而本轮内部已跑了 frames 帧 → 实际速度恰好为 frames 倍。
+        //
+        // 旧实现快进时完全不休眠（if (!fast) 才 sleep），循环速度取决于 CPU，
+        // 实测远超设定倍率（用户反馈「2×/4× 快太多」）。
+        {
             uint64_t now = mr_monotonic_ns();
             nextFrame += frameInterval;
             if (nextFrame < now) {
