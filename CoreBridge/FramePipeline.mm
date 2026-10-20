@@ -13,6 +13,7 @@
     NSUInteger _frameBytes;      // 单缓冲字节数
     BOOL _frontIsA;              // YES = A 为最新帧
     BOOL _dirty;
+    uint64_t _pushedFrameCount;
     pthread_mutex_t _mutex;
 }
 @end
@@ -29,6 +30,7 @@
         _bufferB = (uint8_t *)malloc(_frameBytes);
         _frontIsA = YES;
         _dirty = NO;
+        _pushedFrameCount = 0;
         _lastFrameSize = CGSizeZero;
         pthread_mutex_init(&_mutex, NULL);
     }
@@ -102,6 +104,7 @@
     _frontIsA = !_frontIsA;
     _dirty = YES;
     _lastFrameSize = CGSizeMake(width, height);
+    _pushedFrameCount++;
     pthread_mutex_unlock(&_mutex);
 }
 

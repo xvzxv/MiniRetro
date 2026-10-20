@@ -19,6 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (atomic, readonly) BOOL hasNewFrame;
 @property (atomic, readonly) CGSize lastFrameSize;
+/// 累计推入的帧数（用于 FPS 统计与端到端验证；int64 避免长时间运行溢出）
+@property (atomic, readonly) uint64_t pushedFrameCount;
 
 @end
 

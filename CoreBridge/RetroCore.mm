@@ -13,6 +13,7 @@
 
 #include <dlfcn.h>
 #include <pthread.h>
+#include <stdarg.h>
 #include <stdatomic.h>
 #include <stdlib.h>
 #include <string.h>
@@ -95,6 +96,24 @@ static void *mr_run_loop(void *ctx);
 
 // 环境回调所属实例（libretro 无 user data；同时只运行一个实例）
 static RetroCore *s_environmentOwner = nil;
+
+/// core 日志转发：过滤 DEBUG（SameBoy 等会刷大量 HW 寄存器调试输出），
+/// 只把 INFO/ERROR 送入 MRLog，避免污染 iOS 控制台。
+static void mr_log_callback(enum retro_log_level level, const char *fmt, ...) {
+    if (level == RETRO_LOG_DEBUG) {
+        return;
+    }
+    va_list args;
+    va_start(args, fmt);
+    char buffer[1024];
+    vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_end(args);
+    NSString *message = [NSString stringWithUTF8String:buffer];
+    if (message.length == 0) {
+        return;
+    }
+    NSLog(@"[core:%@] %@", level == RETRO_LOG_ERROR ? @"ERROR" : @"INFO", message);
+}
 
 // MARK: - RetroCore
 
@@ -223,14 +242,17 @@ static RetroCore *s_environmentOwner = nil;
 - (NSString *)coreFrameworkBinaryPath:(NSError **)error {
     NSString *frameworkName = [NSString stringWithFormat:@"%@_core.framework", self.coreName];
     NSString *binaryName = [NSString stringWithFormat:@"%@_core", self.coreName];
-    NSMutableArray<NSString *> *bases = [NSMutableArray array];
+    // 候选根目录：iOS 的 privateFrameworks（<App>.app/Frameworks）、bundle 下 Frameworks
+    NSMutableArray<NSString *> *roots = [NSMutableArray array];
     NSString *privateFW = NSBundle.mainBundle.privateFrameworksPath;
     if (privateFW.length > 0) {
-        [bases addObject:privateFW];
+        [roots addObject:privateFW];
     }
-    [bases addObject:[NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"Frameworks"]];
-    for (NSString *base in bases) {
-        NSString *binary = [base stringByAppendingPathComponent:binaryName];
+    [roots addObject:[NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"Frameworks"]];
+    for (NSString *root in roots) {
+        // <root>/<name>_core.framework/<name>_core
+        NSString *binary = [[root stringByAppendingPathComponent:frameworkName]
+                            stringByAppendingPathComponent:binaryName];
         if ([[NSFileManager defaultManager] isExecutableFileAtPath:binary]) {
             return binary;
         }
@@ -239,7 +261,8 @@ static RetroCore *s_environmentOwner = nil;
         *error = [NSError errorWithDomain:@"RetroCore"
                                     code:1000
                                 userInfo:@{NSLocalizedDescriptionKey :
-                                    [NSString stringWithFormat:@"找不到 core framework: %@", frameworkName]}];
+                                    [NSString stringWithFormat:@"找不到 core framework: %@（已查找 %@）",
+                                     frameworkName, [roots componentsJoinedByString:@", "]]}];
     }
     return nil;
 }
@@ -272,6 +295,9 @@ static RetroCore *s_environmentOwner = nil;
 - (BOOL)loadROMAtPath:(NSString *)romPath error:(NSError **)error {
     pthread_mutex_lock(&_coreMutex);
     BOOL ok = NO;
+    struct retro_game_info info;
+    struct retro_system_info sysInfo;
+    NSData *romData = nil;
     if (![self loadCoreWithError:error]) {
         goto unlock;
     }
@@ -295,15 +321,36 @@ static RetroCore *s_environmentOwner = nil;
         _coreInitialized = YES;
     }
 
-    struct retro_game_info info;
     memset(&info, 0, sizeof(info));
     info.path = romPath.fileSystemRepresentation;
 
+    // 关键：按 core 的 need_fullpath 决定传路径还是传数据。
+    //   fceumm  = true  → 只给 path（core 自行 fopen）
+    //   SameBoy/mGBA = false → 必须把 ROM 读进内存并通过 info.data 传入
+    memset(&sysInfo, 0, sizeof(sysInfo));
+    p_retro_get_system_info(&sysInfo);
+    if (!sysInfo.need_fullpath) {
+        romData = [NSData dataWithContentsOfFile:romPath];
+        if (romData.length == 0) {
+            if (error) {
+                *error = [NSError errorWithDomain:@"RetroCore"
+                                            code:1005
+                                        userInfo:@{NSLocalizedDescriptionKey :
+                                            @"无法读取 ROM 数据（core 要求内存加载）"}];
+            }
+            goto unlock;
+        }
+        info.data = romData.bytes;
+        info.size = romData.length;
+    }
+
     if (!p_retro_load_game(&info)) {
         if (error) {
+            NSString *msg = [NSString stringWithFormat:
+                @"retro_load_game 失败（core=%@，ROM 可能损坏或格式不被支持）", self.coreName];
             *error = [NSError errorWithDomain:@"RetroCore"
                                         code:1004
-                                    userInfo:@{NSLocalizedDescriptionKey : @"retro_load_game 失败（ROM 可能损坏或不支持）"}];
+                                    userInfo:@{NSLocalizedDescriptionKey : msg}];
         }
         goto unlock;
     }
@@ -481,6 +528,10 @@ static void *mr_run_loop(void *ctx) {
     [_framePipeline pushFrame:data width:width height:height pitch:pitch format:self.pixelFormat];
 }
 
+- (uint64_t)renderedFrameCount {
+    return _framePipeline ? _framePipeline.pushedFrameCount : 0;
+}
+
 - (BOOL)copyCurrentFrameToBuffer:(uint8_t *)buffer width:(out NSUInteger *)width height:(out NSUInteger *)height {
     if (_framePipeline == nil) {
         return NO;
@@ -553,8 +604,21 @@ static void *mr_run_loop(void *ctx) {
             }
             return true;
         }
-        case RETRO_ENVIRONMENT_GET_LOG_INTERFACE:
-            return false;
+        case RETRO_ENVIRONMENT_GET_TARGET_SAMPLE_RATE: {
+            // 关键：SameBoy 等 core 通过该回调决定内部重采样率。
+            // 不实现 → core 回退到 2MHz 输出，导致 AVAudioEngine 无法建格式、无声。
+            if (data) {
+                *(unsigned *)data = 48000;
+            }
+            return true;
+        }
+        case RETRO_ENVIRONMENT_GET_LOG_INTERFACE: {
+            if (data) {
+                struct retro_log_callback *cb = (struct retro_log_callback *)data;
+                cb->log = mr_log_callback;
+            }
+            return true;
+        }
         case RETRO_ENVIRONMENT_SET_MESSAGE: {
             const struct retro_message *msg = (const struct retro_message *)data;
             if (msg && msg->msg) {

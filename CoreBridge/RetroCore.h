@@ -54,6 +54,8 @@ typedef NS_ENUM(NSInteger, MRPixelFormat) {
 @property (nonatomic, readonly) CGFloat videoAspectRatio;  ///< 显示宽高比
 @property (nonatomic, readonly) MRPixelFormat pixelFormat;
 @property (nonatomic, readonly) NSUInteger audioSampleRate; ///< 运行后有效，默认 44100
+/// 累计渲染帧数（video_refresh 收到的帧，用于 FPS 统计与验证）
+@property (nonatomic, readonly) uint64_t renderedFrameCount;
 
 // MARK: - 生命周期
 

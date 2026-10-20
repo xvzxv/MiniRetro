@@ -146,8 +146,8 @@ build_mgba() {
             }
     done
 
-    local device_lib="$BUILD_DIR/mgba-device/src/platform/libretro/mgba_libretro.dylib"
-    local sim_lib="$BUILD_DIR/mgba-simulator/src/platform/libretro/mgba_libretro.dylib"
+    local device_lib="$BUILD_DIR/mgba-device/mgba_libretro.dylib"
+    local sim_lib="$BUILD_DIR/mgba-simulator/mgba_libretro.dylib"
     [ -f "$device_lib" ] || die "未找到 mGBA device 产物"
     [ -f "$sim_lib" ] || die "未找到 mGBA simulator 产物"
     package_xcframework "mgba" "$device_lib" "$sim_lib"
