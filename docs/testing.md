@@ -22,6 +22,8 @@
 | A-13 | **端到端**：像素输出（三种 pixel format） | 同上 | ✅ XRGB8888×2 + RGB565 转换均有效 |
 | A-14 | **端到端**：音频回调产出 | 同上 | ✅ 48kHz / 32.768kHz 写入环形缓冲 |
 | A-15 | **端到端**：存档 serialize/unserialize 往返 | 同上 | ✅ 13758 / 252666 / 528448 字节 |
+| A-16 | Metal shader 语法校验 | `xcrun -sdk iphoneos metal -c App/Resources/VideoShaders.metal` | ✅ 编译通过（8KB air） |
+| A-17 | iOS 完整构建 | `./Tools/build.sh` | ✅ BUILD SUCCEEDED，产出 ipa 1.5MB |
 
 运行自动化测试：
 
