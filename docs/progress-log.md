@@ -22,3 +22,6 @@
 **M8 文档** — `testing.md` 用例表、`user-confirm.md` 真机清单、`blockers.md` 阻塞登记、README 补齐。
 
 **M9 联机设计** — `specs/online-play-design.md`：三 core 确定性评估、四方案对比、锁步+快照纠正方案、接口预留点、3–4 周工作量估算；无实现代码。
+
+**端到端验证（第二轮，同日）** — 新增 `Tools/run_e2e.sh`：自动生成极简 homebrew ROM（NES/GB/GBA）、编译 macOS 版三 core、复刻 iOS 的 framework 嵌入布局，用真实 RetroCore 跑完整链路。
+三 core 各 15 项断言全通过（60fps / 像素有效 / 音频有数据 / 存档往返）；过程中修复 framework 路径、need_fullpath、GET_TARGET_SAMPLE_RATE、mGBA 产物路径四个真实缺陷。

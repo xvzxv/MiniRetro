@@ -34,6 +34,16 @@ brew install xcodegen cmake rgbds
 ./Tools/build.sh --skip-cores
 ```
 
+### 无 iOS SDK 时的端到端自检（macOS）
+
+```bash
+./Tools/run_e2e.sh            # 三 core 全测；也可 ./Tools/run_e2e.sh sameboy
+```
+
+脚本会自动生成极简 homebrew 测试 ROM、编译 macOS 版 core、复刻 iOS 的
+`Frameworks/*.framework` 布局，然后验证加载 / 帧率 / 像素 / 音频 / 存档往返。
+这是在没有完整 Xcode 时对桥接层能做的最强验证。
+
 ### 依赖说明
 
 | 依赖 | 用途 | 安装 |
@@ -120,6 +130,7 @@ specs/                   联机设计文档（本期只设计不实现）
 | CoreBridge（C/ObjC++） | ✅ clang `-Wall` 编译零警告 |
 | App 逻辑层（Swift） | ✅ macOS SDK `swiftc -typecheck` 零错误 |
 | App 视图层（SwiftUI） | ✅ 语法解析通过（`@State` 宏需完整 Xcode 展开，见限制） |
-| mgba / SameBoy / fceumm | ✅ 三 core 均已在 macOS 上完成编译冒烟 |
+| mgba / SameBoy / fceumm | ✅ 三 core 均在 macOS 上编译通过 |
+| **端到端运行**（加载 → 60fps → 抓帧 → 存档往返） | ✅ 三 core 全部通过，各 15 项断言（`./Tools/run_e2e.sh`） |
 | ROM 识别逻辑 | ✅ 13 条用例运行时全部通过 |
 | iOS 交叉编译 + 模拟器运行 | ⏳ 需完整 Xcode（本机仅有 CLT），见 `docs/blockers.md` |

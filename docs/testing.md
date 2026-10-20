@@ -16,6 +16,12 @@
 | A-07 | 电池存档 flush | `SaveStateTests` | ⏳ 需 ROM |
 | A-08 | CoreBridge 编译零警告 | `clang -Wall` | ✅ |
 | A-09 | Swift 逻辑层类型检查 | `swiftc -typecheck` | ✅ 零错误 |
+| A-10 | **端到端**：framework 探测 + dlopen | `Tools/run_e2e.sh` | ✅ 三 core 通过 |
+| A-11 | **端到端**：retro_load_game（need_fullpath 两种路径） | 同上 | ✅ fceumm=true / sameboy+mGBA=false 均通过 |
+| A-12 | **端到端**：60fps 帧率 | 同上 | ✅ 60.3 / 59.5 / 59.5 fps |
+| A-13 | **端到端**：像素输出（三种 pixel format） | 同上 | ✅ XRGB8888×2 + RGB565 转换均有效 |
+| A-14 | **端到端**：音频回调产出 | 同上 | ✅ 48kHz / 32.768kHz 写入环形缓冲 |
+| A-15 | **端到端**：存档 serialize/unserialize 往返 | 同上 | ✅ 13758 / 252666 / 528448 字节 |
 
 运行自动化测试：
 

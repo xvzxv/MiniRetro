@@ -70,6 +70,28 @@
 
 ---
 
+## ADR-001 补充：桥接层四处实测修订（2026-10-20）
+
+端到端测试（`Tools/run_e2e.sh`，真实 core + 极简 ROM）暴露并修复：
+
+1. **framework 布局**：嵌入路径必须是 `<root>/<name>_core.framework/<name>_core`，此前漏了 `.framework` 一层。
+2. **`need_fullpath` 语义**：`retro_get_system_info` 必须查询后再决定传 `info.data` 还是 `info.path`。
+   fceumm = true（自行 fopen）；SameBoy / mGBA = false（必须内存注入）。只传 path 会导致后两者 `retro_load_game` 失败。
+3. **`GET_TARGET_SAMPLE_RATE`（实验性，81）必须实现**：SameBoy 用它决定内部重采样率；不实现则回退到 clock/2 = 2,097,152 Hz，AVAudioEngine 无法创建 `AVAudioFormat`，GB/GBC 无声。现返回 48000。
+4. **`GET_LOG_INTERFACE`**：实现并把 DEBUG 级日志丢弃（SameBoy 的 HW 寄存器日志会刷数百行），只透传 INFO/ERROR。
+
+**验证结果**（各 15 项断言全通过）：
+
+| core | 几何 | pixel format | 帧率 | 快照 |
+|---|---|---|---|---|
+| fceumm | 256×240 | XRGB8888 | 60.3 fps | 13,758 B |
+| SameBoy | 160×144 | XRGB8888 | 59.5 fps | 252,666 B |
+| mGBA | 240×160 | **RGB565** | 59.5 fps | 528,448 B |
+
+mGBA 的 RGB565 实测确认了 FramePipeline 的 16bpp → BGRA 转换路径正确（非仅代码审查）。
+
+---
+
 ## ADR-006 补充：cmake / rgbds 获取备用路径（2026-10-20）
 
 **实测**：`brew install cmake` / `brew install rgbds` 在受限网络下失败（bottle 走 `ghcr.io` 被拦截；沙箱还阻止 homebrew 锁文件写入）。

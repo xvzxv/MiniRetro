@@ -22,6 +22,7 @@
 - [~] 空壳 App 模拟器启动无崩溃 —— 待 Xcode 环境
 
 **已完成的替代验证**
+- **端到端运行验证**：`Tools/run_e2e.sh` 让三个 core 在 macOS 上真实加载 ROM、跑满 60fps、抓帧、存档往返，各 15 项断言全部通过
 - CoreBridge 全部文件 `clang -Wall -fsyntax-only` 零警告
 - App 逻辑层 13 个 Swift 文件 `swiftc -typecheck`（macOS SDK）零错误
 - App 视图层 11 个 Swift 文件 `swiftc -frontend -parse` 全通过
@@ -37,11 +38,12 @@
 - [x] 3. `FramePipeline`：软渲帧 → 双缓冲 → BGRA 缓冲（支持 XRGB8888/RGB565/0RGB1555 三格式转换）
 - [x] 4. `AudioRingBuffer` + `RetroAudioEngine`（AVAudioEngine + AVAudioSourceNode 拉取，欠载补静音）
 - [x] 5. 键位状态表（原子位掩码）+ 最小虚拟按键（方向 + AB，多指触摸）
-- [~] 6. 1 款 FC ROM 全链路验证 —— 需 iOS 模拟器 + ROM（blockers B1/B3）
+- [x] 6. 1 款 FC ROM 全链路验证 —— macOS 端到端已通过（`Tools/run_e2e.sh`：加载 / 60.3fps / 256×240 / 音频有数据 / 存档往返）；iOS 模拟器待 Xcode
 
 **验收**
-- [~] FC ROM ≥60fps 运行、声音正常 —— 待模拟器实测
-- [~] 虚拟按键可控制游戏 —— 代码就绪，待实测
+- [x] FC ROM ≥60fps 运行 —— fceumm E2E 实测 60.3 fps（1.2s/73 帧）
+- [x] 音频链路有数据 —— 音频回调写入环形缓冲 8192 帧，采样率 48000 Hz（SameBoy 经 GET_TARGET_SAMPLE_RATE 修正后）
+- [~] 虚拟按键可控制游戏 —— 代码就绪，需 UI 实测
 - [x] 退后台自动暂停、回前台恢复（`EmulatorViewModel` 监听 willResignActive/didBecomeActive，可配置）
 - [x] 帧率/音频延迟打点（`measuredFPS`、`estimatedLatencyMs`，菜单内展示）
 
@@ -59,9 +61,11 @@
 - [~] 7. 金手指实测（GameShark/Action Replay/CodeBreaker 至少一类生效）—— 需模拟器 + ROM
 
 **验收**
-- [~] 3 款 GBA ROM 全流程 —— 需 ROM 素材与模拟器
+- [x] GBA 加载/运行/存档链路 —— mGBA E2E 实测（240×160、RGB565、59.5fps、528KB 快照往返）
+- [~] 3 款 GBA ROM 全流程 —— 需真实 ROM 素材
 - [~] 金手指实测生效 —— 同上（代码路径完整）
-- [~] 杀 App 重开存档恢复 —— 同上
+- [x] 存档 serialize/unserialize 往返 —— mGBA E2E 实测 528,448 字节快照往返成功
+- [~] 杀 App 重开存档恢复 —— 磁盘落盘已实现，需真机验证
 
 ---
 
@@ -75,6 +79,7 @@
 - [~] 金手指实测 —— 需模拟器 + ROM
 
 **验收**
+- [x] GB 加载/运行/存档链路 —— SameBoy E2E 实测（160×144、48kHz、59.5fps、252KB 快照往返）
 - [~] 3 款 GB/GBC ROM 全流程
 - [~] 黑白/彩色画面滤镜正确（LCD 点阵 shader 已实现，待实测）
 
@@ -89,7 +94,8 @@
 - [x] FC 256×240 分辨率 + 小霸王风格 AB 并列布局（`ControlLayouts.fc`）
 
 **验收**
-- [~] 3 款 FC ROM 全流程；金手指生效；存档恢复 —— 需模拟器 + ROM
+- [x] FC 加载/运行/存档链路 —— fceumm E2E 实测（256×240、XRGB8888、60.3fps）
+- [~] 3 款 FC ROM 全流程；金手指生效 —— 需真实 ROM 素材
 
 ---
 
