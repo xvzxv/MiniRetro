@@ -26,13 +26,13 @@ struct VirtualGamepad: UIViewRepresentable {
         let view = GamepadCanvasView()
         view.backgroundColor = .clear
         view.isMultipleTouchEnabled = true
-        view.coordinator = context.coordinator
         context.coordinator.attach(view: view)
+        view.apply(layout: layout, system: system, skin: skin, editing: isEditing)
         return view
     }
 
     func updateUIView(_ uiView: GamepadCanvasView, context: Context) {
-        context.coordinator.layout = $layout
+        context.coordinator.layoutBinding = $layout
         context.coordinator.isEditing = isEditing
         uiView.apply(layout: layout, system: system, skin: skin, editing: isEditing)
     }
@@ -40,14 +40,15 @@ struct VirtualGamepad: UIViewRepresentable {
     // MARK: - Coordinator（协调布局编辑与按键事件）
 
     final class Coordinator: NSObject {
-        @Binding var layout: ControlLayout
+        /// 用 Binding 值类型保存（Coordinator 非 View，不能直接持有 @Binding 属性）
+        var layoutBinding: Binding<ControlLayout>
         var isEditing: Bool
         let onButtonChange: (JoypadButton, Bool) -> Void
         private weak var canvas: GamepadCanvasView?
         private var dragTarget: JoypadButton?
 
         init(layout: Binding<ControlLayout>, isEditing: Bool, onButtonChange: @escaping (JoypadButton, Bool) -> Void) {
-            _layout = layout
+            self.layoutBinding = layout
             self.isEditing = isEditing
             self.onButtonChange = onButtonChange
         }
@@ -76,10 +77,12 @@ struct VirtualGamepad: UIViewRepresentable {
                 guard bounds.width > 0, bounds.height > 0 else { return }
                 let relX = min(max(point.x / bounds.width, 0.03), 0.97)
                 let relY = min(max(point.y / bounds.height, 0.03), 0.97)
-                if let idx = self.layout.buttons.firstIndex(where: { $0.button == button }) {
-                    self.layout.buttons[idx].relativeX = relX
-                    self.layout.buttons[idx].relativeY = relY
-                    canvas.apply(layout: self.layout, system: self.layout.system, skin: self.layout.skin, editing: true)
+                var current = self.layoutBinding.wrappedValue
+                if let idx = current.buttons.firstIndex(where: { $0.button == button }) {
+                    current.buttons[idx].relativeX = relX
+                    current.buttons[idx].relativeY = relY
+                    self.layoutBinding.wrappedValue = current
+                    canvas.apply(layout: current, system: current.system, skin: current.skin, editing: true)
                 }
             }
         }

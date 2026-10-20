@@ -67,8 +67,8 @@ final class EmulatorRenderer: NSObject, MTKViewDelegate {
     }
 
     private func buildPipelines() {
-        guard let library = device.makeDefaultLibrary() else {
-            MRLog.error("Metal 默认库不可用（检查 VideoShaders.metal 是否加入 target）")
+        guard let library = VideoShaderSource.makeLibrary(device: device) else {
+            MRLog.error("Metal shader 库编译失败，画面将无法渲染")
             return
         }
         guard let vertexFunction = library.makeFunction(name: "video_vertex") else {

@@ -9,7 +9,7 @@ struct LayoutEditorView: View {
     @State private var editingSize: CGFloat = 0.11
     @State private var editingOpacity: CGFloat = 0.85
 
-    private let settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     init(rom: ROMEntry) {
         self.rom = rom

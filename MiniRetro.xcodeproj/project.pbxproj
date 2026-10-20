@@ -26,17 +26,17 @@
 		61A4EA4162BC8722148E48B6 /* mgba-core.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9A4BE69C63739940EB4D0003 /* mgba-core.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		68B474FCEB214A7330881831 /* EmulatorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AFFE9F16BD7E999AEB7724D /* EmulatorViewModel.swift */; };
 		73B91186266D04FBFE51B88A /* LayoutEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01760D1BD48FFBEA7B7F05DD /* LayoutEditorView.swift */; };
+		7A4F4C95698E5F7EF6D22151 /* ZipArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B3877084D82ED1EB40CECE8 /* ZipArchive.swift */; };
 		7E1544B536720A893E1C38FC /* CheatManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62AD5C3B1ECFEFB75361505 /* CheatManager.swift */; };
 		8BAC9A9705BAB923BF4FE4FC /* LayoutStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2EFF7695A73F4C2ABC1C32 /* LayoutStoreTests.swift */; };
 		8BAF1119221DFD5457C82DA3 /* MiniRetroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E45AB1BE45D76FC6871A5C /* MiniRetroApp.swift */; };
 		8C7D53FAF07A6AE31F14CC8F /* fceumm-core.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D1381BC0D9D2FBC95A9FA6B /* fceumm-core.xcframework */; };
 		8E548FC1FC9ACD3C18F971CF /* sameboy-core.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3A3FC0EAD50329BDD1B39170 /* sameboy-core.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9DE6FA919C54194ECE06E41A /* CoreRegistry.c in Sources */ = {isa = PBXBuildFile; fileRef = 83F15A8CB8AAF20F72143ADF /* CoreRegistry.c */; };
+		A7A3949FB7442ED4AF1BE054 /* VideoShaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A9539DFC246F6D387B054E2 /* VideoShaders.swift */; };
 		B17BC2DB4E06A5F678B58BA1 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B27DB966190AE2267EF5054 /* RootView.swift */; };
 		B3C7336EB0AE9BF82BBFB438 /* GameDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40F95AE84989D66C5A55C4A /* GameDisplayView.swift */; };
 		B9D8A8CEFD3C6062173924EB /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEEB8A9C0BA8AD9068642606 /* GameView.swift */; };
-		BB857353FA6754F05C7163AD /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 4B58CB442E7F7FB7B85F59DE /* ZIPFoundation */; };
-		C1B824374F44C8AC834279C9 /* VideoShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 570B9D8E5A5BA41300A7D6A9 /* VideoShaders.metal */; };
 		CC70C0879F728DFC10E63551 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF9A1098814BA9E5CDA70FA /* LibraryView.swift */; };
 		D182BB2FC8007D46190E5B84 /* ROMImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE02FEA81B1176A0D737302 /* ROMImporter.swift */; };
 		D34D627C9E969CFFDE06EF19 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D207D1DAA2ED243509A9D614 /* Assets.xcassets */; };
@@ -86,12 +86,13 @@
 		3A3FC0EAD50329BDD1B39170 /* sameboy-core.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = "sameboy-core.xcframework"; path = "Cores/artifacts/sameboy-core.xcframework"; sourceTree = "<group>"; };
 		3CF9A1098814BA9E5CDA70FA /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		3FD8E3CE6A10A5795FB61C2F /* VirtualGamepad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualGamepad.swift; sourceTree = "<group>"; };
-		570B9D8E5A5BA41300A7D6A9 /* VideoShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = VideoShaders.metal; sourceTree = "<group>"; };
 		5CB3410028850C85D429A95D /* FramePipeline.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = FramePipeline.mm; sourceTree = "<group>"; };
 		63647189A416CF934C9EEEF5 /* MiniRetro.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MiniRetro.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6B3877084D82ED1EB40CECE8 /* ZipArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipArchive.swift; sourceTree = "<group>"; };
 		6D2EFF7695A73F4C2ABC1C32 /* LayoutStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutStoreTests.swift; sourceTree = "<group>"; };
 		6EAA8A9F0151BE4C73BBA251 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
 		7050A9B0C37F7A547FAC349B /* RetroAudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroAudioEngine.swift; sourceTree = "<group>"; };
+		7A9539DFC246F6D387B054E2 /* VideoShaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoShaders.swift; sourceTree = "<group>"; };
 		7DB68EA5D1B05BC77269F618 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		80BADB6FC6F8280EA176B090 /* RetroCore.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RetroCore.mm; sourceTree = "<group>"; };
 		81F7A7455BB63D26F8DF0C86 /* CrossImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossImage.swift; sourceTree = "<group>"; };
@@ -123,7 +124,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB857353FA6754F05C7163AD /* ZIPFoundation in Frameworks */,
 				28C92B506F05DC290252D459 /* mgba-core.xcframework in Frameworks */,
 				484D111441BF93BF64957DA7 /* sameboy-core.xcframework in Frameworks */,
 				8C7D53FAF07A6AE31F14CC8F /* fceumm-core.xcframework in Frameworks */,
@@ -137,7 +137,6 @@
 			isa = PBXGroup;
 			children = (
 				D207D1DAA2ED243509A9D614 /* Assets.xcassets */,
-				570B9D8E5A5BA41300A7D6A9 /* VideoShaders.metal */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -243,6 +242,7 @@
 				3CF9A1098814BA9E5CDA70FA /* LibraryView.swift */,
 				D125AB6AD777BDCA7618AF66 /* LibraryViewModel.swift */,
 				9CE02FEA81B1176A0D737302 /* ROMImporter.swift */,
+				6B3877084D82ED1EB40CECE8 /* ZipArchive.swift */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -261,6 +261,7 @@
 				C02547C68EC58878D823A2CA /* KeyRemapView.swift */,
 				01760D1BD48FFBEA7B7F05DD /* LayoutEditorView.swift */,
 				7050A9B0C37F7A547FAC349B /* RetroAudioEngine.swift */,
+				7A9539DFC246F6D387B054E2 /* VideoShaders.swift */,
 				3FD8E3CE6A10A5795FB61C2F /* VirtualGamepad.swift */,
 			);
 			path = Game;
@@ -311,7 +312,6 @@
 			);
 			name = MiniRetro;
 			packageProductDependencies = (
-				4B58CB442E7F7FB7B85F59DE /* ZIPFoundation */,
 			);
 			productName = MiniRetro;
 			productReference = 63647189A416CF934C9EEEF5 /* MiniRetro.app */;
@@ -340,9 +340,6 @@
 			);
 			mainGroup = DBB20B7A85C65548932DF6A4;
 			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				1D14060162AF870AA3BB4CAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
-			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = FC15E1DB2A0B3CA9E3EF9E2A /* Products */;
 			projectDirPath = "";
@@ -407,8 +404,9 @@
 				F5C1BDE4B86AE48419B07DAE /* SettingsStore.swift in Sources */,
 				4303A94BA1D17602B5283D02 /* SettingsView.swift in Sources */,
 				2E54C57B14295924C6E7B393 /* Utilities.swift in Sources */,
-				C1B824374F44C8AC834279C9 /* VideoShaders.metal in Sources */,
+				A7A3949FB7442ED4AF1BE054 /* VideoShaders.swift in Sources */,
 				2145743378D54A80A93554DC /* VirtualGamepad.swift in Sources */,
+				7A4F4C95698E5F7EF6D22151 /* ZipArchive.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -428,6 +426,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGN_IDENTITY = "";
@@ -439,6 +438,9 @@
 					"\"Cores/artifacts\"",
 				);
 				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/CoreBridge",
+				);
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -504,6 +506,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGN_IDENTITY = "";
@@ -515,6 +518,9 @@
 					"\"Cores/artifacts\"",
 				);
 				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/CoreBridge",
+				);
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -685,25 +691,6 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		1D14060162AF870AA3BB4CAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.19;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		4B58CB442E7F7FB7B85F59DE /* ZIPFoundation */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 1D14060162AF870AA3BB4CAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
-			productName = ZIPFoundation;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 47AD384E7075023D48018D6F /* Project object */;
 }

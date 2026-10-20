@@ -10,7 +10,7 @@ struct GameView: View {
     @State private var isEditingLayout = false
     @State private var layout: ControlLayout
 
-    private let settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     init(rom: ROMEntry) {
         _viewModel = StateObject(wrappedValue: EmulatorViewModel(rom: rom))

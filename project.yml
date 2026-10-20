@@ -5,11 +5,6 @@ options:
     iOS: "17.0"
   createIntermediateGroups: true
 
-packages:
-  ZIPFoundation:
-    url: https://github.com/weichsel/ZIPFoundation
-    from: 0.9.19
-
 targets:
   MiniRetro:
     type: application
@@ -19,12 +14,14 @@ targets:
       - path: App
         excludes:
           - "**/.DS_Store"
+          # .metal 不参与编译：Xcode 26+ 的 Metal 编译器为独立可选组件
+          # （MetalToolchain），未安装会导致 xcodebuild 直接失败。
+          # 实际 shader 在 App/Game/VideoShaders.swift 中运行时编译。
+          - "**/*.metal"
       - path: CoreBridge
         excludes:
           - "**/*.h"
     dependencies:
-      - package: ZIPFoundation
-        product: ZIPFoundation
       # 三个 libretro core（Cores/artifacts 下由 build_cores.sh 产出 xcframework）
       # 注意：CoreBridge 是编译进主 target 的源码，不是 framework 依赖
       - framework: Cores/artifacts/mgba-core.xcframework
@@ -43,6 +40,14 @@ targets:
         INFOPLIST_FILE: App/Info.plist
         SWIFT_VERSION: "5.9"
         SWIFT_OBJC_BRIDGING_HEADER: App/MiniRetro-Bridging-Header.h
+        HEADER_SEARCH_PATHS:
+          - $(SRCROOT)/CoreBridge
+        # 单 target 编译需要显式允许 ObjC++ 源文件参与（XcodeGen 默认已包含）
+        CLANG_CXX_LANGUAGE_STANDARD: c++17
+        HEADER_SEARCH_PATHS:
+          - $(SRCROOT)/CoreBridge
+        # 单 target 编译需要显式允许 ObjC++ 源文件参与（XcodeGen 默认已包含）
+        CLANG_CXX_LANGUAGE_STANDARD: c++17
         SWIFT_OBJC_INTERFACE_HEADER_NAME: MiniRetro-Swift.h
         GENERATE_INFOPLIST_FILE: NO
         MARKETING_VERSION: "1.0"

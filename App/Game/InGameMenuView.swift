@@ -12,7 +12,7 @@ struct InGameMenuView: View {
     @State private var showLayoutEditor = false
     @State private var showKeyRemap = false
 
-    private let settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     var body: some View {
         NavigationStack {

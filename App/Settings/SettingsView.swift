@@ -78,8 +78,8 @@ struct LicensesView: View {
             Section("libretro") {
                 Text("MIT\nhttps://github.com/libretro/libretro.h")
             }
-            Section("ZIPFoundation") {
-                Text("MIT\n© 2017 Thomas Zoechling\nhttps://github.com/weichsel/ZIPFoundation")
+            Section("ZIP 解压") {
+                Text("内置实现（App/Library/ZipArchive.swift）\n基于系统 Compression framework，无第三方依赖")
             }
             Section("XcodeGen") {
                 Text("MIT\n© Yonas Kolb\nhttps://github.com/yonaskolb/XcodeGen")

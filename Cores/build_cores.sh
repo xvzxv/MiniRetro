@@ -64,6 +64,50 @@ prepare_headers() {
     cp "$CORES_DIR/libretro.h" "$out/"
 }
 
+# 把裸 dylib 包装成标准 .framework（xcframework 的一个 slice）
+# 含 minos 校正：部分 core 的 Makefile 链接阶段未传 -miphoneos-version-min，
+# 会让 dylib 的 minos 等于当前 SDK 版本（如 27.0），从而只能装到该版本系统。
+make_framework() {
+    local dylib="$1" name="$2" outdir="$3"
+    local fw="$outdir/${name}_core.framework"
+    rm -rf "$fw"
+    mkdir -p "$fw"
+    cp "$dylib" "$fw/${name}_core"
+    install_name_tool -id "@rpath/${name}_core.framework/${name}_core" "$fw/${name}_core"
+
+    local vt
+    vt="$(xcrun --find vtool 2>/dev/null || echo /usr/bin/vtool)"
+    if ! "$vt" -show-build "$fw/${name}_core" 2>/dev/null | grep -q "minos $DEPLOYMENT_TARGET"; then
+        if "$vt" -set-build-version ios "$DEPLOYMENT_TARGET" "$SDK_VERSION" -replace \
+            -output "$fw/${name}_core.tmp" "$fw/${name}_core"; then
+            mv "$fw/${name}_core.tmp" "$fw/${name}_core"
+            log "minos 已校正为 ${DEPLOYMENT_TARGET}（${name}）"
+        else
+            warn "minios 校正失败（${name}），dylib 可能只能在较新系统安装"
+        fi
+    fi
+
+    cat > "$fw/Info.plist" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+    <key>CFBundleExecutable</key>
+    <string>${name}_core</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.miniretro.${name}-core</string>
+    <key>CFBundlePackageType</key>
+    <string>FMWK</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>MinimumOSVersion</key>
+    <string>${DEPLOYMENT_TARGET}</string>
+</dict></plist>
+PLIST
+    echo "$fw"
+}
+
 # 打包 xcframework：优先用 xcodebuild（标准）；不可用时回退到纯 shell 实现
 # 两者都会把 dylib 的 minos 校正到部署目标（Makefile 链接阶段常漏传版本号）
 package_xcframework() {
@@ -79,7 +123,7 @@ package_xcframework() {
             -framework "$device_fw" \
             -framework "$sim_fw" \
             -output "$output" >/dev/null
-        log "已产出 $output（xcodebuild）"
+        log "已产出 ${output}（xcodebuild）"
     else
         warn "xcodebuild 不可用（未同意 Xcode 许可证？），改用纯 shell 打包"
         SDK_VERSION="$SDK_VERSION" DEPLOYMENT_TARGET="$DEPLOYMENT_TARGET" \
@@ -114,10 +158,10 @@ build_mgba() {
             -DDISABLE_FRONTENDS=ON \
             -DDISABLE_DEPS=ON \
             -DCMAKE_BUILD_TYPE=Release > "$build-cmake.log" 2>&1 || {
-                tail -40 "$build-cmake.log"; die "mGBA cmake 配置失败（$variant）"
+                tail -40 "$build-cmake.log"; die "mGBA cmake 配置失败（${variant}）"
             }
         cmake --build "$build" -j"$JOBS" > "$build-build.log" 2>&1 || {
-                tail -40 "$build-build.log"; die "mGBA 编译失败（$variant）"
+                tail -40 "$build-build.log"; die "mGBA 编译失败（${variant}）"
             }
     done
 
@@ -221,17 +265,22 @@ PYEOF
             sdk="$IPHONESIMULATOR_SDK"
             cc="clang -arch arm64 -target arm64-apple-ios$DEPLOYMENT_TARGET-simulator -isysroot $sdk"
         fi
-        # 走根 Makefile 的 libretro target：它会正确传 BOOTROMS_DIR / BIN 给子 make
-        # （命令行变量经 MAKEFLAGS 传递给子 make，platform 一并生效）
-        make -C "$build" libretro \
+        # 不能走根 Makefile 的 libretro target —— 它用 `CC=$(CC) $(MAKE) ...` 拼进 shell，
+        # CC 含空格（clang -arch arm64 -isysroot ...）会被解析成 `-arch: command not found`。
+        # 改为两步：先单独生成 boot ROM，再直接编 libretro 子目录。
+        local native_cc="/Library/Developer/CommandLineTools/usr/bin/clang -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+        ( cd "$build" && make bootroms NATIVE_CC="$native_cc" -j"$JOBS" ) >> "$build-make.log" 2>&1 || {
+            tail -20 "$build-make.log"; die "SameBoy boot ROM 生成失败（${variant}）"
+        }
+        make -C "$build/libretro" \
             platform=ios-arm64 \
             CC="$cc" \
             CXX="$cc" \
             IOSSDK="$sdk" \
             BOOTROMS_DIR="$build/build/bin/BootROMs" \
             BIN="$build/build/bin" \
-            -j"$JOBS" > "$build-make.log" 2>&1 || {
-                tail -40 "$build-make.log"; die "SameBoy 编译失败（$variant）"
+            -j"$JOBS" >> "$build-make.log" 2>&1 || {
+                tail -40 "$build-make.log"; die "SameBoy 编译失败（${variant}）"
             }
     done
 
@@ -266,7 +315,7 @@ build_fceumm() {
             CC="$cc" \
             IOSSDK="$sdk" \
             -j"$JOBS" > "$build-make.log" 2>&1 || {
-                tail -40 "$build-make.log"; die "fceumm 编译失败（$variant）"
+                tail -40 "$build-make.log"; die "fceumm 编译失败（${variant}）"
             }
     done
 
@@ -291,9 +340,9 @@ for target in "${TARGETS[@]}"; do
         mgba) build_mgba ;;
         sameboy) build_sameboy ;;
         fceumm) build_fceumm ;;
-        *) die "未知 core: $target（可选 mgba|sameboy|fceumm）" ;;
+        *) die "未知 core: ${target}（可选 mgba|sameboy|fceumm）" ;;
     esac
 done
 
-log "全部完成。产物位于 $ARTIFACTS_DIR："
+log "全部完成。产物位于 ${ARTIFACTS_DIR}："
 ls -la "$ARTIFACTS_DIR"

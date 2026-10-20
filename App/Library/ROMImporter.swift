@@ -2,10 +2,6 @@
 import Foundation
 import UniformTypeIdentifiers
 
-#if canImport(ZIPFoundation)
-import ZIPFoundation
-#endif
-
 struct ImportResult {
     var imported: [ROMEntry] = []
     var failed: [(name: String, reason: String)] = []
@@ -87,66 +83,35 @@ enum ROMImporter {
 
     // MARK: - zip 导入（可能内含多个 ROM）
 
+    /// 用内置 ZipArchive 解压（无第三方依赖，见 App/Library/ZipArchive.swift）
     static func importZIP(from zipURL: URL, into index: inout LibraryIndex) -> ImportResult {
         var result = ImportResult()
-        #if canImport(ZIPFoundation)
-        FileManager.default.ensureDirectory(romsDirectory)
-        let stagingDir = romsDirectory.appendingPathComponent(".staging", isDirectory: true)
-        FileManager.default.ensureDirectory(stagingDir)
-
         do {
-            try FileManager.default.unzipItem(at: zipURL, to: stagingDir)
-        } catch {
-            result.failed.append((zipURL.lastPathComponent, "解压失败：\(error.localizedDescription)"))
-            try? FileManager.default.removeItem(at: stagingDir)
-            return result
-        }
-
-        // 递归扫描解压产物中的 ROM
-        let extractor = ROMExtractor()
-        extractor.walk(stagingDir, into: &index, result: &result)
-        try? FileManager.default.removeItem(at: stagingDir)
-        #else
-        result.failed.append((zipURL.lastPathComponent, "ZIPFoundation 未集成"))
-        #endif
-        return result
-    }
-
-    private struct ROMExtractor {
-        func walk(_ dir: URL, into index: inout LibraryIndex, result: inout ImportResult) {
-            guard let items = try? FileManager.default.contentsOfDirectory(
-                at: dir, includingPropertiesForKeys: nil
-            ) else { return }
-            for item in items {
-                var isDir: ObjCBool = false
-                FileManager.default.fileExists(atPath: item.path, isDirectory: &isDir)
-                if isDir.boolValue {
-                    walk(item, into: &index, result: &result)
-                    continue
+            let entries = try ZipArchive.extract(url: zipURL)
+            for entry in entries {
+                let fileName = (entry.path as NSString).lastPathComponent
+                // 跳过隐藏文件与 macOS 元数据
+                guard !fileName.hasPrefix("."), !entry.path.contains("__MACOSX") else { continue }
+                guard let identified = identify(data: entry.data, fileName: fileName) else {
+                    continue // 压缩包内的非 ROM 文件静默跳过
                 }
-                guard let data = FileManager.default.contents(atPath: item.path) else { continue }
-                let fileName = item.lastPathComponent
-                if fileName.lowercased().hasSuffix(".zip") {
-                    // 嵌套 zip：直接内层识别失败则忽略（不支持无限嵌套）
-                    continue
-                }
-                guard let identified = ROMImporter.identify(data: data, fileName: fileName) else {
-                    continue // zip 内的非 ROM 文件静默跳过
-                }
-                let entry = ROMImporter.store(
-                    data: data,
+                let stored = store(
+                    data: entry.data,
                     fileName: fileName,
                     system: identified.system,
                     byMagic: identified.byMagic
                 )
-                if index.roms.contains(where: { $0.relativePath == entry.relativePath }) {
+                if index.roms.contains(where: { $0.relativePath == stored.relativePath }) {
                     result.skippedDuplicates += 1
                     continue
                 }
-                index.upsert(entry)
-                result.imported.append(entry)
+                index.upsert(stored)
+                result.imported.append(stored)
             }
+        } catch {
+            result.failed.append((zipURL.lastPathComponent, error.localizedDescription))
         }
+        return result
     }
 
     // MARK: - 落盘
