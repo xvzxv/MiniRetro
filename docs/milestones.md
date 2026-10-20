@@ -131,8 +131,10 @@
 - [x] 7. **按键透明度**：默认全局 60%（单键 opacity × 全局控制），设置页滑杆 25%–100% 实时生效
 - [x] 8. **蓝牙手柄管理**：设置页显示连接状态/设备名/电量 + 连接引导（iOS 只能由系统蓝牙配对，
       App 通过 GameController 框架接入）+ 键位映射入口
-- [x] 9. **跨宽高比自适应布局**（v1.1）：引入 `HorizontalAnchor`（leading/trailing/center），
-      间距与尺寸统一按短边，左右边距镜像对称；iPad 1.33:1 与 iPhone 2.17:1 表现一致
+- [x] 9. **跨宽高比自适应布局**（v1.1 → v1.4）：`HorizontalAnchor`（leading/trailing/center/centerOffset），
+      间距与尺寸统一按短边、组内 pitch = 直径 × 系数；左右边距镜像对称
+- [x] 9b. **布局版本号**（v1.4）：`ControlLayout.version`，旧坐标体系自动作废并回落默认布局
+      （修复「升级后仍是旧错位布局」——用户的旧 JSON 不会被沿用）
 - [x] 10. **配色改为灰色半透明**（v1.1）：去掉经典红，改为常见手柄灰（white 0.42 × 全局透明度）
 
 **验收**

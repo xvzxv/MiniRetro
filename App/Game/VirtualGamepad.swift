@@ -133,6 +133,9 @@ final class GamepadCanvasView: UIView {
             return bounds.width - (1 - control.relativeX) * shortSide
         case .center:
             return bounds.width * control.relativeX
+        case .centerOffset:
+            // 相对屏幕中心的短边偏移：居中但间距按短边算，宽高比变化时不会拉开
+            return bounds.width / 2 + control.relativeX * shortSide
         }
     }
 
@@ -147,6 +150,8 @@ final class GamepadCanvasView: UIView {
             return 1 - (bounds.width - x) / shortSide
         case .center:
             return x / bounds.width
+        case .centerOffset:
+            return (x - bounds.width / 2) / shortSide
         }
     }
 

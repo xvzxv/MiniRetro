@@ -92,6 +92,38 @@ mGBA 的 RGB565 实测确认了 FramePipeline 的 16bpp → BGRA 转换路径正
 
 ---
 
+## ADR-009 补充：布局算法 v3（2026-10-23，用户二次反馈）
+
+**现象**：真机上方向键散开、SELECT 跑到左侧、组间不对称。
+
+**根因（两层）**：
+1. **旧布局文件仍在生效**：`LayoutStore.load` 会优先读取 `Layouts/*.json`，
+   而 v1.1/v1.2 时期保存的坐标用的是旧公式（`dpadStepX 0.09` 等），
+   间距与现在的尺寸不匹配 → 十字散开、重叠。
+2. **SELECT/START 用屏幕宽度比例**：`anchor = .center` 时 x = 屏宽 × 比例，
+   而按钮尺寸按短边。iPhone 2.17:1 下两者比例失衡，两个椭圆会贴在一起或分得过开。
+
+**方案（算法 v3）**：
+1. **布局版本号**：`ControlLayout.version`，当前 `ControlLayouts.currentVersion = 3`。
+   加载时 `version < currentVersion` 的文件**直接删除并回落默认布局** ——
+   坐标体系变更后旧坐标必然错位，不能沿用。
+2. **间距统一为「直径 × 系数」**：`dpadPitch = dpadSize × 1.12`、`actionPitch = actionSize × 1.15`、
+   `turboPitchY = 0.14`。任何屏幕下组内间距一致，不会因为宽高比变形。
+3. **新增 `.centerOffset` 锚点**：`x = 屏宽/2 + relativeX × 短边`。
+   SELECT/START 用它，既能真正居中，间距又按短边计算（iPhone/iPad 都合适）。
+4. 组锚点全部由 `sideMargin` 推导：`dpadLeftX = sideMargin + dpadSize/2`、
+   `bX = 1 - (sideMargin + actionSize/2)`，左右天然镜像。
+
+**验算**（iPhone 18 PM 956×440，短边 440）：
+- 方向键左边距 22pt、十字间距 61.6pt（直径 55 → 间隙 6.6pt）
+- B 右边距 19pt、A/B 间距 56.8pt（直径 49 → 间隙 7.5pt）
+- SELECT/START 距屏幕中心 ±33.7pt，间距 67pt（宽 58.5 → 间隙 8.9pt）
+
+**教训**：布局这类"跨设备比例"的问题，坐标体系一变就必须让旧数据失效，
+否则用户升级后看到的是新旧混合的错位布局——比不做还糟。
+
+---
+
 ## ADR-010：画面比例与快进音频（2026-10-20，用户反馈）
 
 **问题 1：画面被拉伸**

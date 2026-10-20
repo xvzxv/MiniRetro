@@ -74,8 +74,13 @@ enum JoypadButton: UInt16, Codable, CaseIterable {
 
 /// 水平锚点：决定 relativeX 相对哪条边换算成像素
 enum HorizontalAnchor: String, Codable {
+    /// relativeX = 距左边缘的短边倍数（0~0.5）
     case leading
+    /// relativeX = 屏幕宽度比例（兼容旧的居中写法）
     case center
+    /// relativeX = 相对屏幕中心的短边倍数偏移（可正可负），用于居中但需按短边定间距的组
+    case centerOffset
+    /// relativeX = 1 − 距右边缘的短边倍数（0.5~1），与 leading 镜像
     case trailing
 }
 
@@ -150,6 +155,8 @@ struct ControlButton: Codable, Equatable {
 struct ControlLayout: Codable, Equatable {
     var system: SystemType
     var skin: SkinType
+    /// 布局算法版本：低版本坐标不可复用，加载时直接回落到默认布局
+    var version: Int = 0
     var buttons: [ControlButton]
 
     func button(_ joypad: JoypadButton) -> ControlButton? {
@@ -158,37 +165,41 @@ struct ControlLayout: Codable, Equatable {
 }
 
 enum ControlLayouts {
-    /// 左右安全边距（短边倍数）——两组一致，保证对称
-    private static let sideMargin: CGFloat = 0.050
+    /// 当前布局算法版本（改坐标体系时递增，旧 JSON 自动作废）
+    static let currentVersion = 3
+
+    // 统一基准：所有尺寸/间距都是「短边倍数」，保证任何宽高比下比例一致
+    private static let sideMargin: CGFloat = 0.050       // 最外侧按键边缘到屏幕边缘
     private static let dpadSize: CGFloat = 0.125
+    private static let dpadPitch: CGFloat = 0.140        // 十字中心距 = 直径 × 1.12
     private static let dpadCenterY: CGFloat = 0.720
     private static let actionSize: CGFloat = 0.112
+    private static let actionPitch: CGFloat = 0.129      // A/B 中心距 = 直径 × 1.15
+    private static let actionY: CGFloat = 0.720          // 与方向键同高
     private static let turboSize: CGFloat = 0.095
-    private static let actionY: CGFloat = 0.720
-    private static let turboY: CGFloat = 0.585
-    private static let systemButtonY: CGFloat = 0.880
+    private static let turboPitchY: CGFloat = 0.140      // 连发键到 A/B 的垂直中心距
     private static let systemButtonSize: CGFloat = 0.070
     private static let systemButtonAspect: CGFloat = 1.9
+    private static let systemButtonGap: CGFloat = 0.048  // SELECT/START 之间的间隙（短边倍数）
+    private static let systemButtonY: CGFloat = 0.880
 
-    // 锚点推导（左右镜像）
-    /// 方向键最左键中心（距左边缘 = sideMargin + 半径）
+    // 组锚点（左右镜像：都由 sideMargin 推导）
     private static var dpadLeftX: CGFloat { sideMargin + dpadSize / 2 }
-    /// 方向键中列（上/下键）
-    private static var dpadCenterX: CGFloat { dpadLeftX + dpadSize }
-    /// 方向键最右键
-    private static var dpadRightX: CGFloat { dpadLeftX + dpadSize * 2 }
-    /// B 键中心（距右边缘 = sideMargin + 半径）
+    private static var dpadCenterX: CGFloat { dpadLeftX + dpadPitch }
+    private static var dpadRightX: CGFloat { dpadLeftX + dpadPitch * 2 }
     private static var bX: CGFloat { 1 - (sideMargin + actionSize / 2) }
-    /// A 键中心（与 B 相距一个按钮直径）
-    private static var aX: CGFloat { bX - actionSize }
+    private static var aX: CGFloat { bX - actionPitch }
+    /// SELECT/START 相对屏幕中心的短边偏移（负值左、正值右）
+    private static var systemButtonOffset: CGFloat {
+        (systemButtonSize * systemButtonAspect + systemButtonGap) / 2
+    }
 
-    /// 十字方向键（左下角）
+    /// 十字方向键（左下角，间距统一）
     private static func dpad(opacity: CGFloat) -> [ControlButton] {
-        let stepY = dpadSize   // 垂直间距 = 直径，十字紧贴
-        return [
-            ControlButton(button: .up, relativeX: dpadCenterX, relativeY: dpadCenterY - stepY,
+        [
+            ControlButton(button: .up, relativeX: dpadCenterX, relativeY: dpadCenterY - dpadPitch,
                           relativeSize: dpadSize, opacity: opacity, anchor: .leading),
-            ControlButton(button: .down, relativeX: dpadCenterX, relativeY: dpadCenterY + stepY,
+            ControlButton(button: .down, relativeX: dpadCenterX, relativeY: dpadCenterY + dpadPitch,
                           relativeSize: dpadSize, opacity: opacity, anchor: .leading),
             ControlButton(button: .left, relativeX: dpadLeftX, relativeY: dpadCenterY,
                           relativeSize: dpadSize, opacity: opacity, anchor: .leading),
@@ -197,12 +208,12 @@ enum ControlLayouts {
         ]
     }
 
-    /// A/B + 连发 A/B（右下，A 在左 B 在右）
+    /// A/B + 连发（右下，A 左 B 右，与方向键同高）
     private static func actionButtons(opacity: CGFloat) -> [ControlButton] {
         [
-            ControlButton(button: .turboA, relativeX: aX, relativeY: turboY,
+            ControlButton(button: .turboA, relativeX: aX, relativeY: actionY - turboPitchY,
                           relativeSize: turboSize, opacity: opacity, anchor: .trailing),
-            ControlButton(button: .turboB, relativeX: bX, relativeY: turboY,
+            ControlButton(button: .turboB, relativeX: bX, relativeY: actionY - turboPitchY,
                           relativeSize: turboSize, opacity: opacity, anchor: .trailing),
             ControlButton(button: .a, relativeX: aX, relativeY: actionY,
                           relativeSize: actionSize, opacity: opacity, anchor: .trailing),
@@ -211,33 +222,31 @@ enum ControlLayouts {
         ]
     }
 
-    /// SELECT / START（屏幕水平居中，椭圆）
+    /// SELECT / START（屏幕水平居中，间距按短边计算，椭圆）
     private static func systemButtons(opacity: CGFloat) -> [ControlButton] {
         [
-            ControlButton(button: .select, relativeX: 0.440, relativeY: systemButtonY,
+            ControlButton(button: .select, relativeX: -systemButtonOffset, relativeY: systemButtonY,
                           relativeSize: systemButtonSize, opacity: opacity,
-                          aspect: systemButtonAspect, anchor: .center),
-            ControlButton(button: .start, relativeX: 0.560, relativeY: systemButtonY,
+                          aspect: systemButtonAspect, anchor: .centerOffset),
+            ControlButton(button: .start, relativeX: systemButtonOffset, relativeY: systemButtonY,
                           relativeSize: systemButtonSize, opacity: opacity,
-                          aspect: systemButtonAspect, anchor: .center),
+                          aspect: systemButtonAspect, anchor: .centerOffset),
         ]
     }
 
-    /// FC：十字键左下、SELECT/START 中下、A/B + 连发右下
     static func fc(skin: SkinType) -> ControlLayout {
-        ControlLayout(system: .fc, skin: skin, buttons:
+        ControlLayout(system: .fc, skin: skin, version: currentVersion, buttons:
             dpad(opacity: 1.0) + systemButtons(opacity: 1.0) + actionButtons(opacity: 1.0)
         )
     }
 
-    /// GB：与 FC 同构（无 LR）
     static func gb(system: SystemType, skin: SkinType) -> ControlLayout {
-        ControlLayout(system: system, skin: skin, buttons:
+        ControlLayout(system: system, skin: skin, version: currentVersion, buttons:
             dpad(opacity: 1.0) + systemButtons(opacity: 1.0) + actionButtons(opacity: 1.0)
         )
     }
 
-    /// GBA：十字 + A/B + 连发 + LR 肩键（顶部两角，镜像对称）
+    /// GBA：在 FC 基础上加 LR 肩键（顶部两角，镜像）
     static func gba(skin: SkinType) -> ControlLayout {
         var buttons = dpad(opacity: 1.0) + systemButtons(opacity: 1.0) + actionButtons(opacity: 1.0)
         let shoulderSize: CGFloat = 0.095
@@ -246,7 +255,7 @@ enum ControlLayouts {
                                      relativeSize: shoulderSize, opacity: 1.0, anchor: .leading))
         buttons.append(ControlButton(button: .r, relativeX: 1 - shoulderX, relativeY: 0.085,
                                      relativeSize: shoulderSize, opacity: 1.0, anchor: .trailing))
-        return ControlLayout(system: .gba, skin: skin, buttons: buttons)
+        return ControlLayout(system: .gba, skin: skin, version: currentVersion, buttons: buttons)
     }
 
     static func `default`(system: SystemType, skin: SkinType) -> ControlLayout {
@@ -276,6 +285,12 @@ enum LayoutStore {
               let layout = try? JSONDecoder().decode(ControlLayout.self, from: data) else {
             return ControlLayouts.default(system: system, skin: skin)
         }
+        // 旧版本布局的坐标体系已变（间距/锚点规则不同），继续使用会错位，
+        // 因此低于当前版本的文件直接作废，回落到默认布局。
+        guard layout.version >= ControlLayouts.currentVersion else {
+            try? FileManager.default.removeItem(at: url)
+            return ControlLayouts.default(system: system, skin: skin)
+        }
         return migrated(layout)
     }
 
@@ -292,6 +307,8 @@ enum LayoutStore {
     }
 
     static func save(_ layout: ControlLayout) {
+        var layout = layout
+        layout.version = ControlLayouts.currentVersion
         let url = layoutURL(system: layout.system, skin: layout.skin)
         try? FileManager.default.createDirectory(
             at: url.deletingLastPathComponent(),
