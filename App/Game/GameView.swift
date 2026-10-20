@@ -29,7 +29,8 @@ struct GameView: View {
                 system: viewModel.rom.system,
                 skin: settings.skin,
                 layout: $layout,
-                isEditing: isEditingLayout
+                isEditing: isEditingLayout,
+                globalOpacity: settings.controlOpacity
             ) { button, pressed in
                 viewModel.setButton(button, pressed: pressed)
                 if pressed { Haptics.tap() }

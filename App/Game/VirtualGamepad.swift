@@ -16,6 +16,8 @@ struct VirtualGamepad: UIViewRepresentable {
     let skin: SkinType
     @Binding var layout: ControlLayout
     let isEditing: Bool
+    /// 全局按键透明度（与单键 opacity 相乘）
+    var globalOpacity: CGFloat = 0.6
     let onButtonChange: (JoypadButton, Bool) -> Void
 
     func makeCoordinator() -> Coordinator {
@@ -27,14 +29,16 @@ struct VirtualGamepad: UIViewRepresentable {
         view.backgroundColor = .clear
         view.isMultipleTouchEnabled = true
         context.coordinator.attach(view: view)
-        view.apply(layout: layout, system: system, skin: skin, editing: isEditing)
+        view.apply(layout: layout, system: system, skin: skin,
+                   globalOpacity: globalOpacity, editing: isEditing)
         return view
     }
 
     func updateUIView(_ uiView: GamepadCanvasView, context: Context) {
         context.coordinator.layoutBinding = $layout
         context.coordinator.isEditing = isEditing
-        uiView.apply(layout: layout, system: system, skin: skin, editing: isEditing)
+        uiView.apply(layout: layout, system: system, skin: skin,
+                     globalOpacity: globalOpacity, editing: isEditing)
     }
 
     // MARK: - Coordinator（协调布局编辑与按键事件）
@@ -82,7 +86,13 @@ struct VirtualGamepad: UIViewRepresentable {
                     current.buttons[idx].relativeX = relX
                     current.buttons[idx].relativeY = relY
                     self.layoutBinding.wrappedValue = current
-                    canvas.apply(layout: current, system: current.system, skin: current.skin, editing: true)
+                    canvas.apply(
+                        layout: current,
+                        system: current.system,
+                        skin: current.skin,
+                        globalOpacity: canvas.globalOpacity,
+                        editing: true
+                    )
                 }
             }
         }
@@ -100,6 +110,7 @@ final class GamepadCanvasView: UIView {
     private var currentLayout: ControlLayout?
     private var currentSystem: SystemType = .fc
     private var currentSkin: SkinType = .classic
+    fileprivate var globalOpacity: CGFloat = 0.6
     private var editing = false
 
     /// bounds 变化时重排按键（首次 apply 时 bounds 常为 0，必须靠 layoutSubviews 兜底）
@@ -111,10 +122,17 @@ final class GamepadCanvasView: UIView {
     /// 按键圆半径（相对短边）
     private var buttonRadius: CGFloat { min(bounds.width, bounds.height) * 0.075 }
 
-    func apply(layout: ControlLayout, system: SystemType, skin: SkinType, editing: Bool) {
+    func apply(
+        layout: ControlLayout,
+        system: SystemType,
+        skin: SkinType,
+        globalOpacity: CGFloat,
+        editing: Bool
+    ) {
         currentLayout = layout
         currentSystem = system
         currentSkin = skin
+        self.globalOpacity = globalOpacity
         self.editing = editing
         rebuildButtons()
     }
@@ -132,18 +150,23 @@ final class GamepadCanvasView: UIView {
             let view = buttons[control.button] ?? createButton(control.button)
             buttons[control.button] = view
             let shortSide = min(bounds.width, bounds.height)
-            let size = max(shortSide * control.relativeSize, 44)
+            // 高度按短边比例，宽度乘 aspect（>1 为横向椭圆，用于 SELECT/START）
+            let height = max(shortSide * control.relativeSize, 44)
+            let width = height * max(control.aspect, 1.0)
             view.frame = CGRect(
-                x: bounds.width * control.relativeX - size / 2,
-                y: bounds.height * control.relativeY - size / 2,
-                width: size,
-                height: size
+                x: bounds.width * control.relativeX - width / 2,
+                y: bounds.height * control.relativeY - height / 2,
+                width: width,
+                height: height
             )
-            view.layer.cornerRadius = size / 2
-            view.alpha = control.opacity
+            view.layer.cornerRadius = height / 2
+            // 实际透明度 = 单键值 × 全局值（设置页滑杆实时生效）
+            view.alpha = max(0.15, min(1.0, control.opacity * globalOpacity))
             view.isUserInteractionEnabled = false // 统一由 touches 分发
             view.setTitle(control.button.symbol, for: .normal)
-            view.titleLabel?.font = .systemFont(ofSize: size * 0.28, weight: .bold)
+            // 椭圆键文字略小，避免 SELECT/START 挤出边界
+            let fontScale: CGFloat = control.aspect > 1.3 ? 0.24 : 0.28
+            view.titleLabel?.font = .systemFont(ofSize: height * fontScale, weight: .bold)
             // 皮肤配色
             switch (skin, editing) {
             case (.classic, false):

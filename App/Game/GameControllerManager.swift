@@ -109,7 +109,20 @@ final class GameControllerManager: ObservableObject {
         refreshConnectionState()
     }
 
-    private func refreshConnectionState() {
+    /// 手柄电量（0-1），不支持或无数据时返回 nil
+    var batteryLevel: Float? {
+        guard let controller = GCController.controllers().first else { return nil }
+        if #available(iOS 14.0, *) {
+            guard let battery = controller.battery, battery.batteryState != .unknown else {
+                return nil
+            }
+            return battery.batteryLevel
+        }
+        return nil
+    }
+
+    /// 手动刷新连接状态（设置页「刷新」按钮）
+    func refreshConnectionState() {
         if let controller = GCController.controllers().first {
             connectedControllerName = controller.vendorName ?? "蓝牙手柄"
             isConnected = true

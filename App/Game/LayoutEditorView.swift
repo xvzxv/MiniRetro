@@ -24,7 +24,8 @@ struct LayoutEditorView: View {
                     system: rom.system,
                     skin: settings.skin,
                     layout: $layout,
-                    isEditing: true
+                    isEditing: true,
+                    globalOpacity: 1.0   // 编辑时全不透明，便于定位
                 ) { _, _ in }
                 .background(Color.black.opacity(0.92))
                 .cornerRadius(12)

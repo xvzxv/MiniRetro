@@ -78,6 +78,14 @@ final class SettingsStore: ObservableObject {
     @Published var lowPerformanceMode: Bool {
         didSet { defaults.set(lowPerformanceMode, forKey: Keys.lowPerf) }
     }
+    /// 虚拟按键全局透明度（0.25–1.0），与单键 opacity 相乘
+    @Published var controlOpacity: Double {
+        didSet { defaults.set(controlOpacity, forKey: Keys.controlOpacity) }
+    }
+    /// 连发频率（每秒切换次数，5–20）
+    @Published var turboRate: Int {
+        didSet { defaults.set(turboRate, forKey: Keys.turboRate) }
+    }
 
     private enum Keys {
         static let ffMultiplier = "settings.ffMultiplier"
@@ -89,6 +97,8 @@ final class SettingsStore: ObservableObject {
         static let skin = "settings.skin"
         static let showFPS = "settings.showFPS"
         static let lowPerf = "settings.lowPerformanceMode"
+        static let controlOpacity = "settings.controlOpacity"
+        static let turboRate = "settings.turboRate"
     }
 
     private init() {
@@ -109,6 +119,8 @@ final class SettingsStore: ObservableObject {
         }
         showFPS = defaults.object(forKey: Keys.showFPS) as? Bool ?? false
         lowPerformanceMode = defaults.object(forKey: Keys.lowPerf) as? Bool ?? false
+        controlOpacity = defaults.object(forKey: Keys.controlOpacity) as? Double ?? 0.6
+        turboRate = defaults.object(forKey: Keys.turboRate) as? Int ?? 10
     }
 
     /// 低端机自动降级：CRT 等重滤镜强制关闭

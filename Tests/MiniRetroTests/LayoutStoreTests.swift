@@ -12,12 +12,28 @@ final class LayoutStoreTests: XCTestCase {
         XCTAssertNotNil(fc.button(.b))
         XCTAssertNotNil(fc.button(.start))
         XCTAssertNotNil(fc.button(.select))
-        XCTAssertEqual(fc.buttons.count, 8)
+        // 新增连发键：方向4 + select/start 2 + A/B 2 + 连发 2 = 10
+        XCTAssertNotNil(fc.button(.turboA), "FC 应包含连发 A 键")
+        XCTAssertNotNil(fc.button(.turboB), "FC 应包含连发 B 键")
+        XCTAssertEqual(fc.buttons.count, 10)
 
         let gba = ControlLayouts.default(system: .gba, skin: .minimal)
         XCTAssertNotNil(gba.button(.l))
         XCTAssertNotNil(gba.button(.r))
-        XCTAssertEqual(gba.buttons.count, 10)
+        XCTAssertNotNil(gba.button(.turboA))
+        XCTAssertEqual(gba.buttons.count, 12)
+
+        // 布局几何：A/B 应与方向键同高，连发键在 A/B 上方
+        let dpadY = fc.button(.left)?.relativeY ?? 0
+        XCTAssertEqual(fc.button(.a)?.relativeY ?? -1, dpadY, accuracy: 0.001,
+                       "A 应与方向键同一水平线")
+        XCTAssertEqual(fc.button(.b)?.relativeY ?? -1, dpadY, accuracy: 0.001,
+                       "B 应与方向键同一水平线")
+        XCTAssertLessThan(fc.button(.turboA)?.relativeY ?? 1, dpadY, "连发键应在 A/B 上方")
+        // A 在左、B 在右
+        XCTAssertLessThan(fc.button(.a)?.relativeX ?? 1, fc.button(.b)?.relativeX ?? 0)
+        // SELECT/START 为椭圆
+        XCTAssertGreaterThan(fc.button(.select)?.aspect ?? 1, 1.5, "SELECT 应为椭圆")
     }
 
     func testLayoutRoundTrip() throws {

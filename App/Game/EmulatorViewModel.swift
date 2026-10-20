@@ -27,6 +27,12 @@ final class EmulatorViewModel: ObservableObject {
     private var fpsTimer: Timer?
     private var wasPausedByBackground = false
 
+    // 连发（turbo）状态
+    private var directHeld: Set<JoypadButton> = []   // 直接按下的普通键
+    private var turboHeld: Set<JoypadButton> = []    // 正被按住的连发键（.turboA/.turboB）
+    private var turboTimer: Timer?
+    private var turboPhase = false                   // 连发相位（true 时目标键按下）
+
     var onRequestMenu: (() -> Void)?
 
     /// 退出游戏回调（由 GameView 设置 → dismiss）
@@ -91,6 +97,7 @@ final class EmulatorViewModel: ObservableObject {
     }
 
     func unload() {
+        releaseAllInputs()
         stopFPSMonitor()
         audioEngine.stop()
         retroCore.flushBatterySave()
@@ -126,8 +133,73 @@ final class EmulatorViewModel: ObservableObject {
 
     // MARK: - 输入
 
+    /// 按键事件入口（虚拟按键 / 蓝牙手柄共用）
+    /// 连发键（turboA/turboB）由本层拦截，不下发 core；
+    /// 它们通过定时翻转相位，驱动对应的 A/B 状态。
     func setButton(_ button: JoypadButton, pressed: Bool, port: Int = 0) {
-        retroCore.setButton(UInt(button.rawValue), pressed: pressed, forPort: UInt(port))
+        if button.isTurbo {
+            if pressed {
+                turboHeld.insert(button)
+            } else {
+                turboHeld.remove(button)
+            }
+            updateTurboTimer()
+            refreshInputs(port: port)
+            return
+        }
+        if pressed {
+            directHeld.insert(button)
+        } else {
+            directHeld.remove(button)
+        }
+        refreshInputs(port: port)
+    }
+
+    /// 根据「直接按下 + 连发相位」计算最终按键状态并下发
+    private func refreshInputs(port: Int = 0) {
+        for button in JoypadButton.allCases where !button.isTurbo {
+            let pressed = directHeld.contains(button) || turboActive(for: button)
+            retroCore.setButton(UInt(button.rawValue), pressed: pressed, forPort: UInt(port))
+        }
+    }
+
+    /// 该键此刻是否应因连发而按下
+    private func turboActive(for button: JoypadButton) -> Bool {
+        guard turboPhase else { return false }
+        switch button {
+        case .a: return turboHeld.contains(.turboA)
+        case .b: return turboHeld.contains(.turboB)
+        default: return false
+        }
+    }
+
+    /// 有连发键按住时启动翻转定时器，全部松开则停止并复位
+    private func updateTurboTimer() {
+        turboTimer?.invalidate()
+        turboTimer = nil
+        guard !turboHeld.isEmpty else {
+            turboPhase = false
+            return
+        }
+        let rate = max(1, SettingsStore.shared.turboRate)   // 每秒完整周期数
+        let interval = 1.0 / Double(rate * 2)               // 半周期翻转
+        turboTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            self.turboPhase.toggle()
+            self.refreshInputs()
+        }
+    }
+
+    /// 清空所有按键状态（暂停/退出时避免卡键）
+    private func releaseAllInputs() {
+        directHeld.removeAll()
+        turboHeld.removeAll()
+        turboPhase = false
+        turboTimer?.invalidate()
+        turboTimer = nil
+        for button in JoypadButton.allCases where !button.isTurbo {
+            retroCore.setButton(UInt(button.rawValue), pressed: false, forPort: 0)
+        }
     }
 
     // MARK: - 即时存档（多槽位 + 缩略图）

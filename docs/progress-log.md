@@ -30,3 +30,6 @@
 处理了 7 个构建期问题：移除 ZIPFoundation（SwiftPM 在沙箱不可用，改内置 zip 解压）、Metal 编译器独立组件化（改运行时编译 shader）、bridging header 路径、SwiftUI `$settings` 投影、Coordinator 的 @Binding、`mathMode` 的 iOS 18 门限、bash 全角括号变量边界。
 
 **缺陷修复：.nes 导入全部失败（2026-10-20 22:06，用户反馈）** — 根因是 C 层返回 `system_id="nes"` 而 `SystemType` 的 case 名是 `fc`，`SystemType(rawValue:)` 直接返回 nil；同时失败分支只建索引不落盘导致「文件损坏」卡片无法处理。已改为显式映射表 + 失败落盘 + 补 UNIF 识别；新增 7 项 XCTest 与真实 ROMImporter 可执行验证（6 项），ipa 重建。
+
+**按键布局重构 + 连发 + 手柄管理（2026-10-20 22:46，用户需求）** — 虚拟按键改为传统有线手柄形态：方向键左下、SELECT/START 椭圆居中偏下、A 左 B 右且与方向键同高、连发 A+/B+ 在正上方（十字做了横屏宽高比补偿，避免拉成长方形）。
+新增连发键（前端 ID 100/101 + 定时翻转相位，频率可调 5–20/s）、全局按键透明度（默认 60%，设置页滑杆实时生效）、设置页蓝牙手柄区块（连接状态/电量/引导/映射入口）。模拟器截图验证布局，ipa 重建。
