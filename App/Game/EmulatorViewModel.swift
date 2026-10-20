@@ -84,10 +84,10 @@ final class EmulatorViewModel: ObservableObject {
         audioEngine.start(sampleRate: Double(retroCore.audioSampleRate), volume: SettingsStore.shared.volume)
         isLoaded = true
         startFPSMonitor()
-        NSLog("[MiniRetro] loadOK file=%@ system=%@ geometry=%.0fx%.0f audio=%lu",
+        NSLog("[MiniRetro] loadOK file=%@ system=%@ geometry=%.0fx%.0f audio=%ld",
               rom.fileName, rom.system.rawValue,
               retroCore.videoBaseSize.width, retroCore.videoBaseSize.height,
-              (unsigned long)retroCore.audioSampleRate)
+              Int(retroCore.audioSampleRate))
     }
 
     func unload() {

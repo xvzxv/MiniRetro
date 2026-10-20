@@ -27,6 +27,8 @@
 | A-18 | system_id → SystemType 映射（防回归） | `SystemTypeMappingTests` + 真实 ROMImporter 可执行验证 | ✅ 11 + 6 项通过 |
 | A-19 | `.nes` 中文名扩展名兜底 | 同上（含 `水浒神兽[外星科技][CN][RPG](8Mb).nes`） | ✅ 识别为 fc/fceumm |
 | A-20 | UNIF 容器识别 | C 测试 + 可执行验证 | ✅ `UNIF` → fceumm/unf |
+| A-21 | **模拟器全链路**（启动→库→进游戏→渲染） | iPhone Duo / iOS 27.1 | ✅ 60fps，`tex=256x240 hasTex=1`，按键齐全 |
+| A-22 | 中文名 `.nes` 在 iOS 上识别 | 模拟器（真实沙盒扫描） | ✅ 卡片显示 FC/NES，无损坏标记 |
 
 运行自动化测试：
 

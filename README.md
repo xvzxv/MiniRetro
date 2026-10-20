@@ -134,4 +134,4 @@ specs/                   联机设计文档（本期只设计不实现）
 | **端到端运行**（加载 → 60fps → 抓帧 → 存档往返） | ✅ 三 core 全部通过，各 15 项断言（`./Tools/run_e2e.sh`） |
 | ROM 识别逻辑 | ✅ 13 条用例运行时全部通过 |
 | **iOS 完整构建** | ✅ `xcodebuild` Release 成功，产出 `build/MiniRetro-1.0-1-unsigned.ipa`（1.5MB，arm64 / iOS 17.0，三个 core 全部嵌入） |
-| iOS 模拟器运行 | ⏳ 需下载模拟器 runtime（`xcodebuild -downloadPlatform iOS`） |
+| **iOS 模拟器运行** | ✅ iPhone Duo / iOS 27.1 全链路跑通：加载 ROM、60fps 渲染、虚拟按键、中文名识别（截图见 `docs/screenshots/`） |

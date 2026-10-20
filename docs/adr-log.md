@@ -92,6 +92,24 @@ mGBA 的 RGB565 实测确认了 FramePipeline 的 16bpp → BGRA 转换路径正
 
 ---
 
+## ADR-008：模拟器/真机环境差异（权限、渲染尺寸、视图时序）（2026-10-20）
+
+模拟器实测暴露三类「只在真实运行环境出现」的问题，已固化为实现约束：
+
+1. **`simctl install` 会剥掉 dylib 可执行位**：`-rwxr-xr-x` → `-rw-r--r--`。
+   → 判断 framework 是否存在**只能用 `fileExistsAtPath`**，禁止用 `isExecutableFileAtPath`。
+2. **MTKView 的 `drawableSize` 不要手动赋值**：`UIViewRepresentable.updateUIView` 首次调用时
+   `bounds` 常为 0，一旦写入 `drawableSize = .zero`，MTKView 会永久停止出图（`currentDrawable` 恒为 nil）。
+   → 交给 `autoResizeDrawable = true`；仅在尺寸有效时取消 `isPaused`。
+3. **自绘 UIView 必须由 `layoutSubviews` 驱动重排**：`UIViewRepresentable` 的 `makeUIView`
+   发生时 `bounds` 仍为 0，此时按 bounds 计算子视图 frame 会得到全 0（按键不可见）。
+   → `apply()` 只记录参数，实际排布放进 `rebuildButtons()`，由 `layoutSubviews` 在尺寸变化时调用。
+
+**教训**：`swiftc -typecheck`、`-parse`、甚至 macOS 端到端（无 UIKit/SwiftUI）都无法覆盖
+这三类问题——它们是布局时序与安装行为问题。**必须在 iOS 模拟器（或真机）跑一次**。
+
+---
+
 ## ADR-007：识别层 system_id 契约与损坏条目的落盘（2026-10-20，用户反馈缺陷）
 
 **现象**：导入 `.nes` 报「无法识别的格式」，导入 0 款；库中出现一张永久显示「文件损坏」的卡片（GB/GBA 导入正常）。

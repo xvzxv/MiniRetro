@@ -12,7 +12,9 @@
 | B4 | SameBoy cheat 补丁随版本漂移 | GB/GBC 金手指 | 补丁依赖 stub 原文匹配 | 升级 SameBoy 后重跑 `build_cores.sh`，若 assert 失败按 `docs/adr-log.md` ADR-003 更新补丁 | 已加保护 |
 | B5 | `rgbgfx` 缺失（libpng） | SameBoy boot ROM 的 logo 转换 | 受限网络下无法获取 libpng；`rgbds` 源码构建只能出 rgbasm/rgblink/rgbfix | 用户 Mac 上 `brew install rgbds`（含 rgbgfx）即可 | 待用户 |
 | B6 | ~~SwiftUI `@State` 宏无法展开~~ | ~~视图层只能语法解析~~ | 已用 `xcodebuild` 全量编译，暴露并修复 4 类 SwiftUI 错误 | — | **已解除** |
-| B7 | 模拟器 runtime 未安装 | 无法在模拟器跑 App（UI/渲染/音频实测） | Xcode 27 不随附 runtime | `xcodebuild -downloadPlatform iOS`（约 7-10GB） | 下载中 |
+| B7 | ~~模拟器 runtime 未安装~~ | ~~无法在模拟器跑 App~~ | 已安装 iOS 27.1 runtime | — | **已解除（2026-10-20 22:35 模拟器全链路跑通）** |
+| B8 | Xcode 27 `swift-plugin-server` 不稳定 | 模拟器构建随机失败（`malformed response`，158+ 报错） | plugin server 进程状态异常；`libSwiftUIMacros` 不在 toolchain plugins 目录 | 构建前 `pkill -9 -f swift-plugin-server` + `rm -rf` derivedData + `-jobs 4` 低并发，可稳定通过 | 已规避（脚本化建议） |
+| B9 | iPhone Duo 竖屏布局偏紧 | 游戏库工具栏/卡片在竖屏下堆叠 | 该设备类型为竖屏形态，App 按横屏设计 | 真机横屏不受影响；后续可用 `ViewThatFits` 适配 | 待优化 |
 
 ## 环境实测记录（供排障参考）
 
@@ -62,6 +64,27 @@
 
 **结论**：B1 解除后，构建链路完整可复现；剩余未验证项只有模拟器/真机上的运行时表现（runtime 下载中 + 用户签名）。
 
+## 模拟器实测记录（R3，2026-10-20 22:35）
+
+在 iPhone Duo / iOS 27.1 模拟器上跑通全链路，**发现 4 个只在真实运行环境才暴露的缺陷**（语法检查、typecheck、macOS e2e 全部漏过）：
+
+| # | 缺陷 | 现象 | 根因 | 修复 |
+|---|---|---|---|---|
+| F1 | framework 探测误判（**致命**） | 所有游戏「找不到 core framework」，黑屏 | `isExecutableFileAtPath` 判断，但 `simctl install` 把 dylib 权限从 `-rwxr-xr-x` 剥成 `-rw-r--r--` | 改用 `fileExistsAtPath`（dlopen 与 Unix 可执行位无关） |
+| F2 | MTKView 永不出图 | 画面全黑，`tex=0x0 hasTex=0` | `updateUIView` 强制 `drawableSize = bounds.size`，首次 bounds=0 → MTKView 永久停渲染 | 移除赋值，交给 `autoResizeDrawable` |
+| F3 | 虚拟按键不显示 | 进入游戏只见黑屏，无按键 | `apply()` 在 bounds=0 时算 frame，按键尺寸 0 | 抽出 `rebuildButtons()`，由 `layoutSubviews` 在 bounds 变化时重排 |
+| F4 | 游戏库漏扫 | 手工放入 `ROMs/nes/` 的 ROM 不显示 | `scanExisting` 依赖子目录名 == `SystemType.rawValue` | 递归 `enumerator` + `identify` 判断 + 原地建索引 |
+
+**验证结果**（截图见 `docs/screenshots/`）：
+- 空状态：文案与引导正确
+- 游戏库：中文名 `.nes` 正确识别为 FC/NES，无「文件损坏」
+- 进游戏：`loadOK file=test-game.nes system=fc geometry=256x240`、`draw: tex=256x240 hasTex=1 fps=60`、画面显示 NES 背景色（绿）、方向键/A/B/SELECT/START 全部可见
+
+**附带改进**：
+- `MRLog` 在 Release 下也输出系统日志（原先仅 DEBUG，真机排障全盲）
+- 新增 `-MRAutoPlayFirst` 启动参数（自动打开第一款游戏，供模拟器/CI 验证渲染链路）
+- 诊断日志：Metal pipeline 数量、draw 帧尺寸/纹理状态、loadOK 关键参数
+
 ## 执行日志
 
 **2026-10-20**
@@ -76,4 +99,5 @@
 - 构建脚本三件套完成并通过 `bash -n` 语法检查
 - 文档全套：README / milestones / testing / user-confirm / adr-log / blockers / 联机设计
 - **端到端验证（第二轮）**：`Tools/run_e2e.sh` 三 core 全部通过（各 15 项断言）；过程中修复 4 个真实缺陷（framework 路径、need_fullpath、采样率回调、mGBA 产物路径）
-- **iOS 构建打通（第三轮）**：Xcode 27.1 → 三 core 双 slice xcframework → `xcodebuild` Release → `build/MiniRetro-1.0-1-unsigned.ipa`（1.5MB）；修复 E1-E7 七个构建期问题
+- **iOS 构建打通（第三轮）**：Xcode 27.1 → 三 core 双 slice xcframework → `xcodebuild` Release → `build/MiniRetro-1.0-1-unsigned.ipa`；修复 E1-E7 七个构建期问题
+- **模拟器全链路跑通（第四轮）**：iPhone Duo / iOS 27.1 上加载 ROM、60fps 渲染、虚拟按键全部正常；修复 F1-F4 四个运行期缺陷（详见 R3），ipa 重建
