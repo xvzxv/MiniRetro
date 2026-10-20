@@ -25,10 +25,8 @@ targets:
     dependencies:
       - package: ZIPFoundation
         product: ZIPFoundation
-      - framework: CoreBridge/CoreBridge.h
-        embed: false
-        codeSignOnCopy: false
       # 三个 libretro core（Cores/artifacts 下由 build_cores.sh 产出 xcframework）
+      # 注意：CoreBridge 是编译进主 target 的源码，不是 framework 依赖
       - framework: Cores/artifacts/mgba-core.xcframework
         embed: true
         codeSignOnCopy: false
@@ -59,8 +57,9 @@ targets:
         DEVELOPMENT_TEAM: ""
         SUPPORTS_MACCATALYST: NO
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
-        # Metal shader 随 App 编译
-        MTLLINKER_ENABLED: NO
+        # 资源目录（AppIcon / AccentColor）
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
 
   # 桥接层单测（M1 验证 save/load 往返）
   MiniRetroTests:
