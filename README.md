@@ -52,7 +52,7 @@ brew install xcodegen cmake rgbds
 | XcodeGen | 由 `project.yml` 生成 `.xcodeproj` | `brew install xcodegen` |
 | cmake | 编译 mGBA（其 upstream 只提供 CMake 构建） | `brew install cmake`；若 brew 不可用：`./Tools/fetch_cmake.sh` |
 | rgbds | Assembling SameBoy 的 boot ROM（来自 `.asm`） | `brew install rgbds`；若 brew 不可用：`./Tools/fetch_rgbds.sh` |
-| ZIPFoundation | zip ROM 导入解压（SPM 自动解析） | 无需手动安装 |
+| ~~ZIPFoundation~~ | ~~zip 解压~~ → 已改为内置实现（`App/Library/ZipArchive.swift`，系统 Compression framework） | 无需安装 |
 
 > `Tools/vendor/`（自行下载的 cmake/rgbds 二进制）已在 `.gitignore` 中，不入库。
 
@@ -133,4 +133,5 @@ specs/                   联机设计文档（本期只设计不实现）
 | mgba / SameBoy / fceumm | ✅ 三 core 均在 macOS 上编译通过 |
 | **端到端运行**（加载 → 60fps → 抓帧 → 存档往返） | ✅ 三 core 全部通过，各 15 项断言（`./Tools/run_e2e.sh`） |
 | ROM 识别逻辑 | ✅ 13 条用例运行时全部通过 |
-| iOS 交叉编译 + 模拟器运行 | ⏳ 需完整 Xcode（本机仅有 CLT），见 `docs/blockers.md` |
+| **iOS 完整构建** | ✅ `xcodebuild` Release 成功，产出 `build/MiniRetro-1.0-1-unsigned.ipa`（1.5MB，arm64 / iOS 17.0，三个 core 全部嵌入） |
+| iOS 模拟器运行 | ⏳ 需下载模拟器 runtime（`xcodebuild -downloadPlatform iOS`） |

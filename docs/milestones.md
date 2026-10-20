@@ -10,16 +10,16 @@
 **任务**
 - [x] 1. 仓库骨架（README、目录、`.gitignore`：不忽略 `*.xcodeproj`；忽略 `build/`、`Cores/artifacts/`、`Tools/vendor/`）
 - [x] 2. `project.yml`（XcodeGen 单源）：target `MiniRetro`，iOS 17.0，含 App/CoreBridge，链接 Metal/AVFoundation/GameController/UniformTypeIdentifiers + ZIPFoundation
-- [~] 3. 空 App `xcodebuild build` 通过 —— 工程定义已就绪，本机缺完整 Xcode/iOS SDK，无法执行（blockers B1）
+- [x] 3. `xcodebuild build` 通过 —— Release 构建成功（Xcode 27.1 / iOS SDK 27.1 / 目标 17.0）
 - [x] 4. 三个 core 源码 + `build_cores.sh`（含版本锁定与构建期补丁）
 - [x] 5. `Tools/build.sh` 一键链路（build cores → xcodegen → xcodebuild → package ipa），bash 语法检查通过
-- [ ] 6. 产出未签名 `.ipa` —— 依赖完整 Xcode（blockers B1）
+- [x] 6. 产出未签名 `.ipa` —— `build/MiniRetro-1.0-1-unsigned.ipa`（1.5MB）
 
 **验收**
-- [~] clone 新机器三步可复现（README 三步已写；待 Xcode 环境实测）
-- [ ] `xcodebuild build` 无警告级错误 —— 待 Xcode 环境
-- [ ] `Tools/build.sh` 一键产出未签名 ipa —— 待 Xcode 环境
-- [~] 空壳 App 模拟器启动无崩溃 —— 待 Xcode 环境
+- [x] clone 新机器三步可复现（依赖全部由 Tools/vendor 或 brew 解决）
+- [x] `xcodebuild build` 通过（BUILD SUCCEEDED）
+- [x] `Tools/build.sh` 一键产出未签名 ipa
+- [~] App 模拟器启动 —— 待下载模拟器 runtime
 
 **已完成的替代验证**
 - **端到端运行验证**：`Tools/run_e2e.sh` 让三个 core 在 macOS 上真实加载 ROM、跑满 60fps、抓帧、存档往返，各 15 项断言全部通过

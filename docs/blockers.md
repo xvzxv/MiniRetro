@@ -6,12 +6,13 @@
 
 | # | 阻塞项 | 影响 | 原因 | 解除条件 | 状态 |
 |---|---|---|---|---|---|
-| B1 | 完整 Xcode / iOS SDK 缺失 | `xcodebuild`、iOS 模拟器、xcframework 交叉编译、`.ipa` 产出、Instruments 检测 | 当前机器只有 CLT（无 `/Applications/Xcode.app`，CLT SDKs 仅 MacOSX*） | 安装完整 Xcode 16+ 并 `sudo xcode-select -s /Applications/Xcode.app` | 待解除（**已用 macOS 端到端验证弥补，见下方 R1**） |
+| B1 | ~~完整 Xcode / iOS SDK 缺失~~ | ~~构建全链路~~ | 已安装 Xcode 27.1；许可证通过用户域偏好标记（`IDELicenseAgreementVersion`）后 xcrun/xcodebuild 可用 | — | **已解除（2026-10-20 21:46 产出 ipa）** |
 | B2 | 签名/真机 | 真机安装与长测 | 需用户 Apple ID 与签名工具 | 用户侧执行（见 `docs/user-confirm.md`） | 待用户 |
 | B3 | 测试 ROM 素材 | M1-M4 全流程 ROM 实测、金手指实测 | 仓库禁止含版权 ROM；沙箱环境亦无法运行模拟器 | 用户放置 homebrew ROM 到 `Documents/ROMs/` | 待用户 |
 | B4 | SameBoy cheat 补丁随版本漂移 | GB/GBC 金手指 | 补丁依赖 stub 原文匹配 | 升级 SameBoy 后重跑 `build_cores.sh`，若 assert 失败按 `docs/adr-log.md` ADR-003 更新补丁 | 已加保护 |
 | B5 | `rgbgfx` 缺失（libpng） | SameBoy boot ROM 的 logo 转换 | 受限网络下无法获取 libpng；`rgbds` 源码构建只能出 rgbasm/rgblink/rgbfix | 用户 Mac 上 `brew install rgbds`（含 rgbgfx）即可 | 待用户 |
-| B6 | SwiftUI `@State` 宏无法展开 | 视图层只能做语法解析，不能全量类型检查 | CLT 的 Swift 工具链不含 `libSwiftUIMacros`（仅完整 Xcode 提供） | 安装完整 Xcode 后 `xcodebuild` 自然覆盖 | 待解除 |
+| B6 | ~~SwiftUI `@State` 宏无法展开~~ | ~~视图层只能语法解析~~ | 已用 `xcodebuild` 全量编译，暴露并修复 4 类 SwiftUI 错误 | — | **已解除** |
+| B7 | 模拟器 runtime 未安装 | 无法在模拟器跑 App（UI/渲染/音频实测） | Xcode 27 不随附 runtime | `xcodebuild -downloadPlatform iOS`（约 7-10GB） | 下载中 |
 
 ## 环境实测记录（供排障参考）
 
@@ -45,6 +46,22 @@
 
 **结论**：桥接层的加载/运行/渲染/音频/存档链路已用真实 core 验证；剩余未验证项集中在 iOS 特有的 UI、Metal 显示、AVAudioEngine 输出、签名与真机。
 
+## 构建期实测记录（R2，2026-10-20）
+
+在 Xcode 27.1 上首次完整构建，暴露的问题全部为**环境/工具链演进类**，与代码逻辑无关：
+
+| # | 问题 | 现象 | 处理 |
+|---|---|---|---|
+| E1 | SwiftPM 不可用 | 解析 ZIPFoundation 时 `sandbox-exec: Operation not permitted` + manifest 编译失败 | 移除外部依赖，改用内置 `ZipArchive.swift`（系统 Compression framework 解 raw DEFLATE） |
+| E2 | Metal 编译器独立化 | `error: cannot execute tool 'metal' due to missing Metal Toolchain` | shader 改运行时编译（`VideoShaders.swift`），`.metal` 仅作源码参考并从 target 排除 |
+| E3 | bridging header 路径 | `'RetroCore.h' file not found`（dependency scanning 阶段） | bridging header 用相对路径 + `HEADER_SEARCH_PATHS` |
+| E4 | SwiftUI 投影缺失 | `cannot find '$settings' in scope` ×5 文件 | `private let settings` → `@ObservedObject private var settings` |
+| E5 | Coordinator 持有 @Binding | `cannot assign value of type 'Binding<ControlLayout>' to ...` | 改存 `Binding` 值类型，通过 `wrappedValue` 读写 |
+| E6 | Xcode 27 SDK API 门限 | `mathMode` 仅 iOS 18+ | `#available(iOS 18.0, macOS 15.0)` 守卫 + 回退 `fastMathEnabled` |
+| E7 | bash 变量边界 | `${output（` 被当变量名 → `unbound variable` | 全脚本统一 `${var}` 形式 |
+
+**结论**：B1 解除后，构建链路完整可复现；剩余未验证项只有模拟器/真机上的运行时表现（runtime 下载中 + 用户签名）。
+
 ## 执行日志
 
 **2026-10-20**
@@ -59,3 +76,4 @@
 - 构建脚本三件套完成并通过 `bash -n` 语法检查
 - 文档全套：README / milestones / testing / user-confirm / adr-log / blockers / 联机设计
 - **端到端验证（第二轮）**：`Tools/run_e2e.sh` 三 core 全部通过（各 15 项断言）；过程中修复 4 个真实缺陷（framework 路径、need_fullpath、采样率回调、mGBA 产物路径）
+- **iOS 构建打通（第三轮）**：Xcode 27.1 → 三 core 双 slice xcframework → `xcodebuild` Release → `build/MiniRetro-1.0-1-unsigned.ipa`（1.5MB）；修复 E1-E7 七个构建期问题

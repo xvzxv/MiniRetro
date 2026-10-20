@@ -25,3 +25,6 @@
 
 **端到端验证（第二轮，同日）** — 新增 `Tools/run_e2e.sh`：自动生成极简 homebrew ROM（NES/GB/GBA）、编译 macOS 版三 core、复刻 iOS 的 framework 嵌入布局，用真实 RetroCore 跑完整链路。
 三 core 各 15 项断言全通过（60fps / 像素有效 / 音频有数据 / 存档往返）；过程中修复 framework 路径、need_fullpath、GET_TARGET_SAMPLE_RATE、mGBA 产物路径四个真实缺陷。
+
+**iOS 构建打通（2026-10-20 21:46）** — Xcode 27.1 + iOS SDK 27.1 环境下完成全量构建：三 core 交叉编译（device + simulator）→ xcframework → `xcodebuild` Release → `MiniRetro-1.0-1-unsigned.ipa`（1.5MB，arm64/iOS 17.0，三 core 已嵌入）。
+处理了 7 个构建期问题：移除 ZIPFoundation（SwiftPM 在沙箱不可用，改内置 zip 解压）、Metal 编译器独立组件化（改运行时编译 shader）、bridging header 路径、SwiftUI `$settings` 投影、Coordinator 的 @Binding、`mathMode` 的 iOS 18 门限、bash 全角括号变量边界。
