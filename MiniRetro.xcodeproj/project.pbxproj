@@ -1,0 +1,709 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		06584D80A3CE08C9702FB062 /* AppTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91755392B9AB930D9D6D8040 /* AppTypes.swift */; };
+		082404C7A63CEC8FB0DD03E6 /* CoreRegistryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17FBA037F8246B1DCBD5D5B /* CoreRegistryTests.swift */; };
+		08C963295AE08347FB026C5D /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E2C793D1941DD9D9B5D110C /* Haptics.swift */; };
+		2145743378D54A80A93554DC /* VirtualGamepad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FD8E3CE6A10A5795FB61C2F /* VirtualGamepad.swift */; };
+		28C92B506F05DC290252D459 /* mgba-core.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A4BE69C63739940EB4D0003 /* mgba-core.xcframework */; };
+		2E54C57B14295924C6E7B393 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = F130CED08364962109C3AE2A /* Utilities.swift */; };
+		34EAC7ADB797279DEC4AC923 /* CheatEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86A9BEA77B72BAA2DBB0FB2 /* CheatEditorView.swift */; };
+		351F06219575916F3AFF9345 /* fceumm-core.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1D1381BC0D9D2FBC95A9FA6B /* fceumm-core.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3F29E59565461EE956E42A05 /* LibraryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D125AB6AD777BDCA7618AF66 /* LibraryViewModel.swift */; };
+		4303A94BA1D17602B5283D02 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB8962AE1B871D8C0B0BAA02 /* SettingsView.swift */; };
+		44945909D1636EFB67E69D0E /* ControlLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BB91085734F70E5799010FE /* ControlLayout.swift */; };
+		484D111441BF93BF64957DA7 /* sameboy-core.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A3FC0EAD50329BDD1B39170 /* sameboy-core.xcframework */; };
+		49B432812B2F96993DA67F92 /* KeyRemapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02547C68EC58878D823A2CA /* KeyRemapView.swift */; };
+		567E56ECD10B3D5209F64890 /* RetroAudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7050A9B0C37F7A547FAC349B /* RetroAudioEngine.swift */; };
+		570815F1EA6C3E30ABDDA587 /* AudioRingBuffer.mm in Sources */ = {isa = PBXBuildFile; fileRef = DE87D96D069C750B3313E32B /* AudioRingBuffer.mm */; };
+		57E248D6868A85FD5294947E /* RetroCore.mm in Sources */ = {isa = PBXBuildFile; fileRef = 80BADB6FC6F8280EA176B090 /* RetroCore.mm */; };
+		61A4EA4162BC8722148E48B6 /* mgba-core.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9A4BE69C63739940EB4D0003 /* mgba-core.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		68B474FCEB214A7330881831 /* EmulatorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AFFE9F16BD7E999AEB7724D /* EmulatorViewModel.swift */; };
+		73B91186266D04FBFE51B88A /* LayoutEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01760D1BD48FFBEA7B7F05DD /* LayoutEditorView.swift */; };
+		7E1544B536720A893E1C38FC /* CheatManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62AD5C3B1ECFEFB75361505 /* CheatManager.swift */; };
+		8BAC9A9705BAB923BF4FE4FC /* LayoutStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2EFF7695A73F4C2ABC1C32 /* LayoutStoreTests.swift */; };
+		8BAF1119221DFD5457C82DA3 /* MiniRetroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E45AB1BE45D76FC6871A5C /* MiniRetroApp.swift */; };
+		8C7D53FAF07A6AE31F14CC8F /* fceumm-core.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D1381BC0D9D2FBC95A9FA6B /* fceumm-core.xcframework */; };
+		8E548FC1FC9ACD3C18F971CF /* sameboy-core.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3A3FC0EAD50329BDD1B39170 /* sameboy-core.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9DE6FA919C54194ECE06E41A /* CoreRegistry.c in Sources */ = {isa = PBXBuildFile; fileRef = 83F15A8CB8AAF20F72143ADF /* CoreRegistry.c */; };
+		B17BC2DB4E06A5F678B58BA1 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B27DB966190AE2267EF5054 /* RootView.swift */; };
+		B3C7336EB0AE9BF82BBFB438 /* GameDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40F95AE84989D66C5A55C4A /* GameDisplayView.swift */; };
+		B9D8A8CEFD3C6062173924EB /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEEB8A9C0BA8AD9068642606 /* GameView.swift */; };
+		BB857353FA6754F05C7163AD /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 4B58CB442E7F7FB7B85F59DE /* ZIPFoundation */; };
+		C1B824374F44C8AC834279C9 /* VideoShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 570B9D8E5A5BA41300A7D6A9 /* VideoShaders.metal */; };
+		CC70C0879F728DFC10E63551 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF9A1098814BA9E5CDA70FA /* LibraryView.swift */; };
+		D182BB2FC8007D46190E5B84 /* ROMImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE02FEA81B1176A0D737302 /* ROMImporter.swift */; };
+		D34D627C9E969CFFDE06EF19 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D207D1DAA2ED243509A9D614 /* Assets.xcassets */; };
+		D62BC485397D1912AF42B40A /* GameControllerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31163B9E862C5FBEE7940E71 /* GameControllerManager.swift */; };
+		DD7268AC6FAB26524F967A44 /* CrossImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F7A7455BB63D26F8DF0C86 /* CrossImage.swift */; };
+		E190DE9E2DF358E6C5C48DE3 /* FramePipeline.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5CB3410028850C85D429A95D /* FramePipeline.mm */; };
+		E33AD9C6CFDA6A44B2ADD5B8 /* InGameMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10640FF5F43C0193E9D13DCD /* InGameMenuView.swift */; };
+		F5C1BDE4B86AE48419B07DAE /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EAA8A9F0151BE4C73BBA251 /* SettingsStore.swift */; };
+		F902236A5550B68D0296682D /* EmulatorRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08F27DF8E903FFE2EB5F4FEF /* EmulatorRenderer.swift */; };
+		FE00785B6969EC4AF0E23BC9 /* SaveStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD275FCFDB685BB8A1789BFF /* SaveStateTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F8004566F4617769847B5DA0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 47AD384E7075023D48018D6F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9438606627C3B38DF476C4D1;
+			remoteInfo = MiniRetro;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		BECEE9073FBD9482FA6215E4 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				61A4EA4162BC8722148E48B6 /* mgba-core.xcframework in Embed Frameworks */,
+				8E548FC1FC9ACD3C18F971CF /* sameboy-core.xcframework in Embed Frameworks */,
+				351F06219575916F3AFF9345 /* fceumm-core.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		01760D1BD48FFBEA7B7F05DD /* LayoutEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutEditorView.swift; sourceTree = "<group>"; };
+		08F27DF8E903FFE2EB5F4FEF /* EmulatorRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmulatorRenderer.swift; sourceTree = "<group>"; };
+		10640FF5F43C0193E9D13DCD /* InGameMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InGameMenuView.swift; sourceTree = "<group>"; };
+		1D1381BC0D9D2FBC95A9FA6B /* fceumm-core.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = "fceumm-core.xcframework"; path = "Cores/artifacts/fceumm-core.xcframework"; sourceTree = "<group>"; };
+		2AFFE9F16BD7E999AEB7724D /* EmulatorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmulatorViewModel.swift; sourceTree = "<group>"; };
+		2E2C793D1941DD9D9B5D110C /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
+		31163B9E862C5FBEE7940E71 /* GameControllerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameControllerManager.swift; sourceTree = "<group>"; };
+		3A3FC0EAD50329BDD1B39170 /* sameboy-core.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = "sameboy-core.xcframework"; path = "Cores/artifacts/sameboy-core.xcframework"; sourceTree = "<group>"; };
+		3CF9A1098814BA9E5CDA70FA /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		3FD8E3CE6A10A5795FB61C2F /* VirtualGamepad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualGamepad.swift; sourceTree = "<group>"; };
+		570B9D8E5A5BA41300A7D6A9 /* VideoShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = VideoShaders.metal; sourceTree = "<group>"; };
+		5CB3410028850C85D429A95D /* FramePipeline.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = FramePipeline.mm; sourceTree = "<group>"; };
+		63647189A416CF934C9EEEF5 /* MiniRetro.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MiniRetro.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D2EFF7695A73F4C2ABC1C32 /* LayoutStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutStoreTests.swift; sourceTree = "<group>"; };
+		6EAA8A9F0151BE4C73BBA251 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		7050A9B0C37F7A547FAC349B /* RetroAudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroAudioEngine.swift; sourceTree = "<group>"; };
+		7DB68EA5D1B05BC77269F618 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		80BADB6FC6F8280EA176B090 /* RetroCore.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RetroCore.mm; sourceTree = "<group>"; };
+		81F7A7455BB63D26F8DF0C86 /* CrossImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossImage.swift; sourceTree = "<group>"; };
+		83F15A8CB8AAF20F72143ADF /* CoreRegistry.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = CoreRegistry.c; sourceTree = "<group>"; };
+		8B27DB966190AE2267EF5054 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		8BB91085734F70E5799010FE /* ControlLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlLayout.swift; sourceTree = "<group>"; };
+		8F254B0CB40CE24A50A59119 /* MiniRetroTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MiniRetroTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		91755392B9AB930D9D6D8040 /* AppTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTypes.swift; sourceTree = "<group>"; };
+		9A4BE69C63739940EB4D0003 /* mgba-core.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = "mgba-core.xcframework"; path = "Cores/artifacts/mgba-core.xcframework"; sourceTree = "<group>"; };
+		9CE02FEA81B1176A0D737302 /* ROMImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ROMImporter.swift; sourceTree = "<group>"; };
+		AD275FCFDB685BB8A1789BFF /* SaveStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveStateTests.swift; sourceTree = "<group>"; };
+		AEBCDDB1D4F3F36DFFC805B7 /* MiniRetro-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MiniRetro-Bridging-Header.h"; sourceTree = "<group>"; };
+		B40F95AE84989D66C5A55C4A /* GameDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDisplayView.swift; sourceTree = "<group>"; };
+		C02547C68EC58878D823A2CA /* KeyRemapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyRemapView.swift; sourceTree = "<group>"; };
+		C62AD5C3B1ECFEFB75361505 /* CheatManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheatManager.swift; sourceTree = "<group>"; };
+		CB8962AE1B871D8C0B0BAA02 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		CEEB8A9C0BA8AD9068642606 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
+		D125AB6AD777BDCA7618AF66 /* LibraryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModel.swift; sourceTree = "<group>"; };
+		D207D1DAA2ED243509A9D614 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D86A9BEA77B72BAA2DBB0FB2 /* CheatEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheatEditorView.swift; sourceTree = "<group>"; };
+		DE87D96D069C750B3313E32B /* AudioRingBuffer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AudioRingBuffer.mm; sourceTree = "<group>"; };
+		F130CED08364962109C3AE2A /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		F17FBA037F8246B1DCBD5D5B /* CoreRegistryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreRegistryTests.swift; sourceTree = "<group>"; };
+		F4E45AB1BE45D76FC6871A5C /* MiniRetroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniRetroApp.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D90AFC1AEED0F799638C4DB7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB857353FA6754F05C7163AD /* ZIPFoundation in Frameworks */,
+				28C92B506F05DC290252D459 /* mgba-core.xcframework in Frameworks */,
+				484D111441BF93BF64957DA7 /* sameboy-core.xcframework in Frameworks */,
+				8C7D53FAF07A6AE31F14CC8F /* fceumm-core.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		178BA2F3E58347AE96913549 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				D207D1DAA2ED243509A9D614 /* Assets.xcassets */,
+				570B9D8E5A5BA41300A7D6A9 /* VideoShaders.metal */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		25772616F4675DB4215F02E7 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				D46316A3CCB135163540B045 /* MiniRetroTests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		3754312B46AA33BAFAB4AEA8 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				81F7A7455BB63D26F8DF0C86 /* CrossImage.swift */,
+				2E2C793D1941DD9D9B5D110C /* Haptics.swift */,
+				F130CED08364962109C3AE2A /* Utilities.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		51675405E1E9DECC1FC4BE50 /* CoreBridge */ = {
+			isa = PBXGroup;
+			children = (
+				DE87D96D069C750B3313E32B /* AudioRingBuffer.mm */,
+				83F15A8CB8AAF20F72143ADF /* CoreRegistry.c */,
+				5CB3410028850C85D429A95D /* FramePipeline.mm */,
+				80BADB6FC6F8280EA176B090 /* RetroCore.mm */,
+			);
+			path = CoreBridge;
+			sourceTree = "<group>";
+		};
+		56BA19A5F0F08105CFD05C55 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1D1381BC0D9D2FBC95A9FA6B /* fceumm-core.xcframework */,
+				9A4BE69C63739940EB4D0003 /* mgba-core.xcframework */,
+				3A3FC0EAD50329BDD1B39170 /* sameboy-core.xcframework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		5DD8C459DE87D4F62C907F51 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				7DB68EA5D1B05BC77269F618 /* Info.plist */,
+				AEBCDDB1D4F3F36DFFC805B7 /* MiniRetro-Bridging-Header.h */,
+				F4E45AB1BE45D76FC6871A5C /* MiniRetroApp.swift */,
+				8B27DB966190AE2267EF5054 /* RootView.swift */,
+				F7084BB3D4C9B509B88B2542 /* Game */,
+				E85614E1F711726A54F0EF8B /* Library */,
+				A80EEA45B58E71B8BAD51B24 /* Models */,
+				178BA2F3E58347AE96913549 /* Resources */,
+				CCC8F8BCE466F1914D9BA9FE /* Settings */,
+				3754312B46AA33BAFAB4AEA8 /* Utilities */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A80EEA45B58E71B8BAD51B24 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				91755392B9AB930D9D6D8040 /* AppTypes.swift */,
+				8BB91085734F70E5799010FE /* ControlLayout.swift */,
+				6EAA8A9F0151BE4C73BBA251 /* SettingsStore.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		CCC8F8BCE466F1914D9BA9FE /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				CB8962AE1B871D8C0B0BAA02 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		D46316A3CCB135163540B045 /* MiniRetroTests */ = {
+			isa = PBXGroup;
+			children = (
+				F17FBA037F8246B1DCBD5D5B /* CoreRegistryTests.swift */,
+				6D2EFF7695A73F4C2ABC1C32 /* LayoutStoreTests.swift */,
+				AD275FCFDB685BB8A1789BFF /* SaveStateTests.swift */,
+			);
+			path = MiniRetroTests;
+			sourceTree = "<group>";
+		};
+		DBB20B7A85C65548932DF6A4 = {
+			isa = PBXGroup;
+			children = (
+				5DD8C459DE87D4F62C907F51 /* App */,
+				51675405E1E9DECC1FC4BE50 /* CoreBridge */,
+				25772616F4675DB4215F02E7 /* Tests */,
+				56BA19A5F0F08105CFD05C55 /* Frameworks */,
+				FC15E1DB2A0B3CA9E3EF9E2A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E85614E1F711726A54F0EF8B /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				3CF9A1098814BA9E5CDA70FA /* LibraryView.swift */,
+				D125AB6AD777BDCA7618AF66 /* LibraryViewModel.swift */,
+				9CE02FEA81B1176A0D737302 /* ROMImporter.swift */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
+		F7084BB3D4C9B509B88B2542 /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				D86A9BEA77B72BAA2DBB0FB2 /* CheatEditorView.swift */,
+				C62AD5C3B1ECFEFB75361505 /* CheatManager.swift */,
+				08F27DF8E903FFE2EB5F4FEF /* EmulatorRenderer.swift */,
+				2AFFE9F16BD7E999AEB7724D /* EmulatorViewModel.swift */,
+				31163B9E862C5FBEE7940E71 /* GameControllerManager.swift */,
+				B40F95AE84989D66C5A55C4A /* GameDisplayView.swift */,
+				CEEB8A9C0BA8AD9068642606 /* GameView.swift */,
+				10640FF5F43C0193E9D13DCD /* InGameMenuView.swift */,
+				C02547C68EC58878D823A2CA /* KeyRemapView.swift */,
+				01760D1BD48FFBEA7B7F05DD /* LayoutEditorView.swift */,
+				7050A9B0C37F7A547FAC349B /* RetroAudioEngine.swift */,
+				3FD8E3CE6A10A5795FB61C2F /* VirtualGamepad.swift */,
+			);
+			path = Game;
+			sourceTree = "<group>";
+		};
+		FC15E1DB2A0B3CA9E3EF9E2A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				63647189A416CF934C9EEEF5 /* MiniRetro.app */,
+				8F254B0CB40CE24A50A59119 /* MiniRetroTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		20BE8D3D153CC8E89BD8AA24 /* MiniRetroTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 363E04B2DC1CF84933FFD5F0 /* Build configuration list for PBXNativeTarget "MiniRetroTests" */;
+			buildPhases = (
+				1E1E43C3A9C847602ED7C83C /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9611B41138C1AE643C84D749 /* PBXTargetDependency */,
+			);
+			name = MiniRetroTests;
+			packageProductDependencies = (
+			);
+			productName = MiniRetroTests;
+			productReference = 8F254B0CB40CE24A50A59119 /* MiniRetroTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		9438606627C3B38DF476C4D1 /* MiniRetro */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BD930FCAE0F5DA3CCDA5B832 /* Build configuration list for PBXNativeTarget "MiniRetro" */;
+			buildPhases = (
+				CF61C1230A747A84562BF0A6 /* Sources */,
+				272858C90CFA1792DC44A598 /* Resources */,
+				D90AFC1AEED0F799638C4DB7 /* Frameworks */,
+				BECEE9073FBD9482FA6215E4 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MiniRetro;
+			packageProductDependencies = (
+				4B58CB442E7F7FB7B85F59DE /* ZIPFoundation */,
+			);
+			productName = MiniRetro;
+			productReference = 63647189A416CF934C9EEEF5 /* MiniRetro.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		47AD384E7075023D48018D6F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					9438606627C3B38DF476C4D1 = {
+						DevelopmentTeam = "";
+					};
+				};
+			};
+			buildConfigurationList = BA5B5E5917492051BE8F58F8 /* Build configuration list for PBXProject "MiniRetro" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = DBB20B7A85C65548932DF6A4;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				1D14060162AF870AA3BB4CAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = FC15E1DB2A0B3CA9E3EF9E2A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				9438606627C3B38DF476C4D1 /* MiniRetro */,
+				20BE8D3D153CC8E89BD8AA24 /* MiniRetroTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		272858C90CFA1792DC44A598 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D34D627C9E969CFFDE06EF19 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1E1E43C3A9C847602ED7C83C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				082404C7A63CEC8FB0DD03E6 /* CoreRegistryTests.swift in Sources */,
+				8BAC9A9705BAB923BF4FE4FC /* LayoutStoreTests.swift in Sources */,
+				FE00785B6969EC4AF0E23BC9 /* SaveStateTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CF61C1230A747A84562BF0A6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				06584D80A3CE08C9702FB062 /* AppTypes.swift in Sources */,
+				570815F1EA6C3E30ABDDA587 /* AudioRingBuffer.mm in Sources */,
+				34EAC7ADB797279DEC4AC923 /* CheatEditorView.swift in Sources */,
+				7E1544B536720A893E1C38FC /* CheatManager.swift in Sources */,
+				44945909D1636EFB67E69D0E /* ControlLayout.swift in Sources */,
+				9DE6FA919C54194ECE06E41A /* CoreRegistry.c in Sources */,
+				DD7268AC6FAB26524F967A44 /* CrossImage.swift in Sources */,
+				F902236A5550B68D0296682D /* EmulatorRenderer.swift in Sources */,
+				68B474FCEB214A7330881831 /* EmulatorViewModel.swift in Sources */,
+				E190DE9E2DF358E6C5C48DE3 /* FramePipeline.mm in Sources */,
+				D62BC485397D1912AF42B40A /* GameControllerManager.swift in Sources */,
+				B3C7336EB0AE9BF82BBFB438 /* GameDisplayView.swift in Sources */,
+				B9D8A8CEFD3C6062173924EB /* GameView.swift in Sources */,
+				08C963295AE08347FB026C5D /* Haptics.swift in Sources */,
+				E33AD9C6CFDA6A44B2ADD5B8 /* InGameMenuView.swift in Sources */,
+				49B432812B2F96993DA67F92 /* KeyRemapView.swift in Sources */,
+				73B91186266D04FBFE51B88A /* LayoutEditorView.swift in Sources */,
+				CC70C0879F728DFC10E63551 /* LibraryView.swift in Sources */,
+				3F29E59565461EE956E42A05 /* LibraryViewModel.swift in Sources */,
+				8BAF1119221DFD5457C82DA3 /* MiniRetroApp.swift in Sources */,
+				D182BB2FC8007D46190E5B84 /* ROMImporter.swift in Sources */,
+				567E56ECD10B3D5209F64890 /* RetroAudioEngine.swift in Sources */,
+				57E248D6868A85FD5294947E /* RetroCore.mm in Sources */,
+				B17BC2DB4E06A5F678B58BA1 /* RootView.swift in Sources */,
+				F5C1BDE4B86AE48419B07DAE /* SettingsStore.swift in Sources */,
+				4303A94BA1D17602B5283D02 /* SettingsView.swift in Sources */,
+				2E54C57B14295924C6E7B393 /* Utilities.swift in Sources */,
+				C1B824374F44C8AC834279C9 /* VideoShaders.metal in Sources */,
+				2145743378D54A80A93554DC /* VirtualGamepad.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9611B41138C1AE643C84D749 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9438606627C3B38DF476C4D1 /* MiniRetro */;
+			targetProxy = F8004566F4617769847B5DA0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		12948141418991931C511639 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"Cores/artifacts\"",
+				);
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.miniretro.app;
+				PRODUCT_NAME = MiniRetro;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "App/MiniRetro-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "MiniRetro-Swift.h";
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		3DDEE6DDE829B9F00CDDEDF5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_IDENTITY = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.miniretro.app.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MiniRetro.app/MiniRetro";
+			};
+			name = Debug;
+		};
+		796F03122E5577665D274A75 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_IDENTITY = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.miniretro.app.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MiniRetro.app/MiniRetro";
+			};
+			name = Release;
+		};
+		85E2646DC58489B6872C3AE7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"Cores/artifacts\"",
+				);
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.miniretro.app;
+				PRODUCT_NAME = MiniRetro;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "App/MiniRetro-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "MiniRetro-Swift.h";
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B05FDE88F94508B0C8D4579E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		D93DAF08B0A65DFDB50D338D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		363E04B2DC1CF84933FFD5F0 /* Build configuration list for PBXNativeTarget "MiniRetroTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3DDEE6DDE829B9F00CDDEDF5 /* Debug */,
+				796F03122E5577665D274A75 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BA5B5E5917492051BE8F58F8 /* Build configuration list for PBXProject "MiniRetro" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B05FDE88F94508B0C8D4579E /* Debug */,
+				D93DAF08B0A65DFDB50D338D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BD930FCAE0F5DA3CCDA5B832 /* Build configuration list for PBXNativeTarget "MiniRetro" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				85E2646DC58489B6872C3AE7 /* Debug */,
+				12948141418991931C511639 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		1D14060162AF870AA3BB4CAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.19;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4B58CB442E7F7FB7B85F59DE /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1D14060162AF870AA3BB4CAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 47AD384E7075023D48018D6F /* Project object */;
+}

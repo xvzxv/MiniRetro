@@ -28,7 +28,14 @@ die() { echo -e "\033[1;31m[build] ERROR:\033[0m $*" >&2; exit 1; }
 
 # 1. 依赖检查
 command -v xcodebuild >/dev/null || die "需要 Xcode 命令行工具（xcode-select --install 或安装 Xcode）"
-command -v xcodegen >/dev/null || die "需要 XcodeGen：brew install xcodegen"
+# XcodeGen：PATH → Tools/vendor → 报错
+if ! command -v xcodegen >/dev/null; then
+    if [ -x "$ROOT/Tools/vendor/xcodegen/bin/xcodegen" ]; then
+        export PATH="$ROOT/Tools/vendor/xcodegen/bin:$PATH"
+    else
+        die "需要 XcodeGen：brew install xcodegen（或放到 Tools/vendor/xcodegen/bin/）"
+    fi
+fi
 
 # 2. 编译 core xcframeworks
 if [ "$SKIP_CORES" -eq 0 ]; then

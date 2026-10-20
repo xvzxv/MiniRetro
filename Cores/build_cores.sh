@@ -21,6 +21,7 @@ BUILD_DIR="${BUILD_DIR%/}"
 IPHONEOS_SDK="$(xcrun --sdk iphoneos --show-sdk-path)"
 IPHONESIMULATOR_SDK="$(xcrun --sdk iphonesimulator --show-sdk-path)"
 DEPLOYMENT_TARGET="17.0"
+SDK_VERSION="$(xcrun --sdk iphoneos --show-sdk-version 2>/dev/null || echo 27.1)"
 JOBS="$(sysctl -n hw.ncpu)"
 
 mkdir -p "$ARTIFACTS_DIR" "$BUILD_DIR"
@@ -52,7 +53,7 @@ check_dependencies() {
         fi
     fi
     if ! command -v rgbgfx >/dev/null; then
-        warn "未检测到 rgbgfx（SameBoy logo 转换需要）——brew install rgbds 装了完整套件后可用；缺它会卡在 BootROMs/SameBoyLogo 生成"
+        warn "未检测到 rgbgfx（SameBoy logo 转换需要）——缺它会卡在 BootROMs/SameBoyLogo 生成。brew install rgbds 或放入 Tools/vendor/rgbds/bin/"
     fi
 }
 
@@ -63,53 +64,27 @@ prepare_headers() {
     cp "$CORES_DIR/libretro.h" "$out/"
 }
 
-# 把裸 dylib 包装成标准 .framework（保证 App 嵌入后路径为
-# <App>.app/Frameworks/<name>_core.framework/<name>_core，与 RetroCore dlopen 探测一致）
-make_framework() {
-    local dylib="$1" name="$2" outdir="$3"
-    local fw="$outdir/${name}_core.framework"
-    rm -rf "$fw"
-    mkdir -p "$fw"
-    cp "$dylib" "$fw/${name}_core"
-    install_name_tool -id "@rpath/${name}_core.framework/${name}_core" "$fw/${name}_core"
-    cat > "$fw/Info.plist" <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>CFBundleExecutable</key>
-    <string>${name}_core</string>
-    <key>CFBundleIdentifier</key>
-    <string>com.miniretro.${name}-core</string>
-    <key>CFBundlePackageType</key>
-    <string>FMWK</string>
-    <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
-    <key>CFBundleVersion</key>
-    <string>1</string>
-    <key>MinimumOSVersion</key>
-    <string>${DEPLOYMENT_TARGET}</string>
-</dict>
-</plist>
-PLIST
-    echo "$fw"
-}
-
-# 将 device + simulator 的 .framework 打成 xcframework
+# 打包 xcframework：优先用 xcodebuild（标准）；不可用时回退到纯 shell 实现
+# 两者都会把 dylib 的 minos 校正到部署目标（Makefile 链接阶段常漏传版本号）
 package_xcframework() {
     local name="$1" device_dylib="$2" sim_dylib="$3"
-    local headers="$BUILD_DIR/headers"
-    prepare_headers "$headers"
-    local device_fw sim_fw
-    device_fw="$(make_framework "$device_dylib" "$name" "$BUILD_DIR/frameworks-device")"
-    sim_fw="$(make_framework "$sim_dylib" "$name" "$BUILD_DIR/frameworks-simulator")"
     local output="$ARTIFACTS_DIR/${name}-core.xcframework"
-    rm -rf "$output"
-    xcodebuild -create-xcframework \
-        -framework "$device_fw" \
-        -framework "$sim_fw" \
-        -output "$output" >/dev/null
-    log "已产出 $output"
+
+    if command -v xcodebuild >/dev/null 2>&1 && xcodebuild -version >/dev/null 2>&1; then
+        local device_fw sim_fw
+        device_fw="$(make_framework "$device_dylib" "$name" "$BUILD_DIR/frameworks-device")"
+        sim_fw="$(make_framework "$sim_dylib" "$name" "$BUILD_DIR/frameworks-simulator")"
+        rm -rf "$output"
+        xcodebuild -create-xcframework \
+            -framework "$device_fw" \
+            -framework "$sim_fw" \
+            -output "$output" >/dev/null
+        log "已产出 $output（xcodebuild）"
+    else
+        warn "xcodebuild 不可用（未同意 Xcode 许可证？），改用纯 shell 打包"
+        SDK_VERSION="$SDK_VERSION" DEPLOYMENT_TARGET="$DEPLOYMENT_TARGET" \
+            "$ROOT/Tools/make_xcframework.sh" "$name" "$device_dylib" "$sim_dylib"
+    fi
 }
 
 # MARK: - mGBA（CMake 构建，源文件列表由 CMake 解析，不怕版本变动）
