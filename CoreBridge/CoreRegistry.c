@@ -26,6 +26,12 @@ static bool is_fds_magic(const uint8_t *d, size_t n) {
     return n >= 16 && d[0] == 'F' && d[1] == 'D' && d[2] == 'S' && d[3] == 0x1A;
 }
 
+/// UNIF：早期汉化/外星科技等非 iNES 封装，文件头为 ASCII "UNIF"。
+/// fceumm 的 valid_extensions 含 unf|unif，且能自行解析 UNIF 容器。
+static bool is_unif_magic(const uint8_t *d, size_t n) {
+    return n >= 32 && d[0] == 'U' && d[1] == 'N' && d[2] == 'I' && d[3] == 'F';
+}
+
 /// GBA：0xB2 固定值单元 0x96；辅以 0xA0..0xAB（任天堂 logo 区）非零校验。
 static bool is_gba_magic(const uint8_t *d, size_t n) {
     if (n < 0xC0 || d[0xB2] != 0x96) {
@@ -66,6 +72,9 @@ MRCoreMatch mr_core_for_rom(const uint8_t *data, size_t size) {
     if (is_fds_magic(data, size)) {
         return make_match("fceumm", "fds", true);
     }
+    if (is_unif_magic(data, size)) {
+        return make_match("fceumm", "unf", true);
+    }
     if (is_gba_magic(data, size)) {
         return make_match("mgba", "gba", true);
     }
@@ -79,8 +88,12 @@ MRCoreMatch mr_core_for_extension(const char *ext) {
     if (ext == NULL || *ext == '\0') {
         return no_match();
     }
-    if (strcasecmp(ext, "nes") == 0 || strcasecmp(ext, "fds") == 0) {
-        return make_match("fceumm", strcasecmp(ext, "fds") == 0 ? "fds" : "nes", false);
+    if (strcasecmp(ext, "nes") == 0 || strcasecmp(ext, "fds") == 0 ||
+        strcasecmp(ext, "unf") == 0 || strcasecmp(ext, "unif") == 0) {
+        const char *system = strcasecmp(ext, "fds") == 0 ? "fds"
+                           : (strcasecmp(ext, "unf") == 0 || strcasecmp(ext, "unif") == 0) ? "unf"
+                           : "nes";
+        return make_match("fceumm", system, false);
     }
     if (strcasecmp(ext, "gb") == 0) {
         return make_match("sameboy", "gb", false);

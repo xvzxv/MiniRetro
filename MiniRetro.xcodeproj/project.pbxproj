@@ -24,6 +24,7 @@
 		570815F1EA6C3E30ABDDA587 /* AudioRingBuffer.mm in Sources */ = {isa = PBXBuildFile; fileRef = DE87D96D069C750B3313E32B /* AudioRingBuffer.mm */; };
 		57E248D6868A85FD5294947E /* RetroCore.mm in Sources */ = {isa = PBXBuildFile; fileRef = 80BADB6FC6F8280EA176B090 /* RetroCore.mm */; };
 		61A4EA4162BC8722148E48B6 /* mgba-core.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9A4BE69C63739940EB4D0003 /* mgba-core.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		657D7175D11D687C837B9212 /* SystemTypeMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57E468098114E55B6CFB171 /* SystemTypeMappingTests.swift */; };
 		68B474FCEB214A7330881831 /* EmulatorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AFFE9F16BD7E999AEB7724D /* EmulatorViewModel.swift */; };
 		73B91186266D04FBFE51B88A /* LayoutEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01760D1BD48FFBEA7B7F05DD /* LayoutEditorView.swift */; };
 		7A4F4C95698E5F7EF6D22151 /* ZipArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B3877084D82ED1EB40CECE8 /* ZipArchive.swift */; };
@@ -106,6 +107,7 @@
 		AD275FCFDB685BB8A1789BFF /* SaveStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveStateTests.swift; sourceTree = "<group>"; };
 		AEBCDDB1D4F3F36DFFC805B7 /* MiniRetro-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MiniRetro-Bridging-Header.h"; sourceTree = "<group>"; };
 		B40F95AE84989D66C5A55C4A /* GameDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDisplayView.swift; sourceTree = "<group>"; };
+		B57E468098114E55B6CFB171 /* SystemTypeMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemTypeMappingTests.swift; sourceTree = "<group>"; };
 		C02547C68EC58878D823A2CA /* KeyRemapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyRemapView.swift; sourceTree = "<group>"; };
 		C62AD5C3B1ECFEFB75361505 /* CheatManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheatManager.swift; sourceTree = "<group>"; };
 		CB8962AE1B871D8C0B0BAA02 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -221,6 +223,7 @@
 				F17FBA037F8246B1DCBD5D5B /* CoreRegistryTests.swift */,
 				6D2EFF7695A73F4C2ABC1C32 /* LayoutStoreTests.swift */,
 				AD275FCFDB685BB8A1789BFF /* SaveStateTests.swift */,
+				B57E468098114E55B6CFB171 /* SystemTypeMappingTests.swift */,
 			);
 			path = MiniRetroTests;
 			sourceTree = "<group>";
@@ -370,6 +373,7 @@
 				082404C7A63CEC8FB0DD03E6 /* CoreRegistryTests.swift in Sources */,
 				8BAC9A9705BAB923BF4FE4FC /* LayoutStoreTests.swift in Sources */,
 				FE00785B6969EC4AF0E23BC9 /* SaveStateTests.swift in Sources */,
+				657D7175D11D687C837B9212 /* SystemTypeMappingTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

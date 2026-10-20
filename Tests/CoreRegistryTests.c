@@ -40,6 +40,11 @@ int main(void) {
     rom[0] = 'F'; rom[1] = 'D'; rom[2] = 'S'; rom[3] = 0x1A;
     expect_core("FDS 魔数", mr_core_for_rom(rom, sizeof(rom)), "fceumm", "fds");
 
+    // 2b. UNIF 头（早期汉化/外星科技 ROM 常见封装）
+    memset(rom, 0, sizeof(rom));
+    rom[0] = 'U'; rom[1] = 'N'; rom[2] = 'I'; rom[3] = 'F';
+    expect_core("UNIF 魔数", mr_core_for_rom(rom, sizeof(rom)), "fceumm", "unf");
+
     // 3. GBA 头（0xB2 固定值 0x96 + logo 区非零）
     memset(rom, 0, sizeof(rom));
     rom[0xA0] = 0x24; rom[0xB2] = 0x96;
@@ -70,6 +75,8 @@ int main(void) {
     expect_core("扩展名 .gba", mr_core_for_extension("gba"), "mgba", "gba");
     expect_core("扩展名 .GBC（大小写）", mr_core_for_extension("GBC"), "sameboy", "gbc");
     expect_core("扩展名 .nes", mr_core_for_extension("nes"), "fceumm", "nes");
+    expect_core("扩展名 .unf", mr_core_for_extension("unf"), "fceumm", "unf");
+    expect_core("扩展名 .UNIF（大小写）", mr_core_for_extension("UNIF"), "fceumm", "unf");
     expect_core("扩展名 .txt（应无匹配）", mr_core_for_extension("txt"), NULL, NULL);
 
     // 10. 展示名 / framework 名

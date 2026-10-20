@@ -57,17 +57,12 @@ enum ROMImporter {
         }
 
         guard let identified = identify(data: data, fileName: fileName) else {
-            // 无法识别：标记损坏入库（计划书：损坏文件标记）
-            let relative = "Unknown/\(fileName)"
-            index.upsert(ROMEntry(
-                fileName: fileName,
-                relativePath: relative,
-                system: .fc,
-                fileSize: Int64(data.count),
-                detectedByMagic: false,
-                isCorrupted: true
-            ))
-            result.failed.append((fileName, "无法识别的格式"))
+            // 扩展名与文件头都无法识别：仍然落盘并标记损坏，便于用户看到/删除，
+            // 而不是只写一条指向不存在文件的索引（旧实现会导致卡片永久显示「文件损坏」）
+            var entry = store(data: data, fileName: fileName, system: .fc, byMagic: false)
+            entry.isCorrupted = true
+            index.upsert(entry)
+            result.failed.append((fileName, "扩展名与文件头均无法识别（支持 nes/fds/unf/unif/gb/gbc/gba）"))
             return result
         }
 

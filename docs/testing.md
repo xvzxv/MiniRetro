@@ -23,7 +23,10 @@
 | A-14 | **端到端**：音频回调产出 | 同上 | ✅ 48kHz / 32.768kHz 写入环形缓冲 |
 | A-15 | **端到端**：存档 serialize/unserialize 往返 | 同上 | ✅ 13758 / 252666 / 528448 字节 |
 | A-16 | Metal shader 语法校验 | `xcrun -sdk iphoneos metal -c App/Resources/VideoShaders.metal` | ✅ 编译通过（8KB air） |
-| A-17 | iOS 完整构建 | `./Tools/build.sh` | ✅ BUILD SUCCEEDED，产出 ipa 1.5MB |
+| A-17 | iOS 完整构建 | `./Tools/build.sh` | ✅ BUILD SUCCEEDED，产出 ipa 1.6MB |
+| A-18 | system_id → SystemType 映射（防回归） | `SystemTypeMappingTests` + 真实 ROMImporter 可执行验证 | ✅ 11 + 6 项通过 |
+| A-19 | `.nes` 中文名扩展名兜底 | 同上（含 `水浒神兽[外星科技][CN][RPG](8Mb).nes`） | ✅ 识别为 fc/fceumm |
+| A-20 | UNIF 容器识别 | C 测试 + 可执行验证 | ✅ `UNIF` → fceumm/unf |
 
 运行自动化测试：
 

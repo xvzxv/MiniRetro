@@ -28,3 +28,5 @@
 
 **iOS 构建打通（2026-10-20 21:46）** — Xcode 27.1 + iOS SDK 27.1 环境下完成全量构建：三 core 交叉编译（device + simulator）→ xcframework → `xcodebuild` Release → `MiniRetro-1.0-1-unsigned.ipa`（1.5MB，arm64/iOS 17.0，三 core 已嵌入）。
 处理了 7 个构建期问题：移除 ZIPFoundation（SwiftPM 在沙箱不可用，改内置 zip 解压）、Metal 编译器独立组件化（改运行时编译 shader）、bridging header 路径、SwiftUI `$settings` 投影、Coordinator 的 @Binding、`mathMode` 的 iOS 18 门限、bash 全角括号变量边界。
+
+**缺陷修复：.nes 导入全部失败（2026-10-20 22:06，用户反馈）** — 根因是 C 层返回 `system_id="nes"` 而 `SystemType` 的 case 名是 `fc`，`SystemType(rawValue:)` 直接返回 nil；同时失败分支只建索引不落盘导致「文件损坏」卡片无法处理。已改为显式映射表 + 失败落盘 + 补 UNIF 识别；新增 7 项 XCTest 与真实 ROMImporter 可执行验证（6 项），ipa 重建。

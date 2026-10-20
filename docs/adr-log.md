@@ -92,6 +92,30 @@ mGBA 的 RGB565 实测确认了 FramePipeline 的 16bpp → BGRA 转换路径正
 
 ---
 
+## ADR-007：识别层 system_id 契约与损坏条目的落盘（2026-10-20，用户反馈缺陷）
+
+**现象**：导入 `.nes` 报「无法识别的格式」，导入 0 款；库中出现一张永久显示「文件损坏」的卡片（GB/GBA 导入正常）。
+
+**根因**（两层）：
+1. **契约断裂**：C 层 `CoreRegistry` 返回的 `system_id` 是 `"nes"`，而 Swift 侧 `SystemType` 的 case 名是 `fc`，`rawValue` 自然是 `"fc"`。
+   原实现 `SystemType.from(systemID:)` 直接 `SystemType(rawValue:)` → `"nes"` 映射为 `nil` → `identify()` 返回 `nil` → 所有 NES 文件被判为无法识别。
+   GB/GBC/GBA 的 case 名恰好与 C 层字符串一致，所以只有 NES 中招。
+2. **失败分支不落盘**：无法识别时只 `index.upsert` 一条 `Unknown/<name>` 索引，**没有拷贝文件**，导致卡片显示「文件损坏」却无法删除或重试。
+
+**修复**：
+1. `SystemType.from(systemID:)` 改为显式映射表：`nes|fc|unf|unif → .fc`、`fds → .fds`、`gb/gbc/gba` 对应；大小写不敏感。
+2. 无法识别的文件改为 `store(...)` 落盘后再标 `isCorrupted`，并给出明确的支持格式列表。
+3. C 层补充 `UNIF` 魔数（早期汉化/外星科技常见封装）与 `unf/unif` 扩展名 → `fceumm`。
+
+**验证**：
+- 用**真实 ROMImporter**（而非副本）编译执行 6 项用例：中文名 `.nes` 扩展名兜底、iNES 魔数、UNIF 容器、GB 魔数、未知格式、空文件——全通过。
+- C 层测试增至 16 项（新增 UNIF 魔数、`.unf`、`.UNIF` 大小写）全通过。
+- 新增 `Tests/MiniRetroTests/SystemTypeMappingTests.swift`（7 项）防回归，其中一条专门遍历 C 层所有可能输出，确保「新增 system 时不会静默断裂」。
+
+**教训**：跨语言（C ↔ Swift）的枚举/ID 映射不能依赖字符串巧合，必须有显式映射表 + 覆盖「C 层全部可能输出」的测试。
+
+---
+
 ## ADR-006 补充：cmake / rgbds 获取备用路径（2026-10-20）
 
 **实测**：`brew install cmake` / `brew install rgbds` 在受限网络下失败（bottle 走 `ghcr.io` 被拦截；沙箱还阻止 homebrew 锁文件写入）。

@@ -34,8 +34,24 @@ enum SystemType: String, Codable, CaseIterable, Identifiable {
         self == .gba
     }
 
+    /// C 层（CoreRegistry.c）返回的 system_id 与枚举 rawValue 并非一一对应：
+    /// NES 的 case 名是 fc（历史命名，用于持久化与布局 key），而 C 层返回 "nes"。
+    /// 这里用显式映射表，避免依赖字符串巧合。
     static func from(systemID: String) -> SystemType? {
-        SystemType(rawValue: systemID)
+        switch systemID.lowercased() {
+        case "nes", "fc", "unf", "unif":
+            return .fc
+        case "fds":
+            return .fds
+        case "gb":
+            return .gb
+        case "gbc":
+            return .gbc
+        case "gba":
+            return .gba
+        default:
+            return nil
+        }
     }
 }
 
