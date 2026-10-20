@@ -1,9 +1,16 @@
 // ControlLayout.swift — 虚拟按键布局模型与默认布局（M6）
 //
-// 布局按传统有线手柄（FC/小霸王 → Xbox）的直觉排布：
+// 布局按传统有线手柄（FC/小霸王 → Xbox）的排布：
 //   左下 十字方向键 · 中下 SELECT/START（椭圆）· 右下 A/B（与方向键同高）
-//   A/B 上方为连发键（TURBO），按住即自动连发对应按键
-// 所有按键默认半透明，实际透明度 = 单键 opacity × 全局 controlOpacity（设置页可调）
+//   A/B 上方为连发键（TURBO）
+//
+// 坐标体系（关键）：不同设备横屏宽高比差异极大（iPad 1.33:1、iPhone 2.17:1）。
+// 若 x 统一按屏幕宽度归一化，超宽屏上按键会被横向拉开、离边缘很远。
+// 因此每个按键带 anchor：
+//   .leading  — relativeX 是「距左边缘的短边倍数」（左组）
+//   .trailing — relativeX 是 1−(距右边缘的短边倍数)（右组，与左组镜像对称）
+//   .center   — relativeX 是屏幕宽度的比例（居中组，如 SELECT/START）
+// 按键尺寸与水平间距都以短边为基准，任何宽高比下视觉比例一致。
 import CoreGraphics
 import Foundation
 
@@ -65,7 +72,14 @@ enum JoypadButton: UInt16, Codable, CaseIterable {
     var gbRelevant: Bool { fcRelevant }
 }
 
-/// 单个可拖动按键（坐标相对屏幕归一化 0-1）
+/// 水平锚点：决定 relativeX 相对哪条边换算成像素
+enum HorizontalAnchor: String, Codable {
+    case leading
+    case center
+    case trailing
+}
+
+/// 单个可拖动按键
 struct ControlButton: Codable, Equatable {
     var button: JoypadButton
     var relativeX: CGFloat
@@ -76,6 +90,8 @@ struct ControlButton: Codable, Equatable {
     var opacity: CGFloat
     /// 宽高比：1.0 = 圆形；>1 为横向椭圆（如 SELECT/START）
     var aspect: CGFloat
+    /// 水平锚点（见文件头说明）
+    var anchor: HorizontalAnchor
 
     init(
         button: JoypadButton,
@@ -83,7 +99,8 @@ struct ControlButton: Codable, Equatable {
         relativeY: CGFloat,
         relativeSize: CGFloat,
         opacity: CGFloat,
-        aspect: CGFloat = 1.0
+        aspect: CGFloat = 1.0,
+        anchor: HorizontalAnchor = .leading
     ) {
         self.button = button
         self.relativeX = relativeX
@@ -91,11 +108,12 @@ struct ControlButton: Codable, Equatable {
         self.relativeSize = relativeSize
         self.opacity = opacity
         self.aspect = aspect
+        self.anchor = anchor
     }
 
-    // 兼容旧版布局 JSON（缺 aspect 字段时按圆形处理）
+    // 兼容旧版布局 JSON（缺 aspect / anchor 字段）
     private enum CodingKeys: String, CodingKey {
-        case button, relativeX, relativeY, relativeSize, opacity, aspect
+        case button, relativeX, relativeY, relativeSize, opacity, aspect, anchor
     }
 
     init(from decoder: Decoder) throws {
@@ -106,6 +124,15 @@ struct ControlButton: Codable, Equatable {
         relativeSize = try c.decode(CGFloat.self, forKey: .relativeSize)
         opacity = try c.decode(CGFloat.self, forKey: .opacity)
         aspect = try c.decodeIfPresent(CGFloat.self, forKey: .aspect) ?? 1.0
+        anchor = try c.decodeIfPresent(HorizontalAnchor.self, forKey: .anchor)
+            ?? Self.inferredAnchor(relativeX)
+    }
+
+    /// 旧布局没有 anchor，按位置推断（左侧组 / 居中组 / 右侧组）
+    private static func inferredAnchor(_ x: CGFloat) -> HorizontalAnchor {
+        if x < 0.42 { return .leading }
+        if x > 0.62 { return .trailing }
+        return .center
     }
 
     static func == (lhs: ControlButton, rhs: ControlButton) -> Bool {
@@ -115,6 +142,7 @@ struct ControlButton: Codable, Equatable {
             && lhs.relativeSize == rhs.relativeSize
             && lhs.opacity == rhs.opacity
             && lhs.aspect == rhs.aspect
+            && lhs.anchor == rhs.anchor
     }
 }
 
@@ -130,60 +158,68 @@ struct ControlLayout: Codable, Equatable {
 }
 
 enum ControlLayouts {
-    // 统一基准线：方向键与 A/B 同高，连发键在其上方，SELECT/START 在中下
-    private static let dpadCenterX: CGFloat = 0.150
-    private static let dpadY: CGFloat = 0.700
-    // 水平/垂直偏移分别按宽、高归一化，需按屏幕宽高比补偿，
-    // 否则十字会被拉成长方形（横屏宽>高时水平间距偏大）
-    private static let dpadStepX: CGFloat = 0.092
-    private static let dpadStepY: CGFloat = 0.125
-    private static let dpadSize: CGFloat = 0.115
-    private static let actionY: CGFloat = 0.700        // 与方向键同高
-    private static let actionSize: CGFloat = 0.104
-    private static let turboY: CGFloat = 0.585         // A/B 上方
-    private static let turboSize: CGFloat = 0.088
-    private static let systemButtonY: CGFloat = 0.868  // 中下
-    private static let systemButtonSize: CGFloat = 0.068
-    private static let systemButtonAspect: CGFloat = 1.9  // 椭圆
+    /// 左右安全边距（短边倍数）——两组一致，保证对称
+    private static let sideMargin: CGFloat = 0.050
+    private static let dpadSize: CGFloat = 0.125
+    private static let dpadCenterY: CGFloat = 0.720
+    private static let actionSize: CGFloat = 0.112
+    private static let turboSize: CGFloat = 0.095
+    private static let actionY: CGFloat = 0.720
+    private static let turboY: CGFloat = 0.585
+    private static let systemButtonY: CGFloat = 0.880
+    private static let systemButtonSize: CGFloat = 0.070
+    private static let systemButtonAspect: CGFloat = 1.9
+
+    // 锚点推导（左右镜像）
+    /// 方向键最左键中心（距左边缘 = sideMargin + 半径）
+    private static var dpadLeftX: CGFloat { sideMargin + dpadSize / 2 }
+    /// 方向键中列（上/下键）
+    private static var dpadCenterX: CGFloat { dpadLeftX + dpadSize }
+    /// 方向键最右键
+    private static var dpadRightX: CGFloat { dpadLeftX + dpadSize * 2 }
+    /// B 键中心（距右边缘 = sideMargin + 半径）
+    private static var bX: CGFloat { 1 - (sideMargin + actionSize / 2) }
+    /// A 键中心（与 B 相距一个按钮直径）
+    private static var aX: CGFloat { bX - actionSize }
 
     /// 十字方向键（左下角）
     private static func dpad(opacity: CGFloat) -> [ControlButton] {
-        [
-            ControlButton(button: .up, relativeX: dpadCenterX, relativeY: dpadY - dpadStepY,
-                          relativeSize: dpadSize, opacity: opacity),
-            ControlButton(button: .down, relativeX: dpadCenterX, relativeY: dpadY + dpadStepY,
-                          relativeSize: dpadSize, opacity: opacity),
-            ControlButton(button: .left, relativeX: dpadCenterX - dpadStepX, relativeY: dpadY,
-                          relativeSize: dpadSize, opacity: opacity),
-            ControlButton(button: .right, relativeX: dpadCenterX + dpadStepX, relativeY: dpadY,
-                          relativeSize: dpadSize, opacity: opacity),
+        let stepY = dpadSize   // 垂直间距 = 直径，十字紧贴
+        return [
+            ControlButton(button: .up, relativeX: dpadCenterX, relativeY: dpadCenterY - stepY,
+                          relativeSize: dpadSize, opacity: opacity, anchor: .leading),
+            ControlButton(button: .down, relativeX: dpadCenterX, relativeY: dpadCenterY + stepY,
+                          relativeSize: dpadSize, opacity: opacity, anchor: .leading),
+            ControlButton(button: .left, relativeX: dpadLeftX, relativeY: dpadCenterY,
+                          relativeSize: dpadSize, opacity: opacity, anchor: .leading),
+            ControlButton(button: .right, relativeX: dpadRightX, relativeY: dpadCenterY,
+                          relativeSize: dpadSize, opacity: opacity, anchor: .leading),
         ]
     }
 
-    /// A/B + 连发 A/B（右下）
-    /// 顺序：A 在左、B 在右（与需求一致，同 FC 传统左右互换）
+    /// A/B + 连发 A/B（右下，A 在左 B 在右）
     private static func actionButtons(opacity: CGFloat) -> [ControlButton] {
         [
-            ControlButton(button: .turboA, relativeX: 0.840, relativeY: turboY,
-                          relativeSize: turboSize, opacity: opacity),
-            ControlButton(button: .turboB, relativeX: 0.935, relativeY: turboY,
-                          relativeSize: turboSize, opacity: opacity),
-            ControlButton(button: .a, relativeX: 0.840, relativeY: actionY,
-                          relativeSize: actionSize, opacity: opacity),
-            ControlButton(button: .b, relativeX: 0.935, relativeY: actionY,
-                          relativeSize: actionSize, opacity: opacity),
+            ControlButton(button: .turboA, relativeX: aX, relativeY: turboY,
+                          relativeSize: turboSize, opacity: opacity, anchor: .trailing),
+            ControlButton(button: .turboB, relativeX: bX, relativeY: turboY,
+                          relativeSize: turboSize, opacity: opacity, anchor: .trailing),
+            ControlButton(button: .a, relativeX: aX, relativeY: actionY,
+                          relativeSize: actionSize, opacity: opacity, anchor: .trailing),
+            ControlButton(button: .b, relativeX: bX, relativeY: actionY,
+                          relativeSize: actionSize, opacity: opacity, anchor: .trailing),
         ]
     }
 
-    /// SELECT / START（中下，椭圆）
+    /// SELECT / START（屏幕水平居中，椭圆）
     private static func systemButtons(opacity: CGFloat) -> [ControlButton] {
         [
-            ControlButton(button: .select, relativeX: 0.395, relativeY: systemButtonY,
+            ControlButton(button: .select, relativeX: 0.440, relativeY: systemButtonY,
                           relativeSize: systemButtonSize, opacity: opacity,
-                          aspect: systemButtonAspect),
-            ControlButton(button: .start, relativeX: 0.520, relativeY: systemButtonY,
+                          aspect: systemButtonAspect, anchor: .center),
+            ControlButton(button: .start, relativeX: 0.560, relativeY: systemButtonY,
                           relativeSize: systemButtonSize, opacity: opacity,
-                          aspect: systemButtonAspect),
+                          aspect: systemButtonAspect, anchor: .center),
         ]
     }
 
@@ -201,13 +237,15 @@ enum ControlLayouts {
         )
     }
 
-    /// GBA：十字 + A/B + 连发 + LR 肩键（顶部两角）
+    /// GBA：十字 + A/B + 连发 + LR 肩键（顶部两角，镜像对称）
     static func gba(skin: SkinType) -> ControlLayout {
         var buttons = dpad(opacity: 1.0) + systemButtons(opacity: 1.0) + actionButtons(opacity: 1.0)
-        buttons.append(ControlButton(button: .l, relativeX: 0.075, relativeY: 0.085,
-                                     relativeSize: 0.090, opacity: 1.0))
-        buttons.append(ControlButton(button: .r, relativeX: 0.925, relativeY: 0.085,
-                                     relativeSize: 0.090, opacity: 1.0))
+        let shoulderSize: CGFloat = 0.095
+        let shoulderX = sideMargin + shoulderSize / 2
+        buttons.append(ControlButton(button: .l, relativeX: shoulderX, relativeY: 0.085,
+                                     relativeSize: shoulderSize, opacity: 1.0, anchor: .leading))
+        buttons.append(ControlButton(button: .r, relativeX: 1 - shoulderX, relativeY: 0.085,
+                                     relativeSize: shoulderSize, opacity: 1.0, anchor: .trailing))
         return ControlLayout(system: .gba, skin: skin, buttons: buttons)
     }
 

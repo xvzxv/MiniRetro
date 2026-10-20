@@ -79,11 +79,12 @@ struct VirtualGamepad: UIViewRepresentable {
                       let canvas = self.canvas else { return }
                 let bounds = canvas.bounds
                 guard bounds.width > 0, bounds.height > 0 else { return }
-                let relX = min(max(point.x / bounds.width, 0.03), 0.97)
                 let relY = min(max(point.y / bounds.height, 0.03), 0.97)
                 var current = self.layoutBinding.wrappedValue
                 if let idx = current.buttons.firstIndex(where: { $0.button == button }) {
-                    current.buttons[idx].relativeX = relX
+                    let anchor = current.buttons[idx].anchor
+                    let rawX = canvas.relativeX(for: point.x, anchor: anchor)
+                    current.buttons[idx].relativeX = min(max(rawX, 0.01), 1.01)
                     current.buttons[idx].relativeY = relY
                     self.layoutBinding.wrappedValue = current
                     canvas.apply(
@@ -119,6 +120,36 @@ final class GamepadCanvasView: UIView {
         rebuildButtons()
     }
 
+    /// 把按键的归一化 x 换算成像素。
+    /// 左组按「距左边缘的短边倍数」，右组按「距右边缘的短边倍数」（镜像），
+    /// 居中组按屏幕宽度比例 —— 这样 iPad(1.33:1) 与 iPhone(2.17:1) 都是贴边、
+    /// 对称、间距一致，不会被横向拉开。
+    private func resolveX(_ control: ControlButton) -> CGFloat {
+        let shortSide = min(bounds.width, bounds.height)
+        switch control.anchor {
+        case .leading:
+            return control.relativeX * shortSide
+        case .trailing:
+            return bounds.width - (1 - control.relativeX) * shortSide
+        case .center:
+            return bounds.width * control.relativeX
+        }
+    }
+
+    /// 拖拽反算：像素 → 归一化（保持该键的锚点语义）
+    func relativeX(for x: CGFloat, anchor: HorizontalAnchor) -> CGFloat {
+        let shortSide = min(bounds.width, bounds.height)
+        guard shortSide > 0, bounds.width > 0 else { return 0.5 }
+        switch anchor {
+        case .leading:
+            return x / shortSide
+        case .trailing:
+            return 1 - (bounds.width - x) / shortSide
+        case .center:
+            return x / bounds.width
+        }
+    }
+
     /// 按键圆半径（相对短边）
     private var buttonRadius: CGFloat { min(bounds.width, bounds.height) * 0.075 }
 
@@ -151,11 +182,12 @@ final class GamepadCanvasView: UIView {
             buttons[control.button] = view
             let shortSide = min(bounds.width, bounds.height)
             // 高度按短边比例，宽度乘 aspect（>1 为横向椭圆，用于 SELECT/START）
-            let height = max(shortSide * control.relativeSize, 44)
+            let height = max(shortSide * control.relativeSize, 40)
             let width = height * max(control.aspect, 1.0)
+            let center = CGPoint(x: resolveX(control), y: bounds.height * control.relativeY)
             view.frame = CGRect(
-                x: bounds.width * control.relativeX - width / 2,
-                y: bounds.height * control.relativeY - height / 2,
+                x: center.x - width / 2,
+                y: center.y - height / 2,
                 width: width,
                 height: height
             )
@@ -170,20 +202,27 @@ final class GamepadCanvasView: UIView {
             // 皮肤配色
             switch (skin, editing) {
             case (.classic, false):
-                view.backgroundColor = UIColor(red: 0.62, green: 0.13, blue: 0.13, alpha: 1.0)
-                view.setTitleColor(.white, for: .normal)
-                view.layer.borderWidth = 2
-                view.layer.borderColor = UIColor(white: 0.9, alpha: 0.7).cgColor
+                // 常见手柄的灰色半透明：中灰底 + 淡白描边
+                view.backgroundColor = UIColor(white: 0.42, alpha: 1.0)
+                view.setTitleColor(UIColor(white: 1.0, alpha: 0.92), for: .normal)
+                view.layer.borderWidth = 1.5
+                view.layer.borderColor = UIColor(white: 1.0, alpha: 0.26).cgColor
             case (.classic, true):
-                view.backgroundColor = UIColor(red: 0.62, green: 0.13, blue: 0.13, alpha: 0.6)
+                // 编辑态：淡灰底 + 黄框提示
+                view.backgroundColor = UIColor(white: 0.48, alpha: 1.0)
                 view.setTitleColor(.white, for: .normal)
                 view.layer.borderWidth = 2
                 view.layer.borderColor = UIColor.systemYellow.cgColor
-            default:
-                view.backgroundColor = UIColor(white: 0.2, alpha: 0.5)
-                view.setTitleColor(.white, for: .normal)
+            case (.minimal, false):
+                view.backgroundColor = UIColor(white: 0.32, alpha: 1.0)
+                view.setTitleColor(UIColor(white: 1.0, alpha: 0.88), for: .normal)
                 view.layer.borderWidth = 1
-                view.layer.borderColor = UIColor(white: 1.0, alpha: 0.4).cgColor
+                view.layer.borderColor = UIColor(white: 1.0, alpha: 0.18).cgColor
+            default:
+                view.backgroundColor = UIColor(white: 0.38, alpha: 1.0)
+                view.setTitleColor(.white, for: .normal)
+                view.layer.borderWidth = 1.5
+                view.layer.borderColor = UIColor.systemYellow.cgColor
             }
             if view.superview == nil {
                 addSubview(view)
@@ -254,7 +293,8 @@ final class GamepadCanvasView: UIView {
     private func highlight(_ button: JoypadButton, on: Bool) {
         guard let view = buttons[button] else { return }
         UIView.animate(withDuration: 0.05) {
-            view.alpha = on ? 1.0 : (self.currentLayout?.button(button)?.opacity ?? 0.85)
+            let base = (self.currentLayout?.button(button)?.opacity ?? 1.0) * self.globalOpacity
+            view.alpha = on ? 1.0 : max(0.15, min(1.0, base))
             view.transform = on ? CGAffineTransform(scaleX: 0.92, y: 0.92) : .identity
         }
     }
