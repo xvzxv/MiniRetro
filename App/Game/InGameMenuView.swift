@@ -17,48 +17,76 @@ struct InGameMenuView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("即时存档") {
+                Section("存档") {
                     ForEach(states) { state in
-                        HStack {
+                        HStack(spacing: 10) {
+                            // 封面：存档时抓取的游戏画面
                             if let image = viewModel.thumbnailImage(for: state) {
                                 Image(crossImage: image)
                                     .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 72, height: 54)
-                                    .cornerRadius(4)
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 84, height: 60)
+                                    .clipped()
+                                    .cornerRadius(6)
                             } else {
-                                Rectangle()
+                                RoundedRectangle(cornerRadius: 6)
                                     .fill(.quaternary)
-                                    .frame(width: 72, height: 54)
-                                    .cornerRadius(4)
-                                    .overlay(Text("无截图").font(.caption2))
+                                    .frame(width: 84, height: 60)
+                                    .overlay(
+                                        Image(systemName: state.isOccupied ? "photo" : "square.dashed")
+                                            .foregroundStyle(.secondary)
+                                    )
                             }
-                            VStack(alignment: .leading) {
-                                Text(state.isAutoSave ? "自动存档" : "槽位 \(state.slot)")
-                                    .font(.headline)
-                                Text(state.timestamp, style: .time)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 6) {
+                                    Text(state.isAutoSave ? "自动存档" : "槽位 \(state.slot)")
+                                        .font(.headline)
+                                    if state.isAutoSave {
+                                        Text("AUTO")
+                                            .font(.caption2.bold())
+                                            .padding(.horizontal, 5)
+                                            .padding(.vertical, 1)
+                                            .background(.tint.opacity(0.15), in: Capsule())
+                                    }
+                                }
+                                if state.isOccupied {
+                                    Text(state.timestamp, format: .dateTime.month().day().hour().minute())
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    Text("空")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                if state.isAutoSave {
+                                    Text("进入游戏时自动载入")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
                             }
-                            Spacer()
+
+                            Spacer(minLength: 4)
+
                             Button("读取") { load(state) }
                                 .buttonStyle(.bordered)
-                            Button("保存") { save(state) }
+                                .controlSize(.small)
+                                .disabled(!state.isOccupied)
+                            Button(state.isAutoSave ? "更新" : "保存") { save(state) }
                                 .buttonStyle(.borderedProminent)
+                                .controlSize(.small)
                             Button(role: .destructive) {
                                 viewModel.deleteState(slot: state.slot, auto: state.isAutoSave)
                                 refreshStates()
                             } label: {
                                 Image(systemName: "trash")
                             }
+                            .buttonStyle(.borderless)
+                            .disabled(!state.isOccupied)
                         }
-                    }
-                    if states.isEmpty {
-                        Text("暂无存档，点击「保存」创建")
-                            .foregroundColor(.secondary)
+                        .padding(.vertical, 2)
                     }
                 }
-
                 Section("游戏") {
                     Button("金手指管理") { showCheatEditor = true }
                     Toggle("快进（\(settings.fastForwardMultiplier)×）", isOn: fastForwardBinding)
@@ -142,7 +170,7 @@ struct InGameMenuView: View {
     }
 
     private func refreshStates() {
-        states = viewModel.existingStates()
+        states = viewModel.saveSlots()
     }
 
     private func save(_ state: SaveStateEntry) {

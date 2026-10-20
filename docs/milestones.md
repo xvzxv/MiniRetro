@@ -53,7 +53,10 @@
 
 **任务**
 - [x] 1. CoreRegistry 接入 mgba（GBA 魔数 0xB2=0x96 + logo 区校验）
-- [x] 2. 即时存档：`retro_serialize/unserialize`，4 槽 + 自动槽，缩略图（当前帧 → PNG）
+- [x] 2. 即时存档：`retro_serialize/unserialize`，**1 自动槽 + 3 手动槽**（v1.3 调整），
+      每槽保存当时的游戏画面作为封面缩略图；空槽也展示，便于看清结构
+- [x] 2b. **自动存档闭环**（v1.3）：进后台 / 退出游戏时写自动槽；再次进入游戏时自动载入
+      （设置项「打开游戏时载入自动存档」默认开启，可关闭）
 - [x] 3. 正常存档：`GET_SAVE_DIRECTORY` 下发 + `retro_get_memory_data(SAVE_RAM)` flush/restore
 - [x] 4. 金手指：`CheatManager`（增删改、启停、JSON 持久化），`retro_cheat_reset/set` 全量重下发
 - [x] 5. 快进：run 循环内多帧推进（2×/4×）+ 快进期静音

@@ -94,9 +94,24 @@ final class EmulatorViewModel: ObservableObject {
               rom.fileName, rom.system.rawValue,
               retroCore.videoBaseSize.width, retroCore.videoBaseSize.height,
               Int(retroCore.audioSampleRate))
+
+        // 自动载入上次的自动存档（可在设置中关闭）
+        if SettingsStore.shared.autoLoadOnStart,
+           FileManager.default.fileExists(atPath: stateURL(slot: 0, auto: true).path) {
+            if let error = loadState(slot: 0, auto: true) {
+                NSLog("[MiniRetro] 自动读档失败: %@", error)
+            } else {
+                NSLog("[MiniRetro] 已自动载入自动存档")
+                statusMessage = "已载入上次进度"
+            }
+        }
     }
 
     func unload() {
+        // 退出前存一次自动存档，保证下次进入能续上
+        if isLoaded, SettingsStore.shared.autoSaveOnBackground {
+            saveState(slot: 0, auto: true)
+        }
         releaseAllInputs()
         stopFPSMonitor()
         audioEngine.stop()
@@ -202,7 +217,10 @@ final class EmulatorViewModel: ObservableObject {
         }
     }
 
-    // MARK: - 即时存档（多槽位 + 缩略图）
+    // MARK: - 即时存档（自动槽 + 手动槽 + 缩略图）
+
+    /// 手动槽位数量（自动存档单独一个槽）
+    static let manualSlotCount = 3
 
     private func stateURL(slot: Int, auto: Bool) -> URL {
         savesDirectory.appendingPathComponent(auto ? "auto.mrstate" : "slot-\(slot).mrstate")
@@ -251,24 +269,36 @@ final class EmulatorViewModel: ObservableObject {
         try? FileManager.default.removeItem(at: thumbnailURL(slot: slot, auto: auto))
     }
 
-    /// 扫描已有槽位（供 UI 展示缩略图）
-    func existingStates() -> [SaveStateEntry] {
-        let fm = FileManager.default
-        var result: [SaveStateEntry] = []
-        for slot in 1...4 {
-            let url = stateURL(slot: slot, auto: false)
-            if fm.fileExists(atPath: url.path),
-               let attrs = try? fm.attributesOfItem(atPath: url.path),
-               let date = attrs[.modificationDate] as? Date {
-                let hasThumb = fm.fileExists(atPath: thumbnailURL(slot: slot, auto: false).path)
-                result.append(SaveStateEntry(slot: slot, timestamp: date, thumbnailName: hasThumb ? "slot-\(slot)" : nil))
-            }
-        }
-        let autoURL = stateURL(slot: 0, auto: true)
-        if fm.fileExists(atPath: autoURL.path) {
-            result.append(SaveStateEntry(slot: 0, timestamp: Date(), isAutoSave: true))
+    /// 固定的槽位列表：1 个自动存档槽 + N 个手动槽。
+    /// 空槽也会返回（isOccupied = false），让菜单展示完整的槽位结构。
+    func saveSlots() -> [SaveStateEntry] {
+        var result: [SaveStateEntry] = [makeEntry(slot: 0, auto: true)]
+        for slot in 1...Self.manualSlotCount {
+            result.append(makeEntry(slot: slot, auto: false))
         }
         return result
+    }
+
+    private func makeEntry(slot: Int, auto: Bool) -> SaveStateEntry {
+        let fm = FileManager.default
+        let stateFile = stateURL(slot: slot, auto: auto)
+        var entry = SaveStateEntry(
+            slot: slot,
+            timestamp: .distantPast,
+            thumbnailName: nil,
+            isAutoSave: auto,
+            isOccupied: false
+        )
+        guard let attrs = try? fm.attributesOfItem(atPath: stateFile.path),
+              let date = attrs[.modificationDate] as? Date else {
+            return entry
+        }
+        entry.isOccupied = true
+        entry.timestamp = date
+        if fm.fileExists(atPath: thumbnailURL(slot: slot, auto: auto).path) {
+            entry.thumbnailName = auto ? "auto" : "slot-\(slot)"
+        }
+        return entry
     }
 
     func thumbnailImage(for entry: SaveStateEntry) -> CrossImage? {

@@ -90,6 +90,10 @@ final class SettingsStore: ObservableObject {
     @Published var preserveAspectRatio: Bool {
         didSet { defaults.set(preserveAspectRatio, forKey: Keys.preserveAspect) }
     }
+    /// 打开游戏时自动载入「自动存档」
+    @Published var autoLoadOnStart: Bool {
+        didSet { defaults.set(autoLoadOnStart, forKey: Keys.autoLoad) }
+    }
 
     private enum Keys {
         static let ffMultiplier = "settings.ffMultiplier"
@@ -104,6 +108,7 @@ final class SettingsStore: ObservableObject {
         static let controlOpacity = "settings.controlOpacity"
         static let turboRate = "settings.turboRate"
         static let preserveAspect = "settings.preserveAspect"
+        static let autoLoad = "settings.autoLoadOnStart"
     }
 
     private init() {
@@ -127,6 +132,7 @@ final class SettingsStore: ObservableObject {
         controlOpacity = defaults.object(forKey: Keys.controlOpacity) as? Double ?? 0.6
         turboRate = defaults.object(forKey: Keys.turboRate) as? Int ?? 10
         preserveAspectRatio = defaults.object(forKey: Keys.preserveAspect) as? Bool ?? true
+        autoLoadOnStart = defaults.object(forKey: Keys.autoLoad) as? Bool ?? true
     }
 
     /// 低端机自动降级：CRT 等重滤镜强制关闭

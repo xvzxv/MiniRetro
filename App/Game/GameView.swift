@@ -122,6 +122,21 @@ struct GameView: View {
             GameControllerManager.shared.bind { button, pressed in
                 viewModel.setButton(button, pressed: pressed)
             }
+
+        }
+        .task {
+            // 自动化/调试入口：-MRShowMenu 打开菜单（模拟器验证存档 UI）
+            guard ProcessInfo.processInfo.arguments.contains("-MRShowMenu") else { return }
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            NSLog("[MiniRetro] MRShowMenu 触发，showMenu = true")
+            showMenu = true
+        }
+        .task {
+            // 自动化/调试入口：-MRShowMenu 打开菜单（模拟器验证存档 UI）
+            guard ProcessInfo.processInfo.arguments.contains("-MRShowMenu") else { return }
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            NSLog("[MiniRetro] MRShowMenu 触发，showMenu = true")
+            showMenu = true
         }
         .onDisappear {
             GameControllerManager.shared.unbind()

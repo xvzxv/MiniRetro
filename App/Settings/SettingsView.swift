@@ -19,6 +19,10 @@ struct SettingsView: View {
                     }
                     Toggle("进后台自动暂停", isOn: $settings.autoPauseOnBackground)
                     Toggle("进后台自动即时存档", isOn: $settings.autoSaveOnBackground)
+                    Toggle("打开游戏时载入自动存档", isOn: $settings.autoLoadOnStart)
+                    Text("开启后每次进入游戏会接着上次的进度；关闭则从头开始。手动槽位共 3 个，另有 1 个自动槽。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
 
                 Section("显示") {

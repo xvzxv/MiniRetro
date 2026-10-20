@@ -125,6 +125,8 @@ struct SaveStateEntry: Codable, Identifiable, Equatable {
     var timestamp: Date
     var thumbnailName: String?
     var isAutoSave: Bool = false
+    /// 该槽位是否已有存档（false 时 UI 显示「空」）
+    var isOccupied: Bool = false
 
     /// 存档文件相对 Saves/<romID>/ 的文件名
     var stateFileName: String {
