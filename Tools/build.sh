@@ -55,35 +55,54 @@ xcodegen generate
 # 4. 构建 App（真机，Release，不签名）
 log "xcodebuild ..."
 BUILD_DIR="$ROOT/build"
-rm -rf "$BUILD_DIR"
+
+# Xcode 27 的宏服务进程（swift-plugin-server）偶发僵死，
+# 表现为 100+ 条 "SwiftUIMacros.StateMacro could not be found ... produced malformed response"。
+# 这不是代码问题：杀掉僵死进程 + 低并发（-jobs 4）即可稳定通过。
+clear_plugin_server() {
+    pkill -9 -f swift-plugin-server 2>/dev/null || true
+    sleep 1
+}
+
+run_xcodebuild() {
+    local extra_flags=("$@")
+    xcodebuild \
+        -scheme MiniRetro \
+        -configuration Release \
+        -derivedDataPath "$BUILD_DIR" \
+        -destination 'generic/platform=iOS' \
+        -jobs 4 \
+        "${extra_flags[@]}" \
+        clean build
+}
 
 if [ "$ADHOC" -eq 1 ]; then
     log "使用 ad-hoc 签名（CODE_SIGN_IDENTITY=-）"
-    xcodebuild \
-        -scheme MiniRetro \
-        -configuration Release \
-        -derivedDataPath "$BUILD_DIR" \
-        -destination 'generic/platform=iOS' \
-        -archivePath "$BUILD_DIR/MiniRetro.xcarchive" \
-        CODE_SIGNING_ALLOWED=YES \
-        CODE_SIGN_IDENTITY="-" \
-        CODE_SIGNING_REQUIRED=NO \
-        DEVELOPMENT_TEAM="" \
-        clean build
+    EXTRA=(CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO DEVELOPMENT_TEAM=)
 else
-    xcodebuild \
-        -scheme MiniRetro \
-        -configuration Release \
-        -derivedDataPath "$BUILD_DIR" \
-        -destination 'generic/platform=iOS' \
-        CODE_SIGNING_ALLOWED=NO \
-        CODE_SIGN_IDENTITY="" \
-        DEVELOPMENT_TEAM="" \
-        clean build
+    EXTRA=(CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY= DEVELOPMENT_TEAM=)
+fi
+
+clear_plugin_server
+rm -rf "$BUILD_DIR"
+if ! run_xcodebuild "${EXTRA[@]}"; then
+    echo ""
+    log "构建失败，按 Xcode 27 已知问题流程重试一次（清派生数据 + 重启宏服务）..."
+    clear_plugin_server
+    rm -rf "$BUILD_DIR"
+    run_xcodebuild "${EXTRA[@]}" || die "xcodebuild 仍失败，请查看上方错误；若为宏错误见 docs/maintenance.md 第 6 节"
 fi
 
 # 5. 打包未签名 ipa
 log "打包 ipa ..."
 "$ROOT/Tools/package_ipa.sh"
+
+# 交付产物统一放 dist/（git 不跟踪，便于用户直接取用）
+mkdir -p "$ROOT/dist"
+cp -f "$ROOT"/build/*.ipa "$ROOT/dist/" 2>/dev/null || true
+
+# 交付产物统一放 dist/（git 不跟踪，便于用户直接取用）
+mkdir -p "$ROOT/dist"
+cp -f "$ROOT"/build/*.ipa "$ROOT/dist/" 2>/dev/null || true
 
 log "完成！"
