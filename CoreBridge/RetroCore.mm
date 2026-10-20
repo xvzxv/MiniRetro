@@ -253,7 +253,10 @@ static void mr_log_callback(enum retro_log_level level, const char *fmt, ...) {
         // <root>/<name>_core.framework/<name>_core
         NSString *binary = [[root stringByAppendingPathComponent:frameworkName]
                             stringByAppendingPathComponent:binaryName];
-        if ([[NSFileManager defaultManager] isExecutableFileAtPath:binary]) {
+        // 注意：不能用 isExecutableFileAtPath —— 模拟器安装（simctl install）会剥掉
+        // dylib 的可执行位（-rwxr-xr-x → -rw-r--r--），导致误判「找不到 framework」。
+        // dlopen 只需要文件存在且为有效 Mach-O，与 Unix 可执行位无关。
+        if ([[NSFileManager defaultManager] fileExistsAtPath:binary]) {
             return binary;
         }
     }

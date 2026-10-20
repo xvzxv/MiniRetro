@@ -21,8 +21,11 @@ struct GameDisplayView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: MTKView, context: Context) {
-        // 布局变化时刷新 drawableSize
-        uiView.drawableSize = uiView.bounds.size
+        // 不要手动设置 drawableSize：首次布局时 bounds 仍为 0，
+        // 强制赋值会让 MTKView 永久停止出图（autoResizeDrawable 默认已正确管理）
+        if uiView.bounds.width > 0, uiView.bounds.height > 0, uiView.isPaused {
+            uiView.isPaused = false
+        }
     }
 
     static func dismantleUIView(_ uiView: MTKView, coordinator: Coordinator) {

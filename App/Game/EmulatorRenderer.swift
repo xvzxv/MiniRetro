@@ -68,7 +68,7 @@ final class EmulatorRenderer: NSObject, MTKViewDelegate {
 
     private func buildPipelines() {
         guard let library = VideoShaderSource.makeLibrary(device: device) else {
-            MRLog.error("Metal shader 库编译失败，画面将无法渲染")
+            NSLog("[MiniRetro] Metal shader 库编译失败，画面无法渲染")
             return
         }
         guard let vertexFunction = library.makeFunction(name: "video_vertex") else {
@@ -88,9 +88,10 @@ final class EmulatorRenderer: NSObject, MTKViewDelegate {
             do {
                 pipelines[name] = try device.makeRenderPipelineState(descriptor: descriptor)
             } catch {
-                MRLog.error("pipeline \(name) 创建失败: \(error.localizedDescription)")
+                NSLog("[MiniRetro] pipeline \(name) 创建失败: \(error.localizedDescription)")
             }
         }
+        NSLog("[MiniRetro] Metal pipelines 就绪: %d 个", pipelines.count)
     }
 
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
@@ -163,6 +164,13 @@ final class EmulatorRenderer: NSObject, MTKViewDelegate {
         encoder.endEncoding()
         commandBuffer.present(currentDrawable)
         commandBuffer.commit()
+
+        // 诊断：每约 60 帧输出一次绘制状态
+        if frameCountWindow % 60 == 1 {
+            NSLog("[MiniRetro] draw: tex=%dx%d hasTex=%d shader=%@ fps=%.1f",
+                  frameWidth, frameHeight, frameTexture != nil ? 1 : 0,
+                  SettingsStore.shared.effectiveFilter.metalShaderName, measuredFPS)
+        }
 
         // 3. FPS 统计（1 秒窗口）
         let now = CACurrentMediaTime()

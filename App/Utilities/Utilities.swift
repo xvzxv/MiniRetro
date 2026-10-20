@@ -32,6 +32,10 @@ enum MRLog {
         let entry = "[\(level)] \(name):\(line) \(message)"
         #if DEBUG
         print(entry)
+        #else
+        // Release 也写入系统日志：便于真机/模拟器排障（Console.app 过滤 [MiniRetro]）
+        // 仅 ERROR 与 INFO 级，量可控
+        NSLog("%@", entry)
         #endif
         queue.sync {
             buffer.append(entry)

@@ -28,6 +28,21 @@ struct LibraryView: View {
                     listView
                 }
             }
+            .task {
+                // 自动化/调试入口：-MRAutoPlayFirst 启动时自动打开第一款游戏
+                // （供模拟器/CI 验证渲染与运行链路；正常启动无任何影响）
+                let args = ProcessInfo.processInfo.arguments
+                let wantsAutoPlay = args.contains("-MRAutoPlayFirst")
+                    || UserDefaults.standard.bool(forKey: "MRAutoPlayFirst")
+                NSLog("[MiniRetro] autoPlay=%@ args=%@ roms=%ld", wantsAutoPlay ? "yes" : "no",
+                      args.joined(separator: " "), model.filteredROMs(searchText: "", favoritesOnly: false).count)
+                guard wantsAutoPlay else { return }
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                if let first = model.filteredROMs(searchText: "", favoritesOnly: false).first {
+                    NSLog("[MiniRetro] autoPlay opening %@", first.fileName)
+                    selectedROM = first
+                }
+            }
             .navigationTitle("游戏库")
             .searchable(text: $searchText, prompt: "搜索 ROM")
             .toolbar {

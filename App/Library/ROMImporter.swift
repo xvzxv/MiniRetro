@@ -139,41 +139,53 @@ enum ROMImporter {
     // MARK: - 沙盒扫描（增量：已有条目跳过）
 
     @discardableResult
+    /// 递归扫描 Documents/ROMs 下**所有**文件（不依赖子目录命名），
+    /// 用内容/扩展名识别后建索引。已在 ROMs 内的文件原地建索引，不重复拷贝。
+    ///
+    /// 历史实现按「子目录名 == SystemType.rawValue」过滤，导致用户手工放入
+    /// `ROMs/nes/`、`ROMs/中文目录/` 的文件完全扫不到（与 SystemType 映射缺陷同源）。
     static func scanExisting(into index: inout LibraryIndex) -> ImportResult {
         var result = ImportResult()
         let fm = FileManager.default
-        guard fm.fileExists(atPath: romsDirectory.path),
-              let systemDirs = try? fm.contentsOfDirectory(at: romsDirectory, includingPropertiesForKeys: nil)
-        else { return result }
+        guard fm.fileExists(atPath: romsDirectory.path) else { return result }
 
         let knownPaths = Set(index.roms.map(\.relativePath))
-        for dir in systemDirs {
-            var isDir: ObjCBool = false
-            fm.fileExists(atPath: dir.path, isDirectory: &isDir)
-            guard isDir.boolValue, SystemType(rawValue: dir.lastPathComponent) != nil else { continue }
-            guard let files = try? fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) else { continue }
-            for file in files {
-                let relative = "\(dir.lastPathComponent)/\(file.lastPathComponent)"
-                if knownPaths.contains(relative) { continue }
-                guard let data = FileManager.default.contents(atPath: file.path) else { continue }
-                if let identified = identify(data: data, fileName: file.lastPathComponent) {
-                    let entry = store(
-                        data: data,
-                        fileName: file.lastPathComponent,
-                        system: identified.system,
-                        byMagic: identified.byMagic
-                    )
-                    index.upsert(entry)
-                    result.imported.append(entry)
-                }
-            }
+        let keys: Set<URLResourceKey> = [.isRegularFileKey]
+        guard let enumerator = fm.enumerator(
+            at: romsDirectory,
+            includingPropertiesForKeys: Array(keys),
+            options: [.skipsHiddenFiles]
+        ) else { return result }
+
+        let prefix = romsDirectory.path + "/"
+        while let fileURL = enumerator.nextObject() as? URL {
+            guard let values = try? fileURL.resourceValues(forKeys: keys),
+                  values.isRegularFile == true else { continue }
+
+            let fileName = fileURL.lastPathComponent
+            let relative = fileURL.path.hasPrefix(prefix)
+                ? String(fileURL.path.dropFirst(prefix.count))
+                : fileName
+            if knownPaths.contains(relative) { continue }
+
+            guard let data = fm.contents(atPath: fileURL.path),
+                  let identified = identify(data: data, fileName: fileName) else { continue }
+
+            let entry = ROMEntry(
+                fileName: fileName,
+                relativePath: relative,
+                system: identified.system,
+                fileSize: Int64(data.count),
+                detectedByMagic: identified.byMagic
+            )
+            index.upsert(entry)
+            result.imported.append(entry)
         }
-        // 标记缺失文件
+
+        // 标记文件缺失/不可读
         for (idx, entry) in index.roms.enumerated() {
             let path = romsDirectory.appendingPathComponent(entry.relativePath).path
-            if !fm.fileExists(atPath: path) {
-                index.roms[idx].isCorrupted = true
-            }
+            index.roms[idx].isCorrupted = !fm.fileExists(atPath: path)
         }
         return result
     }

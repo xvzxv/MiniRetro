@@ -98,14 +98,31 @@ final class GamepadCanvasView: UIView {
 
     private var buttons: [JoypadButton: UIButton] = [:]
     private var currentLayout: ControlLayout?
+    private var currentSystem: SystemType = .fc
+    private var currentSkin: SkinType = .classic
     private var editing = false
+
+    /// bounds 变化时重排按键（首次 apply 时 bounds 常为 0，必须靠 layoutSubviews 兜底）
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        rebuildButtons()
+    }
 
     /// 按键圆半径（相对短边）
     private var buttonRadius: CGFloat { min(bounds.width, bounds.height) * 0.075 }
 
     func apply(layout: ControlLayout, system: SystemType, skin: SkinType, editing: Bool) {
         currentLayout = layout
+        currentSystem = system
+        currentSkin = skin
         self.editing = editing
+        rebuildButtons()
+    }
+
+    private func rebuildButtons() {
+        guard let layout = currentLayout, bounds.width > 0, bounds.height > 0 else { return }
+        let system = currentSystem
+        let skin = currentSkin
         // 清理失效按键
         for (button, view) in buttons where layout.button(button) == nil {
             view.removeFromSuperview()
