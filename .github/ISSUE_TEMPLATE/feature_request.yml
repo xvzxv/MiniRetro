@@ -1,0 +1,52 @@
+name: 💡 功能建议
+description: 想要新平台、新按键、新交互等
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提建议前请先看 README 的「已知限制」和「支持的平台」，避免重复已经做过或明确不做的内容。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你想解决什么问题
+      description: 描述场景，而不是直接给方案
+      placeholder: 街机游戏投币后需要选人，但 SELECT 键位置太靠中间，单手够不到
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 你希望的方案
+      placeholder: 希望街机布局里 SELECT 可以单独拖到左侧
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 涉及模块
+      multiple: true
+      options:
+        - 虚拟按键 / 布局
+        - 游戏库 / 导入
+        - 存档
+        - 金手指
+        - 手柄
+        - 画面 / 滤镜
+        - 音频
+        - 内核支持
+        - 其他
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 确认
+      options:
+        - label: 我已查看 README 与已有 issue，没有重复
+          required: true

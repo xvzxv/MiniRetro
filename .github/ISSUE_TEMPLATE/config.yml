@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 使用与构建文档
+    url: https://github.com/xvzxv/MiniRetro#readme
+    about: 安装、导入 ROM、街机 BIOS、构建步骤先看这里
+  - name: 🔧 维护与排错手册
+    url: https://github.com/xvzxv/MiniRetro/blob/main/docs/maintenance.md
+    about: 常见构建/运行问题的处理方式
+  - name: 🎮 我可以从哪里获取游戏
+    url: https://github.com/xvzxv/MiniRetro#已知限制
+    about: 本仓库不提供任何 ROM / BIOS，也不接受相关索取

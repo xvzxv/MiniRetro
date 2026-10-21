@@ -1,0 +1,98 @@
+name: 🐞 Bug 反馈
+description: 游戏跑不起来、画面/声音异常、存档丢失等
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！请尽量填全下面信息，尤其是**日志**——没有日志的情况下定位问题的成本会高很多。
+        提交前请先搜索已有 issue，避免重复。
+
+  - type: input
+    id: version
+    attributes:
+      label: App 版本
+      description: 设置 → 关于 → 版本（例如 1.7 (8)）
+      placeholder: 1.7 (8)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: 设备与系统
+      options:
+        - iPhone（iOS 17.x）
+        - iPhone（iOS 18.x）
+        - iPhone（iOS 26 / 27）
+        - iPad（iPadOS 17.x）
+        - iPad（iPadOS 18.x）
+        - iPad（iPadOS 26 / 27）
+        - 模拟器（Xcode Simulator）
+        - 其他（在下方说明）
+    validations:
+      required: true
+
+  - type: dropdown
+    id: system
+    attributes:
+      label: 涉及平台
+      multiple: true
+      options:
+        - FC / NES
+        - FDS
+        - GB
+        - GBC
+        - GBA
+        - 街机（CPS / Neo Geo / PGM）
+        - 游戏库 / 导入
+        - 存档
+        - 金手指
+        - 手柄
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 从打开 App 开始，一步步说明
+      placeholder: |
+        1. 导入 xxx.nes
+        2. 点开游戏
+        3. 打开菜单 → 金手指管理
+        4. 出现「xxx」
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望结果 vs 实际结果
+      placeholder: |
+        期望：正常进入游戏
+        实际：黑屏并提示「加载失败」
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志
+      description: |
+        真机：Xcode → Window → Devices and Simulators → 选中设备 → Open Console，过滤 `MiniRetro`，复制相关行。
+        模拟器：`xcrun simctl spawn booted log show --last 5m --predicate 'process == "MiniRetro"'`
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 确认
+      options:
+        - label: 我已搜索过已有 issue，没有重复
+          required: true
+        - label: 我使用的是自行合法获取的 ROM，不涉及盗版资源索取
+          required: true
