@@ -6,19 +6,43 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ROM="${1:-/Users/makixu/Desktop/模拟器游戏/游戏/水浒神兽[外星科技](CN)[RPG](8Mb).nes}"
+# 可选：传入真实 ROM 以额外验证识别；不传则用脚本生成的合成 ROM 跑结构用例
+REAL_ROM="${1:-}"
+ROM=""
 WORK="${TMPDIR:-/tmp}/miniretro-romlib-test"
 OUT="$WORK/romlib_test"
 rm -rf "$WORK"
 mkdir -p "$WORK/home"
 
+# Python 只用来构造测试用 zip / 合成 ROM，这里探测系统解释器即可
+PYTHON="${PYTHON:-$(command -v python3 || true)}"
+[ -n "$PYTHON" ] || { echo "需要 python3（构造测试文件用）" >&2; exit 1; }
+
 # 隔离 HOME，让 FileManager.documentsDirectory 指向临时目录
 export HOME="$WORK/home"
 mkdir -p "$HOME/Documents"
 
+# 生成一个最小可识别的 iNES ROM（仅用于库逻辑，不含游戏内容）
+SYNTH_ROM="$WORK/synthetic.nes"
+"$PYTHON" - "$SYNTH_ROM" <<'PY2'
+import sys
+path = sys.argv[1]
+header = b"NES\x1a" + bytes([1, 1, 0, 0]) + bytes(8)
+with open(path, "wb") as fh:
+    fh.write(header + bytes(16384) + bytes(8192))
+print(f"built {path}")
+PY2
+
+# 有真实 ROM 就用真实 ROM，否则用合成 ROM
+if [ -n "$REAL_ROM" ] && [ -f "$REAL_ROM" ]; then
+    ROM="$REAL_ROM"
+else
+    ROM="$SYNTH_ROM"
+fi
+
 # 构造一个「街机 romset」zip（只含 arcade 风格文件）
 ARCADE_ZIP="$WORK/kov.zip"
-/Users/makixu/.workbuddy/binaries/python/envs/default/bin/python - "$ARCADE_ZIP" <<'PY'
+"$PYTHON" - "$ARCADE_ZIP" <<'PY'
 import sys, zipfile
 path = sys.argv[1]
 with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:

@@ -40,3 +40,6 @@ __pycache__/
 # FBNeo 街机核心（99MB，体积过大不入库）：
 # 缺失时 ./Tools/build.sh 会自动执行 ./Tools/build_cores.sh fbneo 补建（首次约 40 分钟）
 Cores/artifacts/fbneo-core.xcframework/
+
+# ===== 内部工作区（含开发日志与个人偏好，不对外发布）=====
+.workbuddy/

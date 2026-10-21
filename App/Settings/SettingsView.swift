@@ -183,7 +183,7 @@ struct LicensesView: View {
                 Text("MPL-2.0\n© 2013-2026 Jeffrey Pfau\nhttps://github.com/mgba-emu/mgba")
             }
             Section("SameBoy") {
-                Text("MPL-2.0\n© 2015-2026 Lior Halphon\nhttps://github.com/LIJI32/SameBoy")
+                Text("Expat (MIT)\n© 2015-2026 Lior Halphon\nhttps://github.com/LIJI32/SameBoy")
             }
             Section("fceumm (libretro-fceumm)") {
                 Text("GPL-2.0\nhttps://github.com/libretro/libretro-fceumm")
