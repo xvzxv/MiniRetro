@@ -84,9 +84,12 @@ brew install xcodegen cmake rgbds
 
 ## 安装（侧载）
 
+**直接下载**：最新构建见 [Releases](https://github.com/xvzxv/MiniRetro/releases)
+（未签名 ipa，仍需自行签名）。
+
 仓库不内置签名脚本，签名由你自行管理：
 
-1. 用 **Sideloadly / AltStore / 自签证书** 对 `build/*.ipa` 签名
+1. 用 **Sideloadly / AltStore / 自签证书** 对 `build/*.ipa` 或 Release 附件签名
 2. 免费 Apple ID 的签名 7 天过期，需重新签名
 3. 签名工具拒绝未签名 ipa 时，改用 `./Tools/build.sh --adhoc`
 
