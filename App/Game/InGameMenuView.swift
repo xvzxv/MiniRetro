@@ -92,7 +92,11 @@ struct InGameMenuView: View {
                     Toggle("快进（\(settings.fastForwardMultiplier)×）", isOn: fastForwardBinding)
                     Picker("快进倍率", selection: $settings.fastForwardMultiplier) {
                         Text("2×").tag(2)
+                        Text("3×").tag(3)
                         Text("4×").tag(4)
+                        Text("6×").tag(6)
+                        Text("8×").tag(8)
+                        Text("16×").tag(16)
                     }
                     Button("软复位") { viewModel.resetGame() }
                     Button("保存电池存档") {

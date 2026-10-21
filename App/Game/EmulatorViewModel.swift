@@ -76,14 +76,28 @@ final class EmulatorViewModel: ObservableObject {
         let romURL = romsDir.appendingPathComponent(rom.relativePath)
         FileManager.default.ensureDirectory(savesDirectory)
 
-        retroCore.setSystemDirectory(FileManager.default.documentsDirectory.path)
+        // 街机 core（FBNeo）需要 BIOS 与 romset 在同一个 system 目录里查找：
+        // neogeo.zip（Neo Geo）、pgm.zip（PGM：西游释厄传/三国战纪）
+        let systemDir = FileManager.default.documentsDirectory
+            .appendingPathComponent("System", isDirectory: true)
+        FileManager.default.ensureDirectory(systemDir)
+        retroCore.setSystemDirectory(systemDir.path)
         retroCore.setSaveDirectory(savesDirectory.path)
 
         do {
             try retroCore.loadROM(atPath: romURL.path)
         } catch {
-            statusMessage = "加载失败：\(error.localizedDescription)"
-            MRLog.error("ROM 加载失败: \(error.localizedDescription)")
+            var message = "加载失败：\(error.localizedDescription)"
+            if rom.system == .arcade {
+                let missing = ArcadeSupport.biosRequirements.filter { !$0.installed }.map(\.fileName)
+                if !missing.isEmpty {
+                    message += "\n街机游戏需要 BIOS：缺少 \(missing.joined(separator: "、"))（用游戏库右上角 + 导入）"
+                } else {
+                    message += "\n请确认导入的是完整 romset（整套 .zip，不要解压、不要删减内部文件）"
+                }
+            }
+            statusMessage = message
+            MRLog.error("ROM 加载失败: \(message)")
             return
         }
         retroCore.start()

@@ -104,6 +104,11 @@ MRCoreMatch mr_core_for_extension(const char *ext) {
     if (strcasecmp(ext, "gba") == 0) {
         return make_match("mgba", "gba", false);
     }
+    // 街机 romset：zip 也可能是「压缩包」，调用方（ROMImporter）先尝试按压缩包解压，
+    // 解不出主机 ROM 才回落到这里当作街机 romset。7z 同理。
+    if (strcasecmp(ext, "zip") == 0 || strcasecmp(ext, "7z") == 0) {
+        return make_match("fbneo", "arcade", false);
+    }
     return no_match();
 }
 
@@ -126,6 +131,9 @@ const char *mr_system_display_name(const char *system_id) {
     if (strcmp(system_id, "fds") == 0) {
         return "FDS";
     }
+    if (strcmp(system_id, "arcade") == 0) {
+        return "街机";
+    }
     return "未知";
 }
 
@@ -141,6 +149,9 @@ const char *mr_core_framework_name(const char *core_name) {
     }
     if (strcmp(core_name, "fceumm") == 0) {
         return "fceumm_core";
+    }
+    if (strcmp(core_name, "fbneo") == 0) {
+        return "fbneo_core";
     }
     return "";
 }

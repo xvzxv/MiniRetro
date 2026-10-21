@@ -200,7 +200,7 @@ final class GamepadCanvasView: UIView {
             // 实际透明度 = 单键值 × 全局值（设置页滑杆实时生效）
             view.alpha = max(0.15, min(1.0, control.opacity * globalOpacity))
             view.isUserInteractionEnabled = false // 统一由 touches 分发
-            view.setTitle(control.button.symbol, for: .normal)
+            view.setTitle(control.displayLabel, for: .normal)
             // 椭圆键文字略小，避免 SELECT/START 挤出边界
             let fontScale: CGFloat = control.aspect > 1.3 ? 0.24 : 0.28
             view.titleLabel?.font = .systemFont(ofSize: height * fontScale, weight: .bold)

@@ -7,9 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		01075A5BF05201521D9C90F9 /* CheatIndex.json in Resources */ = {isa = PBXBuildFile; fileRef = AF011F3402BE1CEF6214C441 /* CheatIndex.json */; };
 		06584D80A3CE08C9702FB062 /* AppTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91755392B9AB930D9D6D8040 /* AppTypes.swift */; };
 		082404C7A63CEC8FB0DD03E6 /* CoreRegistryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17FBA037F8246B1DCBD5D5B /* CoreRegistryTests.swift */; };
 		08C963295AE08347FB026C5D /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E2C793D1941DD9D9B5D110C /* Haptics.swift */; };
+		18790DF37D3B406ACA22328C /* CommunityCheatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CA4A679820507B215B02305 /* CommunityCheatView.swift */; };
 		2145743378D54A80A93554DC /* VirtualGamepad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FD8E3CE6A10A5795FB61C2F /* VirtualGamepad.swift */; };
 		28C92B506F05DC290252D459 /* mgba-core.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A4BE69C63739940EB4D0003 /* mgba-core.xcframework */; };
 		2E54C57B14295924C6E7B393 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = F130CED08364962109C3AE2A /* Utilities.swift */; };
@@ -23,9 +25,11 @@
 		567E56ECD10B3D5209F64890 /* RetroAudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7050A9B0C37F7A547FAC349B /* RetroAudioEngine.swift */; };
 		570815F1EA6C3E30ABDDA587 /* AudioRingBuffer.mm in Sources */ = {isa = PBXBuildFile; fileRef = DE87D96D069C750B3313E32B /* AudioRingBuffer.mm */; };
 		57E248D6868A85FD5294947E /* RetroCore.mm in Sources */ = {isa = PBXBuildFile; fileRef = 80BADB6FC6F8280EA176B090 /* RetroCore.mm */; };
+		60286C5BFE4127CE5C21A5FF /* ArcadeSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1162C351AFFF4ECA315ED921 /* ArcadeSupport.swift */; };
 		61A4EA4162BC8722148E48B6 /* mgba-core.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9A4BE69C63739940EB4D0003 /* mgba-core.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		657D7175D11D687C837B9212 /* SystemTypeMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57E468098114E55B6CFB171 /* SystemTypeMappingTests.swift */; };
 		68B474FCEB214A7330881831 /* EmulatorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AFFE9F16BD7E999AEB7724D /* EmulatorViewModel.swift */; };
+		6A7B71EB672D7ECFD8BCC268 /* fbneo-core.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 977758C0B74497D7CED2F293 /* fbneo-core.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		73B91186266D04FBFE51B88A /* LayoutEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01760D1BD48FFBEA7B7F05DD /* LayoutEditorView.swift */; };
 		7A4F4C95698E5F7EF6D22151 /* ZipArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B3877084D82ED1EB40CECE8 /* ZipArchive.swift */; };
 		7E1544B536720A893E1C38FC /* CheatManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62AD5C3B1ECFEFB75361505 /* CheatManager.swift */; };
@@ -35,10 +39,12 @@
 		8E548FC1FC9ACD3C18F971CF /* sameboy-core.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3A3FC0EAD50329BDD1B39170 /* sameboy-core.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9DE6FA919C54194ECE06E41A /* CoreRegistry.c in Sources */ = {isa = PBXBuildFile; fileRef = 83F15A8CB8AAF20F72143ADF /* CoreRegistry.c */; };
 		A7A3949FB7442ED4AF1BE054 /* VideoShaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A9539DFC246F6D387B054E2 /* VideoShaders.swift */; };
+		AB03501B5FEC48B961BA300B /* fbneo-core.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 977758C0B74497D7CED2F293 /* fbneo-core.xcframework */; };
 		B17BC2DB4E06A5F678B58BA1 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B27DB966190AE2267EF5054 /* RootView.swift */; };
 		B3C7336EB0AE9BF82BBFB438 /* GameDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40F95AE84989D66C5A55C4A /* GameDisplayView.swift */; };
 		B9D8A8CEFD3C6062173924EB /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEEB8A9C0BA8AD9068642606 /* GameView.swift */; };
 		CC70C0879F728DFC10E63551 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF9A1098814BA9E5CDA70FA /* LibraryView.swift */; };
+		CE49C1E948652AB5AC327B33 /* CommunityCheatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F430F77DB801D52F896312E /* CommunityCheatService.swift */; };
 		D182BB2FC8007D46190E5B84 /* ROMImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE02FEA81B1176A0D737302 /* ROMImporter.swift */; };
 		D34D627C9E969CFFDE06EF19 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D207D1DAA2ED243509A9D614 /* Assets.xcassets */; };
 		D62BC485397D1912AF42B40A /* GameControllerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31163B9E862C5FBEE7940E71 /* GameControllerManager.swift */; };
@@ -70,6 +76,7 @@
 				61A4EA4162BC8722148E48B6 /* mgba-core.xcframework in Embed Frameworks */,
 				8E548FC1FC9ACD3C18F971CF /* sameboy-core.xcframework in Embed Frameworks */,
 				351F06219575916F3AFF9345 /* fceumm-core.xcframework in Embed Frameworks */,
+				6A7B71EB672D7ECFD8BCC268 /* fbneo-core.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -80,6 +87,7 @@
 		01760D1BD48FFBEA7B7F05DD /* LayoutEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutEditorView.swift; sourceTree = "<group>"; };
 		08F27DF8E903FFE2EB5F4FEF /* EmulatorRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmulatorRenderer.swift; sourceTree = "<group>"; };
 		10640FF5F43C0193E9D13DCD /* InGameMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InGameMenuView.swift; sourceTree = "<group>"; };
+		1162C351AFFF4ECA315ED921 /* ArcadeSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeSupport.swift; sourceTree = "<group>"; };
 		1D1381BC0D9D2FBC95A9FA6B /* fceumm-core.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = "fceumm-core.xcframework"; path = "Cores/artifacts/fceumm-core.xcframework"; sourceTree = "<group>"; };
 		2AFFE9F16BD7E999AEB7724D /* EmulatorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmulatorViewModel.swift; sourceTree = "<group>"; };
 		2E2C793D1941DD9D9B5D110C /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
@@ -95,17 +103,21 @@
 		7050A9B0C37F7A547FAC349B /* RetroAudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroAudioEngine.swift; sourceTree = "<group>"; };
 		7A9539DFC246F6D387B054E2 /* VideoShaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoShaders.swift; sourceTree = "<group>"; };
 		7DB68EA5D1B05BC77269F618 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		7F430F77DB801D52F896312E /* CommunityCheatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityCheatService.swift; sourceTree = "<group>"; };
 		80BADB6FC6F8280EA176B090 /* RetroCore.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RetroCore.mm; sourceTree = "<group>"; };
 		81F7A7455BB63D26F8DF0C86 /* CrossImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossImage.swift; sourceTree = "<group>"; };
 		83F15A8CB8AAF20F72143ADF /* CoreRegistry.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = CoreRegistry.c; sourceTree = "<group>"; };
 		8B27DB966190AE2267EF5054 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		8BB91085734F70E5799010FE /* ControlLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlLayout.swift; sourceTree = "<group>"; };
+		8CA4A679820507B215B02305 /* CommunityCheatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityCheatView.swift; sourceTree = "<group>"; };
 		8F254B0CB40CE24A50A59119 /* MiniRetroTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MiniRetroTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		91755392B9AB930D9D6D8040 /* AppTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTypes.swift; sourceTree = "<group>"; };
+		977758C0B74497D7CED2F293 /* fbneo-core.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = "fbneo-core.xcframework"; path = "Cores/artifacts/fbneo-core.xcframework"; sourceTree = "<group>"; };
 		9A4BE69C63739940EB4D0003 /* mgba-core.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = "mgba-core.xcframework"; path = "Cores/artifacts/mgba-core.xcframework"; sourceTree = "<group>"; };
 		9CE02FEA81B1176A0D737302 /* ROMImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ROMImporter.swift; sourceTree = "<group>"; };
 		AD275FCFDB685BB8A1789BFF /* SaveStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveStateTests.swift; sourceTree = "<group>"; };
 		AEBCDDB1D4F3F36DFFC805B7 /* MiniRetro-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MiniRetro-Bridging-Header.h"; sourceTree = "<group>"; };
+		AF011F3402BE1CEF6214C441 /* CheatIndex.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = CheatIndex.json; sourceTree = "<group>"; };
 		B40F95AE84989D66C5A55C4A /* GameDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDisplayView.swift; sourceTree = "<group>"; };
 		B57E468098114E55B6CFB171 /* SystemTypeMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemTypeMappingTests.swift; sourceTree = "<group>"; };
 		C02547C68EC58878D823A2CA /* KeyRemapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyRemapView.swift; sourceTree = "<group>"; };
@@ -129,6 +141,7 @@
 				28C92B506F05DC290252D459 /* mgba-core.xcframework in Frameworks */,
 				484D111441BF93BF64957DA7 /* sameboy-core.xcframework in Frameworks */,
 				8C7D53FAF07A6AE31F14CC8F /* fceumm-core.xcframework in Frameworks */,
+				AB03501B5FEC48B961BA300B /* fbneo-core.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,6 +152,7 @@
 			isa = PBXGroup;
 			children = (
 				D207D1DAA2ED243509A9D614 /* Assets.xcassets */,
+				AF011F3402BE1CEF6214C441 /* CheatIndex.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -175,6 +189,7 @@
 		56BA19A5F0F08105CFD05C55 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				977758C0B74497D7CED2F293 /* fbneo-core.xcframework */,
 				1D1381BC0D9D2FBC95A9FA6B /* fceumm-core.xcframework */,
 				9A4BE69C63739940EB4D0003 /* mgba-core.xcframework */,
 				3A3FC0EAD50329BDD1B39170 /* sameboy-core.xcframework */,
@@ -203,6 +218,7 @@
 			isa = PBXGroup;
 			children = (
 				91755392B9AB930D9D6D8040 /* AppTypes.swift */,
+				1162C351AFFF4ECA315ED921 /* ArcadeSupport.swift */,
 				8BB91085734F70E5799010FE /* ControlLayout.swift */,
 				6EAA8A9F0151BE4C73BBA251 /* SettingsStore.swift */,
 			);
@@ -255,6 +271,8 @@
 			children = (
 				D86A9BEA77B72BAA2DBB0FB2 /* CheatEditorView.swift */,
 				C62AD5C3B1ECFEFB75361505 /* CheatManager.swift */,
+				7F430F77DB801D52F896312E /* CommunityCheatService.swift */,
+				8CA4A679820507B215B02305 /* CommunityCheatView.swift */,
 				08F27DF8E903FFE2EB5F4FEF /* EmulatorRenderer.swift */,
 				2AFFE9F16BD7E999AEB7724D /* EmulatorViewModel.swift */,
 				31163B9E862C5FBEE7940E71 /* GameControllerManager.swift */,
@@ -360,6 +378,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D34D627C9E969CFFDE06EF19 /* Assets.xcassets in Resources */,
+				01075A5BF05201521D9C90F9 /* CheatIndex.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,9 +401,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				06584D80A3CE08C9702FB062 /* AppTypes.swift in Sources */,
+				60286C5BFE4127CE5C21A5FF /* ArcadeSupport.swift in Sources */,
 				570815F1EA6C3E30ABDDA587 /* AudioRingBuffer.mm in Sources */,
 				34EAC7ADB797279DEC4AC923 /* CheatEditorView.swift in Sources */,
 				7E1544B536720A893E1C38FC /* CheatManager.swift in Sources */,
+				CE49C1E948652AB5AC327B33 /* CommunityCheatService.swift in Sources */,
+				18790DF37D3B406ACA22328C /* CommunityCheatView.swift in Sources */,
 				44945909D1636EFB67E69D0E /* ControlLayout.swift in Sources */,
 				9DE6FA919C54194ECE06E41A /* CoreRegistry.c in Sources */,
 				DD7268AC6FAB26524F967A44 /* CrossImage.swift in Sources */,
@@ -434,7 +456,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGN_IDENTITY = "";
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -451,7 +473,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.miniretro.app;
 				PRODUCT_NAME = MiniRetro;
 				SDKROOT = iphoneos;
@@ -514,7 +536,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGN_IDENTITY = "";
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -531,7 +553,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.miniretro.app;
 				PRODUCT_NAME = MiniRetro;
 				SDKROOT = iphoneos;

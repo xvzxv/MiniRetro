@@ -27,10 +27,12 @@ final class LibraryViewModel: ObservableObject {
 
     private func loadIndex() {
         guard let data = try? Data(contentsOf: indexURL),
-              let decoded = try? JSONDecoder().decode(LibraryIndex.self, from: data) else {
+              var decoded = try? JSONDecoder().decode(LibraryIndex.self, from: data) else {
             index = LibraryIndex()
             return
         }
+        // 旧索引可能带 ROMs/ 前缀或存在重复条目，先归一化再用于比对
+        decoded.normalize()
         index = decoded
     }
 
@@ -57,17 +59,22 @@ final class LibraryViewModel: ObservableObject {
         var totalImported = 0
         var totalFailed: [(String, String)] = []
         var duplicates = 0
+        var bios: [String] = []
 
         for url in urls {
             let result = ROMImporter.importFile(from: url, into: &index)
             totalImported += result.imported.count
             duplicates += result.skippedDuplicates
             totalFailed.append(contentsOf: result.failed)
+            bios.append(contentsOf: result.biosInstalled)
         }
         persist()
 
         summaryParts.append("导入 \(totalImported) 款")
         if duplicates > 0 { summaryParts.append("跳过重复 \(duplicates) 款") }
+        if !bios.isEmpty {
+            summaryParts.append("已安装 BIOS：\(bios.joined(separator: "、"))")
+        }
         for (name, reason) in totalFailed.prefix(3) {
             summaryParts.append("\(name)：\(reason)")
         }
@@ -85,11 +92,20 @@ final class LibraryViewModel: ObservableObject {
 
     func remove(_ rom: ROMEntry) {
         index.remove(id: rom.id)
+        // 同步删除 ROM 文件本体：只删索引的话，下次启动扫描会把文件重新加回库，
+        // 用户会看到「删不掉的条目」（旧版本「文件已损坏」删不干净就是这个原因）。
+        let fileURL = ROMImporter.romsDirectory.appendingPathComponent(rom.relativePath)
+        try? FileManager.default.removeItem(at: fileURL)
         // 同步删除存档目录
         let savesDir = FileManager.default.documentsDirectory
             .appendingPathComponent("Saves", isDirectory: true)
             .appendingPathComponent(rom.id.uuidString, isDirectory: true)
         try? FileManager.default.removeItem(at: savesDir)
+        // 同步删除金手指记录，避免 ID 复用时串味
+        let cheatURL = FileManager.default.documentsDirectory
+            .appendingPathComponent("Cheats", isDirectory: true)
+            .appendingPathComponent("\(rom.id.uuidString).json")
+        try? FileManager.default.removeItem(at: cheatURL)
         persist()
     }
 

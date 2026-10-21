@@ -36,3 +36,7 @@ __pycache__/
 
 # 说明：*.xcodeproj 不忽略——XcodeGen 生成物提交入库，
 # 保证没有 XcodeGen 的环境也能直接打开工程
+
+# FBNeo 街机核心（99MB，体积过大不入库）：
+# 缺失时 ./Tools/build.sh 会自动执行 ./Tools/build_cores.sh fbneo 补建（首次约 40 分钟）
+Cores/artifacts/fbneo-core.xcframework/

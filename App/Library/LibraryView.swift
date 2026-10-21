@@ -164,7 +164,7 @@ struct LibraryView: View {
                 .foregroundColor(.secondary)
             Text("还没有游戏")
                 .font(.title2)
-            Text("点击右上角 + 导入 ROM（.nes / .gb / .gbc / .gba / .zip）\nROM 由你自行提供，本 App 不含任何游戏数据")
+            Text("点击右上角 + 导入 ROM\nFC/NES(.nes/.fds) · GB/GBC(.gb/.gbc) · GBA(.gba) · 街机(.zip/.7z)\n街机 BIOS（neogeo.zip / pgm.zip）也走同一个 + 导入，会自动装到 System 目录\nROM 由你自行提供，本 App 不含任何游戏数据")
                 .font(.callout)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -242,6 +242,8 @@ struct DocumentPicker: UIViewControllerRepresentable {
             UTType(filenameExtension: "gbc") ?? .data,
             UTType(filenameExtension: "gba") ?? .data,
             UTType(filenameExtension: "fds") ?? .data,
+            // 街机 romset（西游释厄传/三国战纪/拳皇等，整套 zip 原样交给 FBNeo）
+            UTType(filenameExtension: "7z") ?? .data,
             UTType.zip,
             .data,
         ]

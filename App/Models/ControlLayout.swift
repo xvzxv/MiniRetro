@@ -97,6 +97,8 @@ struct ControlButton: Codable, Equatable {
     var aspect: CGFloat
     /// 水平锚点（见文件头说明）
     var anchor: HorizontalAnchor
+    /// 按键显示文字覆盖（街机键位需要显示 C/D，但底层仍是 libretro 的 X/Y 位）
+    var label: String?
 
     init(
         button: JoypadButton,
@@ -105,7 +107,8 @@ struct ControlButton: Codable, Equatable {
         relativeSize: CGFloat,
         opacity: CGFloat,
         aspect: CGFloat = 1.0,
-        anchor: HorizontalAnchor = .leading
+        anchor: HorizontalAnchor = .leading,
+        label: String? = nil
     ) {
         self.button = button
         self.relativeX = relativeX
@@ -114,11 +117,15 @@ struct ControlButton: Codable, Equatable {
         self.opacity = opacity
         self.aspect = aspect
         self.anchor = anchor
+        self.label = label
     }
 
-    // 兼容旧版布局 JSON（缺 aspect / anchor 字段）
+    /// 实际显示文字（有覆盖用覆盖，否则用默认符号）
+    var displayLabel: String { label ?? button.symbol }
+
+    // 兼容旧版布局 JSON（缺 aspect / anchor / label 字段）
     private enum CodingKeys: String, CodingKey {
-        case button, relativeX, relativeY, relativeSize, opacity, aspect, anchor
+        case button, relativeX, relativeY, relativeSize, opacity, aspect, anchor, label
     }
 
     init(from decoder: Decoder) throws {
@@ -131,6 +138,7 @@ struct ControlButton: Codable, Equatable {
         aspect = try c.decodeIfPresent(CGFloat.self, forKey: .aspect) ?? 1.0
         anchor = try c.decodeIfPresent(HorizontalAnchor.self, forKey: .anchor)
             ?? Self.inferredAnchor(relativeX)
+        label = try c.decodeIfPresent(String.self, forKey: .label)
     }
 
     /// 旧布局没有 anchor，按位置推断（左侧组 / 居中组 / 右侧组）
@@ -148,6 +156,7 @@ struct ControlButton: Codable, Equatable {
             && lhs.opacity == rhs.opacity
             && lhs.aspect == rhs.aspect
             && lhs.anchor == rhs.anchor
+            && lhs.label == rhs.label
     }
 }
 
@@ -262,11 +271,34 @@ enum ControlLayouts {
         return ControlLayout(system: .gba, skin: skin, version: currentVersion, buttons: buttons)
     }
 
+    /// 街机：十字键 + 四键（A/B/C/D 2×2，SNK 排布）+ SELECT（投币）/START
+    ///
+    /// Neo Geo 的 A/B/C/D 在 libretro 侧分别对应 A/B/Y/X 位，
+    /// 布局里用 label 覆盖显示文字，下发给 core 的仍是标准按键位。
+    static func arcade(skin: SkinType) -> ControlLayout {
+        var buttons = dpad(opacity: 1.0) + systemButtons(opacity: 1.0)
+        // 2×2：A B 在下，C D 在上（与拳皇/三国战纪街机面板一致）
+        buttons.append(ControlButton(button: .a, relativeX: aX, relativeY: actionY,
+                                     relativeSize: actionSize, opacity: 1.0,
+                                     anchor: .trailing, label: "A"))
+        buttons.append(ControlButton(button: .b, relativeX: bX, relativeY: actionY,
+                                     relativeSize: actionSize, opacity: 1.0,
+                                     anchor: .trailing, label: "B"))
+        buttons.append(ControlButton(button: .y, relativeX: aX, relativeY: actionY - actionPitch,
+                                     relativeSize: actionSize, opacity: 1.0,
+                                     anchor: .trailing, label: "C"))
+        buttons.append(ControlButton(button: .x, relativeX: bX, relativeY: actionY - actionPitch,
+                                     relativeSize: actionSize, opacity: 1.0,
+                                     anchor: .trailing, label: "D"))
+        return ControlLayout(system: .arcade, skin: skin, version: currentVersion, buttons: buttons)
+    }
+
     static func `default`(system: SystemType, skin: SkinType) -> ControlLayout {
         switch system {
         case .fc, .fds: return fc(skin: skin)
         case .gb, .gbc: return gb(system: system, skin: skin)
         case .gba: return gba(skin: skin)
+        case .arcade: return arcade(skin: skin)
         }
     }
 }

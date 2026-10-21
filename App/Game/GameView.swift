@@ -9,6 +9,8 @@ struct GameView: View {
     @State private var showMenu = false
     @State private var isEditingLayout = false
     @State private var layout: ControlLayout
+    /// 打开菜单前游戏是否在运行（用于关闭菜单后精确恢复，避免把用户手动暂停的游戏唤醒）
+    @State private var wasRunningBeforeMenu = false
 
     @ObservedObject private var settings = SettingsStore.shared
 
@@ -125,14 +127,7 @@ struct GameView: View {
 
         }
         .task {
-            // 自动化/调试入口：-MRShowMenu 打开菜单（模拟器验证存档 UI）
-            guard ProcessInfo.processInfo.arguments.contains("-MRShowMenu") else { return }
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
-            NSLog("[MiniRetro] MRShowMenu 触发，showMenu = true")
-            showMenu = true
-        }
-        .task {
-            // 自动化/调试入口：-MRShowMenu 打开菜单（模拟器验证存档 UI）
+            // 自动化/调试入口：-MRShowMenu 打开菜单（模拟器验证存档/金手指 UI）
             guard ProcessInfo.processInfo.arguments.contains("-MRShowMenu") else { return }
             try? await Task.sleep(nanoseconds: 2_000_000_000)
             NSLog("[MiniRetro] MRShowMenu 触发，showMenu = true")
@@ -144,6 +139,24 @@ struct GameView: View {
         }
         .sheet(isPresented: $showMenu) {
             InGameMenuView(viewModel: viewModel, isPresented: $showMenu)
+        }
+        // 进入菜单/设置界面自动暂停：设置页、存档槽、金手指都在这个 sheet 里，
+        // 打开时暂停能避免「一边调设置一边游戏在跑/掉血」。
+        .onChange(of: showMenu) { presented in
+            if presented {
+                wasRunningBeforeMenu = viewModel.isLoaded && !viewModel.isPaused
+                if settings.pauseOnOpenMenu && wasRunningBeforeMenu {
+                    viewModel.pause()
+                }
+                NSLog("[MiniRetro] 菜单打开 pauseOnOpenMenu=%d wasRunning=%d paused=%d",
+                      settings.pauseOnOpenMenu ? 1 : 0,
+                      wasRunningBeforeMenu ? 1 : 0,
+                      viewModel.isPaused ? 1 : 0)
+            } else if wasRunningBeforeMenu {
+                viewModel.resume()
+                wasRunningBeforeMenu = false
+                NSLog("[MiniRetro] 菜单关闭 恢复运行 paused=%d", viewModel.isPaused ? 1 : 0)
+            }
         }
         .toolbar(.hidden)
         .onChange(of: layout) { newValue in

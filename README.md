@@ -1,6 +1,6 @@
 # MiniRetro — 小霸王复古模拟器（iOS/iPadOS）
 
-FC/NES、GB/GBC、GBA 三格式原生模拟器。SwiftUI + Metal + libretro 内核（mGBA / SameBoy / fceumm）。
+FC/NES、GB/GBC、GBA 与街机（CPS1/CPS2/Neo Geo/PGM）原生模拟器。SwiftUI + Metal + libretro 内核（fceumm / SameBoy / mGBA / FBNeo）。
 侧载自签名安装，不上 App Store。**不含任何 ROM**——游戏数据由你自行导入。
 
 当前版本 **1.4**（build 5）　·　改动流程与发版清单见 [`docs/maintenance.md`](docs/maintenance.md)
@@ -78,7 +78,8 @@ brew install xcodegen cmake rgbds
 
 ## 使用
 
-1. 打开 App → 右上角 `+` → 从「文件」App 选择 `.nes/.fds/.gb/.gbc/.gba`（支持 `.zip` 批量，自动解压分类）
+1. 打开 App → 右上角 `+` → 从「文件」App 选择 `.nes/.fds/.gb/.gbc/.gba`（**含主机 ROM 的 `.zip` 会自动解压分类**）
+1b. 街机：导入整套 romset `.zip/.7z`（西游释厄传/三国战纪/拳皇等，**不要解压**）；BIOS `neogeo.zip`/`pgm.zip` 用同一个 `+` 导入，会自动装到 `System/`
 2. 点击游戏卡片进入，横屏游玩
 3. 左上角菜单：存档（1 自动槽 + 3 手动槽，带封面）/ 金手指 / 快进 / 滤镜 / 布局编辑 / 手柄键位
 

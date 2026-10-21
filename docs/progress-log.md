@@ -52,3 +52,22 @@
 **v1.6：布局 v5 修复「按键挤到一起」（2026-10-21，用户反馈）** — v1.5 把 dpadPitch 从「误用的半距」改成全距后，十字键四键几乎相切（间隙仅 6.6pt@440），连发键与 A/B 也只剩 7.3pt，用户反馈「全部挤到一起」。
 布局 v5：dpadPitch 0.140→0.260（键间留空 ≈59pt，恢复散开十字观感）、turboPitchY 0.132→0.151（留空 ≈16pt）；方向键右移与 A/B 等大/对称保持不变（两组水平宽度都 ≈0.385×短边，镜像对称）。
 模拟器截图验证（docs/screenshots/11-layout-v5.png）。顺带根治 Xcode 27 构建假错误：根因是宏服务需嵌套 sandbox-exec，受沙箱终端里必然失败，build.sh 现内置 `OTHER_SWIFT_FLAGS="-disable-sandbox"`。版本 1.6（build 7）。
+
+**v1.7：六项功能与缺陷修复（2026-10-21，用户需求）**
+
+1. **「每次重启多出一个文件已损坏条目」根治** — 根因有两层：① 旧索引里 `relativePath` 带 `ROMs/` 前缀
+   （早期版本写法），实际文件在 `fc/x.nes`，于是校验必然失败被标 corrupted；② `scanExisting` 只打标记
+   从不清理，幽灵条目永久残留；③ `remove()` 只删索引不删文件，删掉后下次扫描又回来。
+   修复：`LibraryIndex.normalize()` 归一化路径 + 合并重复；`scanExisting` 直接删除文件不存在的条目；
+   `remove()` 同时删文件/存档/金手指；导入按「文件名+字节数+系统」去重，不再生成 `x-1.nes`。
+2. **快进 16×** + **进菜单/设置自动暂停**（设置项 `pauseOnOpenMenu`，关闭菜单恢复到打开前状态）。
+3. **金手指社区查找** — 预生成 `App/Resources/CheatIndex.json`（libretro-database 的 FC/GB/GBC/GBA 共 5231 条
+   游戏条目，227KB），搜索离线；命中后从 raw.githubusercontent.com 抓 `.cht` 解析。
+   新增 `CheatType.rawRAM`（社区库主流格式 `00AE:41`，与 Game Genie 区分）。
+4. **手柄方向输入可选**：十字键 / 左摇杆 / 两者（死区 45%），映射界面不变。
+5. **街机支持（FBNeo）** — 见 ADR-012。新增 `SystemType.arcade`、zip 双语义、BIOS 自动安装到 `System/`、
+   街机布局（十字键 + A/B/C/D 2×2 + SELECT/START）。
+6. **自测** — 新增 `Tools/run_romlib_test.sh`（28 项断言，含真实 ROM 与脏索引注入），
+   模拟器实测：脏索引 4 条 → 重启后 2 条且无损坏标记；菜单打开 `paused=1`。
+
+版本 1.7（build 8），ipa 15MB（FBNeo 49MB/切片）。

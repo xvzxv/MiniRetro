@@ -16,11 +16,13 @@ struct SettingsView: View {
                         Text("4×").tag(4)
                         Text("6×").tag(6)
                         Text("8×").tag(8)
+                        Text("16×").tag(16)
                     }
                     Toggle("进后台自动暂停", isOn: $settings.autoPauseOnBackground)
                     Toggle("进后台自动即时存档", isOn: $settings.autoSaveOnBackground)
                     Toggle("打开游戏时载入自动存档", isOn: $settings.autoLoadOnStart)
-                    Text("开启后每次进入游戏会接着上次的进度；关闭则从头开始。手动槽位共 3 个，另有 1 个自动槽。")
+                    Toggle("打开菜单/设置时自动暂停", isOn: $settings.pauseOnOpenMenu)
+                    Text("开启后每次进入游戏会接着上次的进度；关闭则从头开始。手动槽位共 3 个，另有 1 个自动槽。\n「打开菜单/设置时自动暂停」关闭菜单后会恢复到打开前的运行状态。")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -103,6 +105,14 @@ struct SettingsView: View {
                     NavigationLink("手柄键位映射") {
                         KeyRemapView()
                     }
+                    Picker("方向输入", selection: $settings.directionInput) {
+                        ForEach(DirectionInputMode.allCases) { mode in
+                            Text(mode.displayName).tag(mode)
+                        }
+                    }
+                    Text("选择用手柄的十字键还是左摇杆控制方向（摇杆需推动超过约 45% 才触发，避免误触）。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     DisclosureGroup("如何连接 Xbox / 蓝牙手柄") {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("1. Xbox 手柄：按住顶部配对键（⌂ 旁的圆形键）约 3 秒，指示灯快闪")
@@ -115,6 +125,25 @@ struct SettingsView: View {
                     }
                 }
 
+                Section("街机（FBNeo）") {
+                    ForEach(ArcadeSupport.biosRequirements, id: \.fileName) { item in
+                        HStack {
+                            Image(systemName: item.installed ? "checkmark.circle.fill" : "circle.dashed")
+                                .foregroundStyle(item.installed ? .green : .secondary)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(item.fileName)
+                                Text(item.title)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                        }
+                    }
+                    Text("把 neogeo.zip / pgm.zip 用游戏库右上角 + 导入，会自动装到 System 目录；也可在「文件」App 里放进本 App 的 System 文件夹。\n街机游戏请导入整套 romset（.zip/.7z），不要解压。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
                 Section("音频") {
                     Slider(value: $settings.volume, in: 0...1) {
                         Text("音量")
@@ -122,8 +151,8 @@ struct SettingsView: View {
                 }
 
                 Section("关于") {
-                    LabeledContent("版本", value: "1.0 (1)")
-                    LabeledContent("内核", value: "mGBA 0.10.5 / SameBoy 1.0.4 / fceumm")
+                    LabeledContent("版本", value: Self.versionString)
+                    LabeledContent("内核", value: "fceumm / SameBoy 1.0.4 / mGBA 0.10.5 / FBNeo")
                     NavigationLink("开源许可") {
                         LicensesView()
                     }
@@ -134,6 +163,14 @@ struct SettingsView: View {
             }
             .navigationTitle("设置")
         }
+    }
+
+    /// 版本号从 Bundle 读取（避免写死后与 project.yml 漂移）
+    private static var versionString: String {
+        let info = Bundle.main.infoDictionary
+        let short = info?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let build = info?["CFBundleVersion"] as? String ?? "1"
+        return "\(short) (\(build))"
     }
 }
 
@@ -150,6 +187,9 @@ struct LicensesView: View {
             }
             Section("fceumm (libretro-fceumm)") {
                 Text("GPL-2.0\nhttps://github.com/libretro/libretro-fceumm")
+            }
+            Section("FBNeo (FinalBurn Neo)") {
+                Text("FBNeo 许可（非商业使用）\n© FinalBurn Neo team\nhttps://github.com/libretro/fbneo\n街机核心：CPS1/CPS2/Neo Geo/PGM（西游释厄传、三国战纪、拳皇等）")
             }
             Section("libretro") {
                 Text("MIT\nhttps://github.com/libretro/libretro.h")

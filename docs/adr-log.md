@@ -269,3 +269,38 @@ MTKView 用一个铺满全屏的 quad 绘制，纹理 256×240（1.07:1）在 iP
 - mGBA 上游无 libretro Makefile，必须 cmake → 提供 `Tools/fetch_cmake.sh`（cmake.org 官方 tarball，已验证 3.31.6 可用）
 - SameBoy boot ROM 需 rgbds → 提供 `Tools/fetch_rgbds.sh`（源码构建，自动处理系统 bison 过旧的问题；`rgbgfx` 需 libpng，缺失时跳过并在构建时提示）
 - `build_cores.sh` 自动检测 PATH → `Tools/vendor/` → 提示安装，三级回退
+
+---
+
+## ADR-012 接入 FBNeo 支持街机（CPS1/CPS2/Neo Geo/PGM）（2026-10-21）
+
+**背景**：用户要求支持西游释厄传（IGS PGM）、三国战纪（PGM）、拳皇（Neo Geo MVS）。
+这些都不是家用主机平台，现有三个 core（fceumm/SameBoy/mGBA）完全不覆盖。
+
+**调研结论**：
+- 职业/家用机 core 无法运行街机 romset，必须接街机 core。libretro 生态里唯一同时覆盖
+  CPS1/CPS2/Neo Geo/PGM 的是 **FBNeo**（FinalBurn Neo）。
+- 上游 `Makefile.libretro` 自带 `platform=ios-arm64` 分支（`else ifneq (,$(findstring ios,$(platform)))`），
+  交叉编译可用；CC/CXX 需在命令行覆盖以换成 simulator target。
+- 仓库体积 204MB，不适合做 git submodule（本项目其余 core 都是 submodule）。
+  → 首次构建时浅克隆到 `$TMPDIR/miniretro-cores-build/fbneo-src`，锁定 commit
+  `2b0c1c0679df115cada7df9199ea2762222e58fd`。
+
+**决策**：
+1. 新增 `SystemType.arcade`（rawValue `arcade`，core `fbneo`）。
+2. **zip 双语义**：压缩包（内含 nes/gb/…）解压入库；解不出主机 ROM 时按街机 romset 整包入库
+   （`ROMs/arcade/<romset>.zip`），`.7z` 一律按 romset 处理。
+3. BIOS 走 `Documents/System`（`GET_SYSTEM_DIRECTORY`）。用户用同一个 + 按钮导入
+   `neogeo.zip` / `pgm.zip`，App 按文件名识别后直接装到 System，不进游戏库。
+4. 街机布局单独一套：十字键 + A/B/C/D 2×2 + SELECT（投币）/START。
+   Neo Geo 的 C/D 复用 libretro 的 Y/X 位，靠 `ControlButton.label` 覆盖显示文字。
+
+**代价**：
+- 二进制 49MB/切片（strip 后），ipa 从 1.6MB → 15MB。
+- 需要用户自备 romset 与 BIOS；仓库不含任何 ROM/BIOS。
+
+**验证**：
+- device/simulator 两个切片分别编译通过，`vtool -showBuild` 平台分别为 `IOS` / `IOSSIMULATOR`，
+  minos 17.0。
+- `./Tools/run_romlib_test.sh` 覆盖：真实 ROM 识别、重复导入去重、旧索引幽灵条目自愈、
+  街机 zip 入库为 `arcade/kov.zip`（15 项全通过）。

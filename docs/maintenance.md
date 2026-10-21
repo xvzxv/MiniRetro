@@ -148,3 +148,15 @@ swiftc -typecheck -sdk "$SDK" -swift-version 5 -target arm64-apple-macosx14.0 \
 - ❌ 改 core 版本却不更新 `.gitmodules` 头部与 `docs/adr-log.md`
 - ❌ 改布局坐标体系却不递增 `ControlLayouts.currentVersion`
 - ❌ 在 `App/` 里引入任何第三方 SPM 包（SwiftPM 在受限环境不可用，本项目刻意零依赖）
+
+## 街机核心（FBNeo）维护要点（v1.7 起）
+
+| 项 | 说明 |
+|---|---|
+| 源码 | 不做 submodule（204MB）；首次 `./Tools/build_cores.sh fbneo` 会浅克隆到 `$TMPDIR/miniretro-cores-build/fbneo-src` 并切到锁定 commit（见 ADR-012） |
+| 编译 | `make -f Makefile platform=ios-arm64 CC/CXX=... -j`；simulator 需把 CC/CXX 换成 `-target arm64-apple-ios17.0-simulator` |
+| 产物 | `fbneo_libretro_ios.dylib`（约 55MB，strip 后 49MB），`install_name` 必须改成 `@rpath/fbneo_core.framework/fbneo_core`，否则 App 启动即 dyld 崩溃 |
+| 打包 | `./Tools/make_xcframework.sh fbneo <device.dylib> <sim.dylib>`（脚本已内置 install_name 修正） |
+| BIOS | 用户提供：`Documents/System/neogeo.zip`（Neo Geo）、`pgm.zip`（IGS PGM）；导入时按文件名自动识别安装 |
+| romset | 整套 `.zip/.7z` 原样入库（`ROMs/arcade/`），**不得解压**；缺文件时 core 报 romset 不完整，App 会提示补 BIOS |
+| 已知限制 | 游戏库无法校验 romset 完整性；不支持 CHD（`CHD_LIBRETRO=0`）与街机金手指社区检索 |

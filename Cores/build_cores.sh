@@ -326,13 +326,64 @@ build_fceumm() {
     package_xcframework "fceumm" "$device_lib" "$sim_lib"
 }
 
+# MARK: - FBNeo（街机：CPS1/CPS2/Neo Geo/PGM）
+#
+# 用途：西游释厄传、三国战纪、拳皇等街机游戏（romset 为整套 zip/7z）。
+# 源码不在 submodule 里（仓库体积 200MB+），首次构建时浅克隆到构建目录；
+# 版本锁定 FBNEO_REV（与 ADR-012 一致），变更需同步 docs/adr-log.md。
+FBNEO_REV="2b0c1c0679df115cada7df9199ea2762222e58fd"
+FBNEO_REPO="https://github.com/libretro/fbneo.git"
+
+build_fbneo() {
+    log "构建 FBNeo (${FBNEO_REV:0:8}) ..."
+    local src="$BUILD_DIR/fbneo-src"
+    if [ ! -d "$src/src/burner/libretro" ]; then
+        log "浅克隆 FBNeo 源码（约 200MB，仅首次）..."
+        rm -rf "$src"
+        git clone --filter=blob:none "$FBNEO_REPO" "$src" > "$BUILD_DIR/fbneo-clone.log" 2>&1 \
+            || die "FBNeo 克隆失败（见 $BUILD_DIR/fbneo-clone.log）"
+        git -C "$src" checkout "$FBNEO_REV" >> "$BUILD_DIR/fbneo-clone.log" 2>&1 \
+            || die "FBNeo 切到 $FBNEO_REV 失败"
+    fi
+
+    for variant in device simulator; do
+        local out="$BUILD_DIR/fbneo-$variant"
+        local sdk cc
+        if [ "$variant" = "device" ]; then
+            sdk="$IPHONEOS_SDK"
+            cc="clang -arch arm64 -isysroot $sdk -miphoneos-version-min=$DEPLOYMENT_TARGET"
+        else
+            sdk="$IPHONESIMULATOR_SDK"
+            cc="clang -arch arm64 -target arm64-apple-ios$DEPLOYMENT_TARGET-simulator -isysroot $sdk"
+        fi
+        # FBNeo 的 Makefile 用 ios-arm64 分支，CC/CXX 命令行变量优先级高于 Makefile 内赋值
+        make -C "$src/src/burner/libretro" -f Makefile platform=ios-arm64 clean \
+            > "$out-clean.log" 2>&1 || true
+        make -C "$src/src/burner/libretro" -f Makefile platform=ios-arm64 \
+            CC="$cc" CXX="${cc/clang/clang++}" IOSSDK="$sdk" -j"$JOBS" \
+            > "$out-make.log" 2>&1 || {
+                tail -40 "$out-make.log"; die "FBNeo 编译失败（${variant}）"
+            }
+        mkdir -p "$out"
+        cp "$src/src/burner/libretro/fbneo_libretro_ios.dylib" "$out/fbneo_libretro_ios.dylib"
+        # 去符号：55MB → 约 30MB，sideload 传输更省时（不影响运行）
+        strip -x "$out/fbneo_libretro_ios.dylib" 2>/dev/null || true
+    done
+
+    local device_lib="$BUILD_DIR/fbneo-device/fbneo_libretro_ios.dylib"
+    local sim_lib="$BUILD_DIR/fbneo-simulator/fbneo_libretro_ios.dylib"
+    [ -f "$device_lib" ] || die "未找到 FBNeo device 产物"
+    [ -f "$sim_lib" ] || die "未找到 FBNeo simulator 产物"
+    package_xcframework "fbneo" "$device_lib" "$sim_lib"
+}
+
 # MARK: - 入口
 
 check_dependencies
 
 TARGETS=("$@")
 if [ ${#TARGETS[@]} -eq 0 ]; then
-    TARGETS=(mgba sameboy fceumm)
+    TARGETS=(mgba sameboy fceumm fbneo)
 fi
 
 for target in "${TARGETS[@]}"; do
@@ -340,7 +391,8 @@ for target in "${TARGETS[@]}"; do
         mgba) build_mgba ;;
         sameboy) build_sameboy ;;
         fceumm) build_fceumm ;;
-        *) die "未知 core: ${target}（可选 mgba|sameboy|fceumm）" ;;
+        fbneo) build_fbneo ;;
+        *) die "未知 core: ${target}（可选 mgba|sameboy|fceumm|fbneo）" ;;
     esac
 done
 

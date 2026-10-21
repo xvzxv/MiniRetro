@@ -6,6 +6,8 @@ struct ImportResult {
     var imported: [ROMEntry] = []
     var failed: [(name: String, reason: String)] = []
     var skippedDuplicates = 0
+    /// 识别为 BIOS 并安装到 System/ 的文件名（街机 core 依赖）
+    var biosInstalled: [String] = []
 }
 
 enum ROMImporter {
@@ -13,6 +15,16 @@ enum ROMImporter {
     static var romsDirectory: URL {
         FileManager.default.documentsDirectory.appendingPathComponent("ROMs", isDirectory: true)
     }
+
+    /// 街机 BIOS 目录（libretro GET_SYSTEM_DIRECTORY 指向这里）
+    static var systemDirectory: URL {
+        FileManager.default.documentsDirectory.appendingPathComponent("System", isDirectory: true)
+    }
+
+    /// 常见街机 BIOS 包名（zip）：导入时按名字识别，直接装进 System/ 而不是游戏库
+    static let biosArchiveNames: Set<String> = [
+        "neogeo", "pgm", "pgm3", "skns", "cps1", "cps2", "cps3", "nmk16", "decocass",
+    ]
 
     // MARK: - 识别（魔数 + 扩展名双保险）
 
@@ -53,7 +65,26 @@ enum ROMImporter {
         }
 
         if fileName.lowercased().hasSuffix(".zip") {
+            // BIOS 包（neogeo.zip / pgm.zip）不是游戏，装进 System/ 供 core 读取
+            let stem = ((fileName as NSString).lastPathComponent as NSString)
+                .deletingPathExtension.lowercased()
+            if biosArchiveNames.contains(stem) {
+                let dir = systemDirectory
+                FileManager.default.ensureDirectory(dir)
+                let dest = dir.appendingPathComponent(fileName)
+                do {
+                    try data.write(to: dest, options: .atomic)
+                    result.biosInstalled.append(fileName)
+                } catch {
+                    result.failed.append((fileName, "BIOS 写入失败：\(error.localizedDescription)"))
+                }
+                return result
+            }
             return importZIP(from: sourceURL, into: &index)
+        }
+        // .7z 只能是街机 romset（主机 ROM 没有用 7z 封装的），原样交给 FBNeo
+        if fileName.lowercased().hasSuffix(".7z") {
+            return importArcadeArchive(from: sourceURL, into: &index)
         }
 
         guard let identified = identify(data: data, fileName: fileName) else {
@@ -62,7 +93,20 @@ enum ROMImporter {
             var entry = store(data: data, fileName: fileName, system: .fc, byMagic: false)
             entry.isCorrupted = true
             index.upsert(entry)
-            result.failed.append((fileName, "扩展名与文件头均无法识别（支持 nes/fds/unf/unif/gb/gbc/gba）"))
+            result.failed.append((fileName, "扩展名与文件头均无法识别（支持 nes/fds/unf/unif/gb/gbc/gba/zip）"))
+            return result
+        }
+
+        // 去重：同一款 ROM（文件名 + 字节数 + 系统一致）已在库中就不再落盘第二份，
+        // 否则每次重装/重新导入都会在 ROMs 里留下 x-1.nes、x-2.nes 的副本。
+        if let existing = index.roms.first(where: {
+            $0.system == identified.system
+                && $0.fileName == fileName
+                && $0.fileSize == Int64(data.count)
+        }) {
+            if !result.imported.contains(where: { $0.id == existing.id }) {
+                result.skippedDuplicates += 1
+            }
             return result
         }
 
@@ -79,22 +123,45 @@ enum ROMImporter {
     // MARK: - zip 导入（可能内含多个 ROM）
 
     /// 用内置 ZipArchive 解压（无第三方依赖，见 App/Library/ZipArchive.swift）
+    ///
+    /// 两种 zip 语义必须区分：
+    ///  1. 「压缩包」——内含 nes/gb/gbc/gba 文件，解压后逐个入库（原有行为）
+    ///  2. 「街机 romset」——zip 本身就是一整套街机文件（三国战纪/拳皇的 .zip），
+    ///     必须原样保存交给 FBNeo，不能解压（core 需要按 romset 名称打开压缩包）
     static func importZIP(from zipURL: URL, into index: inout LibraryIndex) -> ImportResult {
         var result = ImportResult()
         do {
             let entries = try ZipArchive.extract(url: zipURL)
+            var consoleEntries: [(path: String, data: Data, identified: (system: SystemType, coreName: String, byMagic: Bool))] = []
+            var hasArcadePayload = false
+
             for entry in entries {
                 let fileName = (entry.path as NSString).lastPathComponent
                 // 跳过隐藏文件与 macOS 元数据
                 guard !fileName.hasPrefix("."), !entry.path.contains("__MACOSX") else { continue }
-                guard let identified = identify(data: entry.data, fileName: fileName) else {
-                    continue // 压缩包内的非 ROM 文件静默跳过
+                if let identified = identify(data: entry.data, fileName: fileName) {
+                    consoleEntries.append((entry.path, entry.data, identified))
+                } else if Self.arcadeFileExtension(fileName) != nil {
+                    hasArcadePayload = true
                 }
+            }
+
+            if consoleEntries.isEmpty {
+                // 没有主机 ROM：按街机 romset 处理（同为 zip，但整套交给 FBNeo）
+                if hasArcadePayload || entries.contains(where: { !$0.path.hasSuffix("/") }) {
+                    return importArcadeArchive(from: zipURL, into: &index)
+                }
+                result.failed.append((zipURL.lastPathComponent, "压缩包内没有可识别的 ROM"))
+                return result
+            }
+
+            for item in consoleEntries {
+                let fileName = (item.path as NSString).lastPathComponent
                 let stored = store(
-                    data: entry.data,
+                    data: item.data,
                     fileName: fileName,
-                    system: identified.system,
-                    byMagic: identified.byMagic
+                    system: item.identified.system,
+                    byMagic: item.identified.byMagic
                 )
                 if index.roms.contains(where: { $0.relativePath == stored.relativePath }) {
                     result.skippedDuplicates += 1
@@ -104,8 +171,40 @@ enum ROMImporter {
                 result.imported.append(stored)
             }
         } catch {
+            // 不是有效 zip（例如损坏或用了 ZIP64）→ 也按街机 romset 再试一次
+            let arcade = importArcadeArchive(from: zipURL, into: &index)
+            if !arcade.imported.isEmpty { return arcade }
             result.failed.append((zipURL.lastPathComponent, error.localizedDescription))
         }
+        return result
+    }
+
+    /// 街机 romset 内部常见文件后缀（用于和普通压缩包区分）
+    private static func arcadeFileExtension(_ name: String) -> String? {
+        let arcadeLike: Set<String> = [
+            "bin", "rom", "pcm", "gfx", "snd", "nv", "data", "cslot", "cpu",
+            "key", "m1", "m2", "v1", "v2", "c1", "c2", "s1", "sprites",
+        ]
+        let ext = (name as NSString).pathExtension.lowercased()
+        return arcadeLike.contains(ext) ? ext : nil
+    }
+
+    /// 把整个压缩包作为一套街机 romset 保存（.zip / .7z 原样保留）
+    @discardableResult
+    static func importArcadeArchive(from sourceURL: URL, into index: inout LibraryIndex) -> ImportResult {
+        var result = ImportResult()
+        let fileName = sourceURL.lastPathComponent
+        guard let data = FileManager.default.contents(atPath: sourceURL.path) else {
+            result.failed.append((fileName, "无法读取文件"))
+            return result
+        }
+        let dest = store(data: data, fileName: fileName, system: .arcade, byMagic: false)
+        if index.roms.contains(where: { $0.relativePath == dest.relativePath }) {
+            result.skippedDuplicates += 1
+            return result
+        }
+        index.upsert(dest)
+        result.imported.append(dest)
         return result
     }
 
@@ -144,11 +243,16 @@ enum ROMImporter {
     ///
     /// 历史实现按「子目录名 == SystemType.rawValue」过滤，导致用户手工放入
     /// `ROMs/nes/`、`ROMs/中文目录/` 的文件完全扫不到（与 SystemType 映射缺陷同源）。
+    ///
+    /// 同时做两件「自愈」的事（修复「每次重启多出一个文件已损坏条目」）：
+    ///  1. 索引里指向不存在文件的条目**直接删除**（旧实现只打 isCorrupted 标记，幽灵条目永久残留）
+    ///  2. 指向同一文件的重复条目合并（老版本写出的 `ROMs/xxx` 前缀路径会与扫描结果撞车）
     static func scanExisting(into index: inout LibraryIndex) -> ImportResult {
         var result = ImportResult()
         let fm = FileManager.default
         guard fm.fileExists(atPath: romsDirectory.path) else { return result }
 
+        index.normalize()
         let knownPaths = Set(index.roms.map(\.relativePath))
         let keys: Set<URLResourceKey> = [.isRegularFileKey]
         guard let enumerator = fm.enumerator(
@@ -168,8 +272,23 @@ enum ROMImporter {
                 : fileName
             if knownPaths.contains(relative) { continue }
 
-            guard let data = fm.contents(atPath: fileURL.path),
-                  let identified = identify(data: data, fileName: fileName) else { continue }
+            guard let data = fm.contents(atPath: fileURL.path) else { continue }
+
+            // 街机 romset：整包入库，不解压（.7z 只能这样处理）
+            if fileName.lowercased().hasSuffix(".7z") {
+                let entry = ROMEntry(
+                    fileName: fileName,
+                    relativePath: relative,
+                    system: .arcade,
+                    fileSize: Int64(data.count),
+                    detectedByMagic: false
+                )
+                index.upsert(entry)
+                result.imported.append(entry)
+                continue
+            }
+
+            guard let identified = identify(data: data, fileName: fileName) else { continue }
 
             let entry = ROMEntry(
                 fileName: fileName,
@@ -182,10 +301,18 @@ enum ROMImporter {
             result.imported.append(entry)
         }
 
-        // 标记文件缺失/不可读
-        for (idx, entry) in index.roms.enumerated() {
+        // 自愈：清掉文件已不存在的条目（改名/删除/旧版本遗留的失效路径），
+        // 保留真正损坏但仍在磁盘上的文件（那些条目文件存在，只是内容无法识别）。
+        let before = index.roms.count
+        index.roms.removeAll { entry in
             let path = romsDirectory.appendingPathComponent(entry.relativePath).path
-            index.roms[idx].isCorrupted = !fm.fileExists(atPath: path)
+            return !fm.fileExists(atPath: path)
+        }
+        for idx in index.roms.indices {
+            index.roms[idx].isCorrupted = false
+        }
+        if index.roms.count != before {
+            MRLog.info("已清理 \(before - index.roms.count) 条失效索引（文件不存在）")
         }
         return result
     }

@@ -9,13 +9,15 @@ struct CheatEditorView: View {
     @State private var newCode = ""
     @State private var newType: CheatEntry.CheatType = .gameShark
     @State private var message: String?
+    @State private var showCommunity = false
 
     /// 当前系统支持的作弊码类型
     private var supportedTypes: [CheatEntry.CheatType] {
         switch viewModel.rom.system {
-        case .gba: return [.gameShark, .actionReplay, .codeBreaker]
-        case .fc, .fds: return [.gameGenie]
-        case .gb, .gbc: return [.gameShark, .gameGenie]
+        case .gba: return [.rawRAM, .gameShark, .actionReplay, .codeBreaker]
+        case .fc, .fds: return [.gameGenie, .rawRAM]
+        case .gb, .gbc: return [.gameShark, .gameGenie, .rawRAM]
+        case .arcade: return [.gameShark, .rawRAM]
         }
     }
 
@@ -47,6 +49,17 @@ struct CheatEditorView: View {
                     }
                 } header: {
                     Text("已启用的金手指（\(viewModel.cheats.cheats.filter(\.isEnabled).count)）")
+                }
+
+                Section {
+                    Button {
+                        showCommunity = true
+                    } label: {
+                        Label("从社区金手指库查找", systemImage: "magnifyingglass.circle")
+                    }
+                    Text("按游戏名在 libretro-database 社区库中搜索，勾选后一键导入并立即生效。")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
 
                 Section("添加金手指") {
@@ -86,6 +99,9 @@ struct CheatEditorView: View {
                 Button("好", role: .cancel) {}
             } message: {
                 Text(message ?? "")
+            }
+            .sheet(isPresented: $showCommunity) {
+                CommunityCheatView(viewModel: viewModel)
             }
         }
     }

@@ -22,7 +22,7 @@ targets:
         excludes:
           - "**/*.h"
     dependencies:
-      # 三个 libretro core（Cores/artifacts 下由 build_cores.sh 产出 xcframework）
+      # 四个 libretro core（Cores/artifacts 下由 build_cores.sh 产出 xcframework）
       # 注意：CoreBridge 是编译进主 target 的源码，不是 framework 依赖
       - framework: Cores/artifacts/mgba-core.xcframework
         embed: true
@@ -31,6 +31,10 @@ targets:
         embed: true
         codeSignOnCopy: false
       - framework: Cores/artifacts/fceumm-core.xcframework
+        embed: true
+        codeSignOnCopy: false
+      # FBNeo：街机（CPS1/CPS2/Neo Geo/PGM）——西游释厄传、三国战纪、拳皇
+      - framework: Cores/artifacts/fbneo-core.xcframework
         embed: true
         codeSignOnCopy: false
     settings:
@@ -50,8 +54,8 @@ targets:
         CLANG_CXX_LANGUAGE_STANDARD: c++17
         SWIFT_OBJC_INTERFACE_HEADER_NAME: MiniRetro-Swift.h
         GENERATE_INFOPLIST_FILE: NO
-        MARKETING_VERSION: "1.6"
-        CURRENT_PROJECT_VERSION: "7"
+        MARKETING_VERSION: "1.7"
+        CURRENT_PROJECT_VERSION: "8"
         TARGETED_DEVICE_FAMILY: "1,2"
         SWIFT_STRICT_CONCURRENCY: minimal
         ENABLE_USER_SCRIPT_SANDBOXING: NO

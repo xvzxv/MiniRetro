@@ -46,6 +46,11 @@ else
     for core in mgba sameboy fceumm; do
         [ -d "Cores/artifacts/${core}-core.xcframework" ] || die "缺少 $core xcframework，请先不带 --skip-cores 构建"
     done
+    # FBNeo 产物 99MB 不入库：缺失时自动补建（仅首次，约 40 分钟）
+    if [ ! -d "Cores/artifacts/fbneo-core.xcframework" ]; then
+        log "缺少 FBNeo xcframework，自动补建（首次约 40 分钟）..."
+        "$ROOT/Cores/build_cores.sh" fbneo || die "FBNeo 补建失败"
+    fi
 fi
 
 # 3. 生成 Xcode 工程

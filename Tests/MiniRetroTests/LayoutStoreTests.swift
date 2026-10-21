@@ -36,6 +36,23 @@ final class LayoutStoreTests: XCTestCase {
         XCTAssertGreaterThan(fc.button(.select)?.aspect ?? 1, 1.5, "SELECT 应为椭圆")
     }
 
+    func testArcadeLayoutHasFourActionButtons() {
+        let arcade = ControlLayouts.default(system: .arcade, skin: .classic)
+        // 方向 4 + SELECT/START 2 + A/B/C/D 4 = 10
+        XCTAssertEqual(arcade.buttons.count, 10)
+        // 四键齐全：A/B/C/D 复用 libretro 的 A/B/Y/X 位，靠 label 显示
+        let labels = Set(arcade.buttons.compactMap { $0.label })
+        XCTAssertEqual(labels, ["A", "B", "C", "D"])
+        // 街机键位必须是 2×2：A/B 在下，C/D 在上
+        let a = arcade.button(.a)!
+        let c = arcade.button(.y)!
+        XCTAssertEqual(a.relativeY, arcade.button(.b)!.relativeY, accuracy: 0.001)
+        XCTAssertEqual(c.relativeY, arcade.button(.x)!.relativeY, accuracy: 0.001)
+        XCTAssertLessThan(c.relativeY, a.relativeY, "C/D 应在 A/B 上方")
+        // 方向上 A 在左、B 在右
+        XCTAssertLessThan(a.relativeX, arcade.button(.b)!.relativeX)
+    }
+
     func testLayoutRoundTrip() throws {
         var layout = ControlLayouts.default(system: .gba, skin: .classic)
         if let idx = layout.buttons.firstIndex(where: { $0.button == .a }) {

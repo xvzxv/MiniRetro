@@ -42,6 +42,26 @@ enum SkinType: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+/// 蓝牙手柄控制方向的输入源（映射界面不变，只切换物理输入来源）
+enum DirectionInputMode: String, Codable, CaseIterable, Identifiable {
+    case dpad
+    case leftStick
+    case both
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .dpad: return "十字键"
+        case .leftStick: return "左摇杆"
+        case .both: return "十字键 + 摇杆"
+        }
+    }
+
+    var usesDpad: Bool { self == .dpad || self == .both }
+    var usesLeftStick: Bool { self == .leftStick || self == .both }
+}
+
 final class SettingsStore: ObservableObject {
     static let shared = SettingsStore()
 
@@ -94,6 +114,14 @@ final class SettingsStore: ObservableObject {
     @Published var autoLoadOnStart: Bool {
         didSet { defaults.set(autoLoadOnStart, forKey: Keys.autoLoad) }
     }
+    /// 打开游戏内菜单/设置时自动暂停（关闭菜单后恢复到打开前的状态）
+    @Published var pauseOnOpenMenu: Bool {
+        didSet { defaults.set(pauseOnOpenMenu, forKey: Keys.pauseOnMenu) }
+    }
+    /// 蓝牙手柄方向输入：十字键 / 左摇杆 / 两者
+    @Published var directionInput: DirectionInputMode {
+        didSet { defaults.set(directionInput.rawValue, forKey: Keys.directionInput) }
+    }
 
     private enum Keys {
         static let ffMultiplier = "settings.ffMultiplier"
@@ -109,6 +137,8 @@ final class SettingsStore: ObservableObject {
         static let turboRate = "settings.turboRate"
         static let preserveAspect = "settings.preserveAspect"
         static let autoLoad = "settings.autoLoadOnStart"
+        static let pauseOnMenu = "settings.pauseOnOpenMenu"
+        static let directionInput = "settings.directionInput"
     }
 
     private init() {
@@ -133,6 +163,13 @@ final class SettingsStore: ObservableObject {
         turboRate = defaults.object(forKey: Keys.turboRate) as? Int ?? 10
         preserveAspectRatio = defaults.object(forKey: Keys.preserveAspect) as? Bool ?? true
         autoLoadOnStart = defaults.object(forKey: Keys.autoLoad) as? Bool ?? true
+        pauseOnOpenMenu = defaults.object(forKey: Keys.pauseOnMenu) as? Bool ?? true
+        if let raw = defaults.string(forKey: Keys.directionInput),
+           let mode = DirectionInputMode(rawValue: raw) {
+            directionInput = mode
+        } else {
+            directionInput = .dpad
+        }
     }
 
     /// 低端机自动降级：CRT 等重滤镜强制关闭

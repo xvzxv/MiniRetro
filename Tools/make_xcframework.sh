@@ -41,6 +41,9 @@ make_slice() {
     mkdir -p "$fw"
     normalize_minos "$dylib" "$fw/${NAME}_core"
     chmod +x "$fw/${NAME}_core"
+    # install_name 必须是 framework 内部路径：否则 dyld 会按裸名找 dylib 而启动失败
+    # （实测：fbneo 的 Makefile 产物 install_name 为 fbneo_libretro_ios.dylib）
+    install_name_tool -id "@rpath/${NAME}_core.framework/${NAME}_core" "$fw/${NAME}_core" 2>/dev/null || true
     cat > "$fw/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
