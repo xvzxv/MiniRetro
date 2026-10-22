@@ -11,8 +11,11 @@ struct GameView: View {
     @State private var layout: ControlLayout
     /// 打开菜单前游戏是否在运行（用于关闭菜单后精确恢复，避免把用户手动暂停的游戏唤醒）
     @State private var wasRunningBeforeMenu = false
+    /// 手柄已连接但用户临时要求显示按键（断开手柄后自动复位）
+    @State private var forceShowControls = false
 
     @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var controller = GameControllerManager.shared
 
     init(rom: ROMEntry) {
         _viewModel = StateObject(wrappedValue: EmulatorViewModel(rom: rom))
@@ -22,23 +25,33 @@ struct GameView: View {
         ))
     }
 
+    /// 是否隐藏虚拟按键：手柄已连接 + 开关打开 + 用户没有临时要求显示
+    private var controlsHidden: Bool {
+        controller.isConnected
+            && settings.autoHideControlsOnController
+            && !forceShowControls
+    }
+
     var body: some View {
         ZStack {
             GameDisplayView(viewModel: viewModel)
                 .ignoresSafeArea()
 
-            VirtualGamepad(
-                system: viewModel.rom.system,
-                skin: settings.skin,
-                layout: $layout,
-                isEditing: isEditingLayout,
-                globalOpacity: settings.controlOpacity
-            ) { button, pressed in
-                viewModel.setButton(button, pressed: pressed)
-                if pressed { Haptics.tap() }
+            if !controlsHidden {
+                VirtualGamepad(
+                    system: viewModel.rom.system,
+                    skin: settings.skin,
+                    layout: $layout,
+                    isEditing: isEditingLayout,
+                    globalOpacity: settings.controlOpacity
+                ) { button, pressed in
+                    viewModel.setButton(button, pressed: pressed)
+                    if pressed { Haptics.tap() }
+                }
+                .ignoresSafeArea()
+                .allowsHitTesting(true)
+                .transition(.opacity)
             }
-            .ignoresSafeArea()
-            .allowsHitTesting(true)
 
             // HUD
             VStack {
@@ -96,11 +109,18 @@ struct GameView: View {
                             .background(.black.opacity(0.6), in: Capsule())
                     }
 
-                    if GameControllerManager.shared.isConnected {
-                        Image(systemName: "gamecontroller.fill")
-                            .font(.caption)
-                            .padding(6)
-                            .background(.black.opacity(0.5), in: Circle())
+                    if controller.isConnected {
+                        Button {
+                            guard settings.autoHideControlsOnController else { return }
+                            forceShowControls.toggle()
+                            Haptics.tap()
+                        } label: {
+                            Image(systemName: controlsHidden ? "hand.tap" : "gamecontroller.fill")
+                                .font(.caption)
+                                .padding(6)
+                                .background(.black.opacity(0.5), in: Circle())
+                        }
+                        .accessibilityLabel(controlsHidden ? "显示虚拟按键" : "隐藏虚拟按键")
                     }
                 }
                 .foregroundColor(.white)
@@ -124,7 +144,6 @@ struct GameView: View {
             GameControllerManager.shared.bind { button, pressed in
                 viewModel.setButton(button, pressed: pressed)
             }
-
         }
         .task {
             // 自动化/调试入口：-MRShowMenu 打开菜单（模拟器验证存档/金手指 UI）
@@ -159,6 +178,13 @@ struct GameView: View {
             }
         }
         .toolbar(.hidden)
+        .animation(.easeInOut(duration: 0.2), value: controlsHidden)
+        .onChange(of: controller.isConnected) { connected in
+            // 手柄断开后复位「临时显示」，下次连接仍按设置自动隐藏
+            if !connected { forceShowControls = false }
+            NSLog("[MiniRetro] 手柄状态变化 connected=%d controlsHidden=%d",
+                  connected ? 1 : 0, controlsHidden ? 1 : 0)
+        }
         .onChange(of: layout) { newValue in
             LayoutStore.save(newValue)
         }

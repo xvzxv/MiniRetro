@@ -123,6 +123,18 @@ final class GameControllerManager: ObservableObject {
 
     /// 手动刷新连接状态（设置页「刷新」按钮）
     func refreshConnectionState() {
+        let args = ProcessInfo.processInfo.arguments
+        // 自动化/调试入口：模拟器会把宿主机手柄透传进来，这里可强制两种状态做对照验证
+        if args.contains("-MRFakeController") {
+            connectedControllerName = "调试虚拟手柄"
+            isConnected = true
+            return
+        }
+        if args.contains("-MRNoController") {
+            connectedControllerName = nil
+            isConnected = false
+            return
+        }
         if let controller = GCController.controllers().first {
             connectedControllerName = controller.vendorName ?? "蓝牙手柄"
             isConnected = true

@@ -160,3 +160,11 @@ swiftc -typecheck -sdk "$SDK" -swift-version 5 -target arm64-apple-macosx14.0 \
 | BIOS | 用户提供：`Documents/System/neogeo.zip`（Neo Geo）、`pgm.zip`（IGS PGM）；导入时按文件名自动识别安装 |
 | romset | 整套 `.zip/.7z` 原样入库（`ROMs/arcade/`），**不得解压**；缺文件时 core 报 romset 不完整，App 会提示补 BIOS |
 | 已知限制 | 游戏库无法校验 romset 完整性；不支持 CHD（`CHD_LIBRETRO=0`）与街机金手指社区检索 |
+
+## App 图标
+
+图标由 `Tools/gen_app_icon.py` 程序化生成（纯 Python，无外部素材）：
+```bash
+python3 Tools/gen_app_icon.py     # 产出 App/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png
+```
+改配色/形状直接改脚本常量，再重新生成即可；iOS 会自动裁圆角，因此**不要**自己画圆角底板。

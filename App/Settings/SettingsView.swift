@@ -113,6 +113,10 @@ struct SettingsView: View {
                     Text("选择用手柄的十字键还是左摇杆控制方向（摇杆需推动超过约 45% 才触发，避免误触）。")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    Toggle("连接手柄时隐藏虚拟按键", isOn: $settings.autoHideControlsOnController)
+                    Text("检测到蓝牙手柄连接后自动隐藏屏幕按键（游戏内 HUD 右上角图标可临时调回），断开手柄后自动恢复。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     DisclosureGroup("如何连接 Xbox / 蓝牙手柄") {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("1. Xbox 手柄：按住顶部配对键（⌂ 旁的圆形键）约 3 秒，指示灯快闪")

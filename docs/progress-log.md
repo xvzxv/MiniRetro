@@ -71,3 +71,17 @@
    模拟器实测：脏索引 4 条 → 重启后 2 条且无损坏标记；菜单打开 `paused=1`。
 
 版本 1.7（build 8），ipa 15MB（FBNeo 49MB/切片）。
+
+**v1.8：App 图标 + 手柄连接自动隐藏虚拟按键（2026-10-22，用户需求）**
+
+1. **App 图标**：此前 `AppIcon.appiconset` 只有空的 Contents.json，装到桌面是白底占位。
+   新增 `Tools/gen_app_icon.py` 程序化生成 1024×1024 无 alpha 图标（米白底 + 红白机手柄正面：
+   朱红机身 + 米白十字键 + 并排双键），产物 `App/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png`。
+   为什么程序生成而不是找素材：形状可控、可复现、无版权问题，40pt 下仍能认出是手柄。
+2. **连接手柄自动隐藏虚拟按键**：新增设置 `autoHideControlsOnController`（默认开，设置页与游戏内菜单都可切）。
+   检测到手柄连接时 `GameView` 不渲染 `VirtualGamepad`（带淡入淡出）；HUD 右上角图标可临时调回（hand.tap），
+   手柄断开自动复位。虚拟按键层消失后画面完全不被遮挡，适合手柄玩家。
+3. 调试钩子：`-MRFakeController` / `-MRNoController` 强制两种连接状态，便于无手柄环境验证。
+
+**实测**：模拟器（iPhone Duo）`connected=1 → hidden=1`（画面无按键、HUD 出现 hand.tap）、
+`connected=0 → hidden=0`（按键正常显示）；桌面图标渲染正常。版本 1.8（build 9）。

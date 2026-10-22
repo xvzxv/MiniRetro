@@ -122,6 +122,10 @@ final class SettingsStore: ObservableObject {
     @Published var directionInput: DirectionInputMode {
         didSet { defaults.set(directionInput.rawValue, forKey: Keys.directionInput) }
     }
+    /// 连接蓝牙手柄时自动隐藏虚拟按键（断开后自动恢复）
+    @Published var autoHideControlsOnController: Bool {
+        didSet { defaults.set(autoHideControlsOnController, forKey: Keys.autoHideControls) }
+    }
 
     private enum Keys {
         static let ffMultiplier = "settings.ffMultiplier"
@@ -139,6 +143,7 @@ final class SettingsStore: ObservableObject {
         static let autoLoad = "settings.autoLoadOnStart"
         static let pauseOnMenu = "settings.pauseOnOpenMenu"
         static let directionInput = "settings.directionInput"
+        static let autoHideControls = "settings.autoHideControlsOnController"
     }
 
     private init() {
@@ -170,6 +175,7 @@ final class SettingsStore: ObservableObject {
         } else {
             directionInput = .dpad
         }
+        autoHideControlsOnController = defaults.object(forKey: Keys.autoHideControls) as? Bool ?? true
     }
 
     /// 低端机自动降级：CRT 等重滤镜强制关闭

@@ -118,6 +118,10 @@ struct InGameMenuView: View {
                     }
                     Button("虚拟按键布局编辑") { showLayoutEditor = true }
                     Button("手柄键位设置") { showKeyRemap = true }
+                    Toggle("连接手柄时隐藏虚拟按键", isOn: $settings.autoHideControlsOnController)
+                    Text("开启后，检测到蓝牙手柄连接会自动隐藏虚拟按键（HUD 右上角可临时调回）；断开手柄自动恢复。")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
 
                 Section("关于本机") {
