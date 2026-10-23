@@ -84,6 +84,7 @@ final class EmulatorViewModel: ObservableObject {
         retroCore.setSystemDirectory(systemDir.path)
         retroCore.setSaveDirectory(savesDirectory.path)
 
+        RetroCore.clearLogLines()   // 只保留本次加载的诊断信息
         do {
             try retroCore.loadROM(atPath: romURL.path)
         } catch {
@@ -108,6 +109,18 @@ final class EmulatorViewModel: ObservableObject {
               rom.fileName, rom.system.rawValue,
               retroCore.videoBaseSize.width, retroCore.videoBaseSize.height,
               Int(retroCore.audioSampleRate))
+
+        // 街机：FBNeo 缺 BIOS 时 retro_load_game 依然返回成功（画面里会自己画一张
+        // “missing files for THIS VERSION” 错误页），这里只在“一个 BIOS 都没装”时补一句提示，
+        // 免得用户以为 App 坏了。具体缺哪个文件由内核错误页给出，比我们猜得准。
+        if rom.system == .arcade {
+            let installedBIOS = ArcadeSupport.biosRequirements.filter(\.installed)
+            if installedBIOS.isEmpty {
+                statusMessage = "街机游戏通常需要 BIOS：pgm.zip（PGM）或 neogeo.zip（Neo Geo）。"
+                    + "\n当前一个都没装——用游戏库右上角 + 导入，或放进 Documents/System。"
+                NSLog("[MiniRetro] 街机无可用 BIOS，已在界面提示")
+            }
+        }
 
         // 自动载入上次的自动存档（可在设置中关闭）
         if SettingsStore.shared.autoLoadOnStart,

@@ -189,7 +189,13 @@ enum ROMImporter {
         return arcadeLike.contains(ext) ? ext : nil
     }
 
-    /// 把整个压缩包作为一套街机 romset 保存（.zip / .7z 原样保留）
+    /// 把压缩包作为街机游戏导入。
+    ///
+    /// 必须处理两种真实世界形态（否则 FBNeo 一律加载失败）：
+    ///  1. **裸 romset**：zip 内直接是 a0600.rom 这类文件，文件名必须等于内核驱动名（如 kovsh.zip）
+    ///  2. **整合包/壳包**：外层 zip 里套着 `<驱动名>.zip` 甚至还有模拟器 exe、ini、说明文件。
+    ///     这种整个丢给 core 必然失败（驱动名对不上），必须取出内层 romset。
+    /// 顺带把包内的 BIOS（neogeo.zip / pgm.zip…）装进 System/。
     @discardableResult
     static func importArcadeArchive(from sourceURL: URL, into index: inout LibraryIndex) -> ImportResult {
         var result = ImportResult()
@@ -198,6 +204,39 @@ enum ROMImporter {
             result.failed.append((fileName, "无法读取文件"))
             return result
         }
+        return importArcadeData(data, fileName: fileName, into: &index, result: &result)
+    }
+
+    /// 街机包解析核心：拆 BIOS、拆内层 romset，都不成立才原样入库
+    @discardableResult
+    private static func importArcadeData(
+        _ data: Data,
+        fileName: String,
+        into index: inout LibraryIndex,
+        result: inout ImportResult
+    ) -> ImportResult {
+        let package = inspectArcadePackage(data)
+
+        // 1) 包里的 BIOS 先装进 System/
+        for (biosName, biosData) in package.bios {
+            installBIOS(data: biosData, fileName: biosName, result: &result)
+        }
+
+        // 2) 有内层 romset（壳包/整合包）→ 逐个入库，外层丢弃
+        if !package.romsets.isEmpty {
+            for (innerName, innerData) in package.romsets {
+                let dest = store(data: innerData, fileName: innerName, system: .arcade, byMagic: false)
+                if index.roms.contains(where: { $0.relativePath == dest.relativePath }) {
+                    result.skippedDuplicates += 1
+                    continue
+                }
+                index.upsert(dest)
+                result.imported.append(dest)
+            }
+            return result
+        }
+
+        // 3) 裸 romset：原样入库（.7z 或被 ZIP64 挡住的 zip 都走这里）
         let dest = store(data: data, fileName: fileName, system: .arcade, byMagic: false)
         if index.roms.contains(where: { $0.relativePath == dest.relativePath }) {
             result.skippedDuplicates += 1
@@ -206,6 +245,51 @@ enum ROMImporter {
         index.upsert(dest)
         result.imported.append(dest)
         return result
+    }
+
+    /// 解析结果：BIOS 文件 + 内层 romset
+    private struct ArcadePackage {
+        var bios: [(name: String, data: Data)] = []
+        var romsets: [(name: String, data: Data)] = []
+        /// 是否属于「壳包」（有内层压缩包，说明外层不是 romset 本体）
+        var isWrapper: Bool { !romsets.isEmpty }
+    }
+
+    /// 拆包：识别 BIOS 与内层 zip/7z；普通文件（ini/exe/说明）忽略
+    private static func inspectArcadePackage(_ data: Data) -> ArcadePackage {
+        var package = ArcadePackage()
+        guard let entries = try? ZipArchive.extract(data: data) else { return package }
+
+        let archiveExts: Set<String> = ["zip", "7z"]
+        for entry in entries {
+            let name = (entry.path as NSString).lastPathComponent
+            guard !name.hasPrefix("."), !entry.path.contains("__MACOSX") else { continue }
+            let stem = (name as NSString).deletingPathExtension.lowercased()
+            let ext = (name as NSString).pathExtension.lowercased()
+
+            if archiveExts.contains(ext) {
+                if biosArchiveNames.contains(stem) {
+                    package.bios.append((name, entry.data))
+                } else if entry.data.count > 1024 {   // 排除空壳占位
+                    package.romsets.append((name, entry.data))
+                }
+            }
+        }
+        return package
+    }
+
+    /// 写入 System/ 供 core 通过 GET_SYSTEM_DIRECTORY 找到
+    private static func installBIOS(data: Data, fileName: String, result: inout ImportResult) {
+        let dir = systemDirectory
+        FileManager.default.ensureDirectory(dir)
+        do {
+            try data.write(to: dir.appendingPathComponent(fileName), options: .atomic)
+            if !result.biosInstalled.contains(fileName) {
+                result.biosInstalled.append(fileName)
+            }
+        } catch {
+            result.failed.append((fileName, "BIOS 写入失败：\(error.localizedDescription)"))
+        }
     }
 
     // MARK: - 落盘
@@ -313,6 +397,32 @@ enum ROMImporter {
         }
         if index.roms.count != before {
             MRLog.info("已清理 \(before - index.roms.count) 条失效索引（文件不存在）")
+        }
+
+        // 自愈：v1.8 及以前把「壳包」整个当 romset 存了（例如 kovsh_v13.zip 里套着 kovsh.zip），
+        // FBNeo 按文件名认驱动名，必然失败。这里在启动扫描时自动拆包替换。
+        let wrapperCandidates = index.roms.filter {
+            $0.system == .arcade && $0.fileName.lowercased().hasSuffix(".zip")
+        }
+        for entry in wrapperCandidates {
+            let url = romsDirectory.appendingPathComponent(entry.relativePath)
+            guard let data = fm.contents(atPath: url.path) else { continue }
+            let package = inspectArcadePackage(data)
+            guard package.isWrapper else { continue }
+
+            for (biosName, biosData) in package.bios {
+                var scratch = ImportResult()
+                installBIOS(data: biosData, fileName: biosName, result: &scratch)
+            }
+            for (innerName, innerData) in package.romsets {
+                let dest = store(data: innerData, fileName: innerName, system: .arcade, byMagic: false)
+                if !index.roms.contains(where: { $0.relativePath == dest.relativePath }) {
+                    index.upsert(dest)
+                }
+            }
+            try? fm.removeItem(at: url)
+            index.remove(id: entry.id)
+            MRLog.info("已拆分壳包 \(entry.fileName) → \(package.romsets.map(\.name).joined(separator: ", "))")
         }
         return result
     }

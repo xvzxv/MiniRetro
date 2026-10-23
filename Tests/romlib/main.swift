@@ -143,6 +143,52 @@ if let indexData = ProcessInfo.processInfo.environment["CHEAT_INDEX"],
     print("[7] ⏳ 跳过索引检查（未提供 CHEAT_INDEX）")
 }
 
+print("[8] 真实街机整合包（壳包）解析")
+if let pkg = ProcessInfo.processInfo.environment["ARCADE_PACKAGE"], !pkg.isEmpty {
+    var arcadeIndex = LibraryIndex()
+    let result = ROMImporter.importFile(from: URL(fileURLWithPath: pkg), into: &arcadeIndex)
+    let names = result.imported.map(\.fileName)
+    check(result.imported.count == 1, "壳包拆出 1 个 romset（实际 \(result.imported.count)：\(names)）")
+    check(names.first?.lowercased() == "kovsh.zip", "取到内层 romset 而非外层壳包（实际 \(names.first ?? "nil")）")
+    check(!names.contains(where: { $0.lowercased().hasPrefix("kovsh_v13") }),
+          "外层壳包未入库（否则驱动名不匹配必然加载失败）")
+    let storedPath = result.imported.first.map {
+        ROMImporter.romsDirectory.appendingPathComponent($0.relativePath).path
+    }
+    let storedSize = storedPath.flatMap { FileManager.default.contents(atPath: $0)?.count } ?? 0
+    check(storedSize > 15 * 1024 * 1024, "内层 romset 完整（\(storedSize / 1024 / 1024) MB，压缩态）")
+} else {
+    print("  ⏳ 跳过（未提供 ARCADE_PACKAGE）")
+}
+
+print("[9] 手柄方向合并（十字键 + 摇杆同时开启）")
+do {
+    var merger = DirectionInputMerger()
+    // 按住十字键「上」
+    for (button, pressed) in DirectionInputMerger.dpadDirections(up: true, down: false, left: false, right: false) {
+        merger.setDpad(button, pressed)
+    }
+    check(merger.merged(.up), "十字键按住时方向为上")
+
+    // 摇杆每帧回调、停在死区内（全 false）——旧实现就是在这里把方向清掉的
+    for (button, pressed) in DirectionInputMerger.stickDirections(x: 0.1, y: 0.05) {
+        merger.setStick(button, pressed)
+    }
+    check(merger.merged(.up), "摇杆回中后，十字键的「上」仍然保持（v1.8 的 bug 点）")
+
+    // 摇杆推右，与十字键的上同时成立
+    for (button, pressed) in DirectionInputMerger.stickDirections(x: 0.9, y: 0.1) {
+        merger.setStick(button, pressed)
+    }
+    check(merger.merged(.up) && merger.merged(.right), "两个输入源可同时生效")
+
+    // 摇杆回中，上仍保持
+    for (button, pressed) in DirectionInputMerger.stickDirections(x: 0, y: 0) {
+        merger.setStick(button, pressed)
+    }
+    check(merger.merged(.up) && !merger.merged(.right), "摇杆回中只撤销摇杆自己的方向")
+}
+
 print("")
 if failures == 0 {
     print("全部通过 ✅")

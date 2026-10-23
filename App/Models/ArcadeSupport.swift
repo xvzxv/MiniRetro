@@ -30,6 +30,37 @@ enum ArcadeSupport {
         }
     }
 
+    /// 从内核日志判断缺哪些 BIOS。
+    ///
+    /// FBNeo 找不到 BIOS 时不会让 retro_load_game 失败，只在日志里写：
+    ///   `Searching all possible locations for romset pgm`
+    ///   `No romset found at .../pgm`（有则写 `Romset found at .../pgm`）
+    /// 所以按「搜索 → 是否 found」成对解析，命中即在界面提示，避免用户对着黑屏猜。
+    static func missingBIOS(in logLines: [String]) -> [String] {
+        var missing = Set<String>()
+        var pending: String?
+        var found = false
+
+        func settle() {
+            if let name = pending, !found, ROMImporter.biosArchiveNames.contains(name) {
+                missing.insert(name)
+            }
+            pending = nil
+        }
+
+        for line in logLines {
+            if let range = line.range(of: "Searching all possible locations for romset ") {
+                settle()
+                pending = String(line[range.upperBound...]).trimmingCharacters(in: .whitespaces)
+                found = false
+            } else if pending != nil, line.contains("Romset found at ") {
+                found = true
+            }
+        }
+        settle()
+        return missing.sorted()
+    }
+
     /// 街机 romset 常见分类（仅用于提示文案）
     static func platformHint(for romName: String) -> String {
         let name = romName.lowercased()

@@ -14,6 +14,7 @@
 		18790DF37D3B406ACA22328C /* CommunityCheatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CA4A679820507B215B02305 /* CommunityCheatView.swift */; };
 		2145743378D54A80A93554DC /* VirtualGamepad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FD8E3CE6A10A5795FB61C2F /* VirtualGamepad.swift */; };
 		28C92B506F05DC290252D459 /* mgba-core.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A4BE69C63739940EB4D0003 /* mgba-core.xcframework */; };
+		29414EA8355E62CDB35289AD /* DirectionInputMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D24DAB181BBD954765FC4B8 /* DirectionInputMerger.swift */; };
 		2E54C57B14295924C6E7B393 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = F130CED08364962109C3AE2A /* Utilities.swift */; };
 		34EAC7ADB797279DEC4AC923 /* CheatEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86A9BEA77B72BAA2DBB0FB2 /* CheatEditorView.swift */; };
 		351F06219575916F3AFF9345 /* fceumm-core.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1D1381BC0D9D2FBC95A9FA6B /* fceumm-core.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -31,6 +32,7 @@
 		68B474FCEB214A7330881831 /* EmulatorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AFFE9F16BD7E999AEB7724D /* EmulatorViewModel.swift */; };
 		6A7B71EB672D7ECFD8BCC268 /* fbneo-core.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 977758C0B74497D7CED2F293 /* fbneo-core.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		73B91186266D04FBFE51B88A /* LayoutEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01760D1BD48FFBEA7B7F05DD /* LayoutEditorView.swift */; };
+		7583BC3EAB0692CEBD18E582 /* RemoteImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 327B8BF46007DEE5B92D0336 /* RemoteImportService.swift */; };
 		7A4F4C95698E5F7EF6D22151 /* ZipArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B3877084D82ED1EB40CECE8 /* ZipArchive.swift */; };
 		7E1544B536720A893E1C38FC /* CheatManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62AD5C3B1ECFEFB75361505 /* CheatManager.swift */; };
 		8BAC9A9705BAB923BF4FE4FC /* LayoutStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2EFF7695A73F4C2ABC1C32 /* LayoutStoreTests.swift */; };
@@ -50,7 +52,9 @@
 		D62BC485397D1912AF42B40A /* GameControllerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31163B9E862C5FBEE7940E71 /* GameControllerManager.swift */; };
 		DD7268AC6FAB26524F967A44 /* CrossImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F7A7455BB63D26F8DF0C86 /* CrossImage.swift */; };
 		E190DE9E2DF358E6C5C48DE3 /* FramePipeline.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5CB3410028850C85D429A95D /* FramePipeline.mm */; };
+		E2B2DD7E2CCDBA1AD56C18FA /* RemoteImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38F9B5610B3EBAB5EE264712 /* RemoteImportView.swift */; };
 		E33AD9C6CFDA6A44B2ADD5B8 /* InGameMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10640FF5F43C0193E9D13DCD /* InGameMenuView.swift */; };
+		EA88D0B68DD54CA8649C90B6 /* WebDAVCredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C797CB89F1699BF42515E0AE /* WebDAVCredentialStore.swift */; };
 		F5C1BDE4B86AE48419B07DAE /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EAA8A9F0151BE4C73BBA251 /* SettingsStore.swift */; };
 		F902236A5550B68D0296682D /* EmulatorRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08F27DF8E903FFE2EB5F4FEF /* EmulatorRenderer.swift */; };
 		FE00785B6969EC4AF0E23BC9 /* SaveStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD275FCFDB685BB8A1789BFF /* SaveStateTests.swift */; };
@@ -92,6 +96,8 @@
 		2AFFE9F16BD7E999AEB7724D /* EmulatorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmulatorViewModel.swift; sourceTree = "<group>"; };
 		2E2C793D1941DD9D9B5D110C /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		31163B9E862C5FBEE7940E71 /* GameControllerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameControllerManager.swift; sourceTree = "<group>"; };
+		327B8BF46007DEE5B92D0336 /* RemoteImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteImportService.swift; sourceTree = "<group>"; };
+		38F9B5610B3EBAB5EE264712 /* RemoteImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteImportView.swift; sourceTree = "<group>"; };
 		3A3FC0EAD50329BDD1B39170 /* sameboy-core.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = "sameboy-core.xcframework"; path = "Cores/artifacts/sameboy-core.xcframework"; sourceTree = "<group>"; };
 		3CF9A1098814BA9E5CDA70FA /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		3FD8E3CE6A10A5795FB61C2F /* VirtualGamepad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualGamepad.swift; sourceTree = "<group>"; };
@@ -110,6 +116,7 @@
 		8B27DB966190AE2267EF5054 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		8BB91085734F70E5799010FE /* ControlLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlLayout.swift; sourceTree = "<group>"; };
 		8CA4A679820507B215B02305 /* CommunityCheatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityCheatView.swift; sourceTree = "<group>"; };
+		8D24DAB181BBD954765FC4B8 /* DirectionInputMerger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionInputMerger.swift; sourceTree = "<group>"; };
 		8F254B0CB40CE24A50A59119 /* MiniRetroTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MiniRetroTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		91755392B9AB930D9D6D8040 /* AppTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTypes.swift; sourceTree = "<group>"; };
 		977758C0B74497D7CED2F293 /* fbneo-core.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = "fbneo-core.xcframework"; path = "Cores/artifacts/fbneo-core.xcframework"; sourceTree = "<group>"; };
@@ -122,6 +129,7 @@
 		B57E468098114E55B6CFB171 /* SystemTypeMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemTypeMappingTests.swift; sourceTree = "<group>"; };
 		C02547C68EC58878D823A2CA /* KeyRemapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyRemapView.swift; sourceTree = "<group>"; };
 		C62AD5C3B1ECFEFB75361505 /* CheatManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheatManager.swift; sourceTree = "<group>"; };
+		C797CB89F1699BF42515E0AE /* WebDAVCredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebDAVCredentialStore.swift; sourceTree = "<group>"; };
 		CB8962AE1B871D8C0B0BAA02 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CEEB8A9C0BA8AD9068642606 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
 		D125AB6AD777BDCA7618AF66 /* LibraryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModel.swift; sourceTree = "<group>"; };
@@ -197,6 +205,16 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		5B88465D6B4FF5534C766D17 /* Remote */ = {
+			isa = PBXGroup;
+			children = (
+				327B8BF46007DEE5B92D0336 /* RemoteImportService.swift */,
+				38F9B5610B3EBAB5EE264712 /* RemoteImportView.swift */,
+				C797CB89F1699BF42515E0AE /* WebDAVCredentialStore.swift */,
+			);
+			path = Remote;
+			sourceTree = "<group>";
+		};
 		5DD8C459DE87D4F62C907F51 /* App */ = {
 			isa = PBXGroup;
 			children = (
@@ -207,6 +225,7 @@
 				F7084BB3D4C9B509B88B2542 /* Game */,
 				E85614E1F711726A54F0EF8B /* Library */,
 				A80EEA45B58E71B8BAD51B24 /* Models */,
+				5B88465D6B4FF5534C766D17 /* Remote */,
 				178BA2F3E58347AE96913549 /* Resources */,
 				CCC8F8BCE466F1914D9BA9FE /* Settings */,
 				3754312B46AA33BAFAB4AEA8 /* Utilities */,
@@ -273,6 +292,7 @@
 				C62AD5C3B1ECFEFB75361505 /* CheatManager.swift */,
 				7F430F77DB801D52F896312E /* CommunityCheatService.swift */,
 				8CA4A679820507B215B02305 /* CommunityCheatView.swift */,
+				8D24DAB181BBD954765FC4B8 /* DirectionInputMerger.swift */,
 				08F27DF8E903FFE2EB5F4FEF /* EmulatorRenderer.swift */,
 				2AFFE9F16BD7E999AEB7724D /* EmulatorViewModel.swift */,
 				31163B9E862C5FBEE7940E71 /* GameControllerManager.swift */,
@@ -410,6 +430,7 @@
 				44945909D1636EFB67E69D0E /* ControlLayout.swift in Sources */,
 				9DE6FA919C54194ECE06E41A /* CoreRegistry.c in Sources */,
 				DD7268AC6FAB26524F967A44 /* CrossImage.swift in Sources */,
+				29414EA8355E62CDB35289AD /* DirectionInputMerger.swift in Sources */,
 				F902236A5550B68D0296682D /* EmulatorRenderer.swift in Sources */,
 				68B474FCEB214A7330881831 /* EmulatorViewModel.swift in Sources */,
 				E190DE9E2DF358E6C5C48DE3 /* FramePipeline.mm in Sources */,
@@ -424,6 +445,8 @@
 				3F29E59565461EE956E42A05 /* LibraryViewModel.swift in Sources */,
 				8BAF1119221DFD5457C82DA3 /* MiniRetroApp.swift in Sources */,
 				D182BB2FC8007D46190E5B84 /* ROMImporter.swift in Sources */,
+				7583BC3EAB0692CEBD18E582 /* RemoteImportService.swift in Sources */,
+				E2B2DD7E2CCDBA1AD56C18FA /* RemoteImportView.swift in Sources */,
 				567E56ECD10B3D5209F64890 /* RetroAudioEngine.swift in Sources */,
 				57E248D6868A85FD5294947E /* RetroCore.mm in Sources */,
 				B17BC2DB4E06A5F678B58BA1 /* RootView.swift in Sources */,
@@ -432,6 +455,7 @@
 				2E54C57B14295924C6E7B393 /* Utilities.swift in Sources */,
 				A7A3949FB7442ED4AF1BE054 /* VideoShaders.swift in Sources */,
 				2145743378D54A80A93554DC /* VirtualGamepad.swift in Sources */,
+				EA88D0B68DD54CA8649C90B6 /* WebDAVCredentialStore.swift in Sources */,
 				7A4F4C95698E5F7EF6D22151 /* ZipArchive.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -456,7 +480,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGN_IDENTITY = "";
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -473,7 +497,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8;
+				MARKETING_VERSION = 1.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.miniretro.app;
 				PRODUCT_NAME = MiniRetro;
 				SDKROOT = iphoneos;
@@ -536,7 +560,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGN_IDENTITY = "";
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -553,7 +577,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8;
+				MARKETING_VERSION = 1.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.miniretro.app;
 				PRODUCT_NAME = MiniRetro;
 				SDKROOT = iphoneos;

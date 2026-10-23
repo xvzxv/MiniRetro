@@ -2,12 +2,13 @@
 # Tools/run_romlib_test.sh — 运行 ROM 库逻辑回归测试（macOS 命令行，秒级）
 #
 # 覆盖：真实 ROM 识别、重复导入去重、旧索引幽灵条目自愈、街机 romset 入库。
-# 用法：./Tools/run_romlib_test.sh [ROM 路径]
+# 用法：./Tools/run_romlib_test.sh [ROM 路径] [街机整合包路径]
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # 可选：传入真实 ROM 以额外验证识别；不传则用脚本生成的合成 ROM 跑结构用例
 REAL_ROM="${1:-}"
+REAL_ARCADE_PACKAGE="${2:-}"
 ROM=""
 WORK="${TMPDIR:-/tmp}/miniretro-romlib-test"
 OUT="$WORK/romlib_test"
@@ -67,14 +68,16 @@ echo "[test] 编译 Swift 测试 ..."
     -Xcc -I"$ROOT/CoreBridge" \
     "$ROOT/App/Models/AppTypes.swift" \
     "$ROOT/App/Models/SettingsStore.swift" \
+    "$ROOT/App/Models/ControlLayout.swift" \
     "$ROOT/App/Utilities/Utilities.swift" \
     "$ROOT/App/Library/ZipArchive.swift" \
     "$ROOT/App/Library/ROMImporter.swift" \
     "$ROOT/App/Game/CommunityCheatService.swift" \
+    "$ROOT/App/Game/DirectionInputMerger.swift" \
     "$ROOT/Tests/romlib/main.swift" \
     "$WORK/CoreRegistry.o" \
     -o "$OUT"
 
 echo "[test] 运行 ..."
-TEST_ROM="$ROM" ARCADE_ZIP="$ARCADE_ZIP" \
+TEST_ROM="$ROM" ARCADE_ZIP="$ARCADE_ZIP" ARCADE_PACKAGE="$REAL_ARCADE_PACKAGE" \
     CHEAT_INDEX="$ROOT/App/Resources/CheatIndex.json" "$OUT"

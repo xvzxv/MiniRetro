@@ -98,7 +98,24 @@ static void *mr_run_loop(void *ctx);
 static RetroCore *s_environmentOwner = nil;
 
 /// core 日志转发：过滤 DEBUG（SameBoy 等会刷大量 HW 寄存器调试输出），
-/// 只把 INFO/ERROR 送入 MRLog，避免污染 iOS 控制台。
+/// 只把 INFO/ERROR 送入 NSLog + 内存环形缓冲（供上层判断「缺少 BIOS」这类静默失败）。
+static NSMutableArray<NSString *> *gCoreLogLines = nil;
+static NSLock *gCoreLogLock = nil;
+static const NSUInteger kCoreLogCapacity = 200;
+
+static void mr_append_core_log(NSString *message) {
+    if (gCoreLogLock == nil) {
+        gCoreLogLock = [NSLock new];
+        gCoreLogLines = [NSMutableArray arrayWithCapacity:kCoreLogCapacity];
+    }
+    [gCoreLogLock lock];
+    [gCoreLogLines addObject:message];
+    if (gCoreLogLines.count > kCoreLogCapacity) {
+        [gCoreLogLines removeObjectsInRange:NSMakeRange(0, gCoreLogLines.count - kCoreLogCapacity)];
+    }
+    [gCoreLogLock unlock];
+}
+
 static void mr_log_callback(enum retro_log_level level, const char *fmt, ...) {
     if (level == RETRO_LOG_DEBUG) {
         return;
@@ -112,6 +129,7 @@ static void mr_log_callback(enum retro_log_level level, const char *fmt, ...) {
     if (message.length == 0) {
         return;
     }
+    mr_append_core_log(message);
     NSLog(@"[core:%@] %@", level == RETRO_LOG_ERROR ? @"ERROR" : @"INFO", message);
 }
 
@@ -156,6 +174,22 @@ static void mr_log_callback(enum retro_log_level level, const char *fmt, ...) {
     NSString *_lastCoreMessage;
     FramePipeline *_framePipeline;
 }
+
++ (NSArray<NSString *> *)recentCoreLogLines {
+    if (gCoreLogLock == nil) { return @[]; }
+    [gCoreLogLock lock];
+    NSArray *copy = [gCoreLogLines copy];
+    [gCoreLogLock unlock];
+    return copy;
+}
+
++ (void)clearCoreLogLines {
+    if (gCoreLogLock == nil) { return; }
+    [gCoreLogLock lock];
+    [gCoreLogLines removeAllObjects];
+    [gCoreLogLock unlock];
+}
+
 
 - (BOOL)isRunning {
     return atomic_load(&_running);
@@ -371,7 +405,10 @@ static void mr_log_callback(enum retro_log_level level, const char *fmt, ...) {
     }
     _serializeSize = p_retro_serialize_size();
     _shutdownRequested = NO;
-    _framePipeline = [[FramePipeline alloc] initWithMaxWidth:512 maxHeight:512];
+    // 1024×1024 上限：街机 core 常用 640×480 / 512×384（PGM、CPS3 等），
+    // 旧的 512×512 会把超大帧整帧丢弃，表现为「加载成功但永远黑屏」。
+    // 双缓冲内存 2×1024×1024×4 = 8MB，对 iPhone/iPad 无压力。
+    _framePipeline = [[FramePipeline alloc] initWithMaxWidth:1024 maxHeight:1024];
 
     [self.audioRingBuffer reset];
     [self.frameDelegate retroCore:self didChangeVideoGeometry:_videoBaseSize aspectRatio:_videoAspectRatio];

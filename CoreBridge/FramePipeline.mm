@@ -52,7 +52,15 @@
         return;
     }
     if (width > _maxWidth || height > _maxHeight) {
-        return; // 超出预设上限，丢弃（core 不应超过 512×512）
+        // 超出上限直接丢弃 = 黑屏。街机 core（FBNeo/PGM）常见 640×480、512×384，
+        // 早期上限写成 512×512 导致整款游戏「加载成功但一直黑屏」，这里必须大声报出来。
+        static NSUInteger sDroppedWidth = 0, sDroppedHeight = 0;
+        if (width != sDroppedWidth || height != sDroppedHeight) {
+            sDroppedWidth = width; sDroppedHeight = height;
+            NSLog(@"[FramePipeline] 丢弃超限帧 %lux%lu（上限 %lux%lu）", (unsigned long)width,
+                  (unsigned long)height, (unsigned long)_maxWidth, (unsigned long)_maxHeight);
+        }
+        return;
     }
     pthread_mutex_lock(&_mutex);
     uint8_t *dst = [self backBuffer];

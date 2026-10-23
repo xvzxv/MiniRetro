@@ -85,3 +85,26 @@
 
 **实测**：模拟器（iPhone Duo）`connected=1 → hidden=1`（画面无按键、HUD 出现 hand.tap）、
 `connected=0 → hidden=0`（按键正常显示）；桌面图标渲染正常。版本 1.8（build 9）。
+
+**v1.9：街机黑屏根因 + 手柄方向 + 远程导入（2026-10-23，用户反馈）**
+
+1. **手柄方向「按一下动一下」** — 根因：十字键与摇杆共用一张方向状态表，摇杆每帧回调（停在死区内=全 false）
+   立刻把十字键按住的方向清掉。抽成 `DirectionInputMerger`（两源分开记录后取或），
+   并补了 4 项单测，其中一条直接复现旧 bug 场景。
+2. **街机导入后打不开 —— 两个真原因**
+   - ① **壳包**：`kovsh_v13.zip` 里套着 `kovsh.zip`（外加 ini/说明）。FBNeo 按**文件名**认驱动名，
+     喂外层壳包必然 no driver。导入改为自动拆包（BIOS 装 System/、内层 romset 逐个入库），
+     并对 v1.8 已入库的壳包做启动自愈。
+   - ② **帧尺寸上限**：`FramePipeline` 写死 512×512，PGM 输出 640×480 → **每帧被静默丢弃** → 黑屏。
+     上限提到 1024×1024，超限时打日志（静默丢弃是最难查的一类 bug）。
+   - 顺带修：`statusMessage` 从来没在界面上显示过（加载失败/缺 BIOS 全是哑的），现已做成可点掉的提示条。
+   - 验证：真包实测 `Romset name: kovsh` → 640×480 出帧 60fps → FBNeo 自绘「缺 pgm BIOS 中的 6 个文件」。
+     **结论：包本身还缺 PGM BIOS（pgm.zip），App 不内置、也不能内置。**
+3. **远程导入**（直链 + WebDAV）：游戏库右上角 🌐 → 粘贴 http(s) 直链，或连 WebDAV
+   （群晖/坚果云/Nextcloud/InfiniCLOUD）浏览下载；下载后走同一套导入流程（压缩包/壳包自动处理）。
+   WebDAV 密码进钥匙串，服务器/用户名进 UserDefaults。
+   实测：本地 HTTP 服务器下载 21,158,101 字节 → 导入 1 款（拆出 kovsh.zip）；
+   WebDAV 列目录 3 项、中文名解码正常。ATS 增加 NSAllowsLocalNetworking（局域网 http）。
+4. **未做：ROM 站点自动搜索下载** — 见交付说明（版权 + 站点安全性），改为通用远程导入 + 手动链接。
+
+版本 1.9（build 10）。

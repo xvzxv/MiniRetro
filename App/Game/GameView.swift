@@ -53,6 +53,29 @@ struct GameView: View {
                 .transition(.opacity)
             }
 
+            // 状态提示（加载失败 / 缺 BIOS / 已载入进度）——
+            // 这些消息以前只写进 statusMessage 从不显示，用户遇到失败只能看黑屏
+            if let message = viewModel.statusMessage {
+                VStack {
+                    Spacer()
+                    Text(message)
+                        .font(.callout)
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(.black.opacity(0.78), in: RoundedRectangle(cornerRadius: 14))
+                        .padding(.horizontal, 40)
+                    Spacer()
+                }
+                .transition(.opacity)
+                .onTapGesture { viewModel.statusMessage = nil }
+                .task(id: message) {
+                    try? await Task.sleep(nanoseconds: 8_000_000_000)
+                    if viewModel.statusMessage == message { viewModel.statusMessage = nil }
+                }
+            }
+
             // HUD
             VStack {
                 HStack {

@@ -112,6 +112,14 @@ typedef NS_ENUM(NSInteger, MRPixelFormat) {
 - (void)setFastForwardEnabled:(BOOL)enabled multiplier:(NSInteger)multiplier
     NS_SWIFT_NAME(setFastForward(enabled:multiplier:));
 
+// MARK: - 内核日志（诊断用）
+
+/// 最近的内核日志（INFO/ERROR，最多保留 200 行）。
+/// 街机 core 加载失败时只往日志里写「No romset found ... pgm」这类信息，
+/// 不捕获就只能让用户对着黑屏猜。
++ (NSArray<NSString *> *)recentCoreLogLines NS_SWIFT_NAME(recentLogLines());
++ (void)clearCoreLogLines NS_SWIFT_NAME(clearLogLines());
+
 @end
 
 NS_ASSUME_NONNULL_END

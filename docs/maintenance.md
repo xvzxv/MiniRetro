@@ -168,3 +168,16 @@ swiftc -typecheck -sdk "$SDK" -swift-version 5 -target arm64-apple-macosx14.0 \
 python3 Tools/gen_app_icon.py     # 产出 App/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png
 ```
 改配色/形状直接改脚本常量，再重新生成即可；iOS 会自动裁圆角，因此**不要**自己画圆角底板。
+
+## 街机排错顺序（v1.9 实测）
+
+按顺序查，能覆盖 90% 的「街机打不开」：
+
+1. **文件名是不是驱动名**：FBNeo 按 romset 文件名认驱动（`kovsh.zip` 对 `kovsh` 驱动）。
+   整合包（外层 zip 里套 romset）必须拆包 —— v1.9 起导入会自动拆，历史条目在启动扫描时自愈。
+2. **BIOS 在不在**：`Documents/System/pgm.zip`（PGM）或 `neogeo.zip`（Neo Geo）。
+   缺失时内核会自己画一张错误页，列出缺哪几个文件（比前台猜得准）。
+3. **帧尺寸**：`FramePipeline` 上限必须 ≥ 内核输出。PGM 实测 640×480，
+   旧上限 512×512 会让每帧被静默丢弃 → 加载成功但永久黑屏。现在上限 1024×1024，超限会打日志。
+
+日志抓取：`xcrun simctl spawn booted log show --last 3m --predicate 'process == "MiniRetro"' | grep -E "core:INFO|FramePipeline"`

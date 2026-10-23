@@ -14,6 +14,7 @@ struct LibraryView: View {
     @State private var showGrid = true
     @State private var selectedROM: ROMEntry?
     @State private var importMessage: String?
+    @State private var showRemoteImport = false
 
     private let columns = [GridItem(.adaptive(minimum: 140), spacing: 16)]
 
@@ -29,6 +30,20 @@ struct LibraryView: View {
                 }
             }
             .task {
+                // 自动化/调试入口：-MRRemoteTest <url>
+                //   url 以 "/" 结尾 → 当作 WebDAV 目录列一次；否则下载并导入
+                // （模拟器里没法点按钮，靠它验证远程导入全链路）
+                let argv = ProcessInfo.processInfo.arguments
+                if argv.contains("-MRShowRemoteImport") {
+                    showRemoteImport = true
+                    return
+                }
+                if let idx = argv.firstIndex(of: "-MRRemoteTest"), idx + 1 < argv.count,
+                   let url = URL(string: argv[idx + 1]) {
+                    runRemoteSelfTest(url)
+                    return
+                }
+
                 // 自动化/调试入口：-MRAutoPlayFirst 启动时自动打开第一款游戏
                 // （供模拟器/CI 验证渲染与运行链路；正常启动无任何影响）
                 let args = ProcessInfo.processInfo.arguments
@@ -71,6 +86,13 @@ struct LibraryView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
+                        showRemoteImport = true
+                    } label: {
+                        Image(systemName: "globe")
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
                         model.showImporter = true
                     } label: {
                         Image(systemName: "plus")
@@ -83,6 +105,17 @@ struct LibraryView: View {
             .sheet(isPresented: $model.showImporter) {
                 DocumentPicker { urls in
                     model.importFiles(urls: urls)
+                }
+            }
+            .sheet(isPresented: $showRemoteImport) {
+                RemoteImportView { localFile in
+                    // 下载到临时目录后走同一套导入流程（zip 会自动解压/拆街机包）
+                    let urls = [localFile]
+                    Task { @MainActor in
+                        try? await Task.sleep(nanoseconds: 300_000_000)
+                        model.importFiles(urls: urls)
+                        try? FileManager.default.removeItem(at: localFile)
+                    }
                 }
             }
             .alert("导入结果", isPresented: Binding(
@@ -174,6 +207,42 @@ struct LibraryView: View {
 
     private func coverImage(for rom: ROMEntry) -> Image {
         Image(crossImage: model.coverImage(for: rom), placeholder: "gamecontroller")
+    }
+
+    /// 远程导入自测（-MRRemoteTest）：下载/列目录 → 走正常导入流程 → 打日志
+    private func runRemoteSelfTest(_ url: URL) {
+        Task { @MainActor in
+            do {
+                if url.absoluteString.hasSuffix("/") {
+                    guard let base = URL(string: "\(url.scheme ?? "http")://\(url.host ?? "127.0.0.1"):\(url.port ?? 80)/") else {
+                        NSLog("[MiniRetro] WebDAV 自测：地址非法")
+                        return
+                    }
+                    let credential = WebDAVCredential(
+                        server: base.absoluteString,
+                        username: "tester",
+                        password: "secret"
+                    )
+                    let items = try await RemoteImportService.listWebDAV(
+                        server: base,
+                        path: String(url.path.dropFirst()),
+                        credential: credential
+                    )
+                    NSLog("[MiniRetro] WebDAV 自测：%ld 项 → %@", items.count,
+                          items.prefix(6).map { "\($0.isDirectory ? "[D]" : "[F]")\($0.name)" }
+                              .joined(separator: " "))
+                } else {
+                    let file = try await RemoteImportService.download(url: url) { _ in }
+                    let size = (try? FileManager.default.attributesOfItem(atPath: file.path)[.size] as? Int64) ?? 0
+                    NSLog("[MiniRetro] 下载自测：%@ (%lld 字节) → 开始导入", file.lastPathComponent, size ?? 0)
+                    model.importFiles(urls: [file])
+                    NSLog("[MiniRetro] 导入自测结果：%@", model.importSummary ?? "无")
+                    try? FileManager.default.removeItem(at: file)
+                }
+            } catch {
+                NSLog("[MiniRetro] 远程自测失败：%@", error.localizedDescription)
+            }
+        }
     }
 }
 

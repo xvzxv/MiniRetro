@@ -154,6 +154,7 @@ final class GameControllerManager: ObservableObject {
     func unbind() {
         buttonSink = nil
         directionState.removeAll()
+        directionMerger.reset()
         for controller in GCController.controllers() {
             controller.extendedGamepad?.valueChangedHandler = nil
         }
@@ -180,34 +181,51 @@ final class GameControllerManager: ObservableObject {
         }
     }
 
-    /// 方向键状态缓存：GameController 会高频回调，只在状态真正翻转时下发，
-    /// 否则每帧几十次 setButton 会把输入表刷爆（还会让连发相位抖动）。
+    /// 方向状态：十字键与摇杆分别记录后取或（见 DirectionInputMerger 注释）
+    private var directionMerger = DirectionInputMerger()
     private var directionState: [JoypadButton: Bool] = [:]
 
     private func handleDirectionPad(_ dpad: GCControllerDirectionPad) {
-        guard SettingsStore.shared.directionInput.usesDpad else { return }
-        emitDirection(.up, dpad.up.isPressed)
-        emitDirection(.down, dpad.down.isPressed)
-        emitDirection(.left, dpad.left.isPressed)
-        emitDirection(.right, dpad.right.isPressed)
+        guard SettingsStore.shared.directionInput.usesDpad else {
+            directionMerger.clearDpad()
+            emitMergedDirections()
+            return
+        }
+        for (button, pressed) in DirectionInputMerger.dpadDirections(
+            up: dpad.up.isPressed,
+            down: dpad.down.isPressed,
+            left: dpad.left.isPressed,
+            right: dpad.right.isPressed
+        ) {
+            directionMerger.setDpad(button, pressed)
+        }
+        emitMergedDirections()
     }
 
     /// 摇杆转方向：超过死区（0.45）才算按下，避免手指轻触就乱走
     private func handleThumbstick(_ stick: GCControllerDirectionPad) {
-        guard SettingsStore.shared.directionInput.usesLeftStick else { return }
-        let deadzone: Float = 0.45
-        let x = stick.xAxis.value
-        let y = stick.yAxis.value
-        emitDirection(.left, x <= -deadzone)
-        emitDirection(.right, x >= deadzone)
-        emitDirection(.up, y >= deadzone)
-        emitDirection(.down, y <= -deadzone)
+        guard SettingsStore.shared.directionInput.usesLeftStick else {
+            directionMerger.clearStick()
+            emitMergedDirections()
+            return
+        }
+        let directions = DirectionInputMerger.stickDirections(
+            x: stick.xAxis.value, y: stick.yAxis.value
+        )
+        for (button, pressed) in directions {
+            directionMerger.setStick(button, pressed)
+        }
+        emitMergedDirections()
     }
 
-    private func emitDirection(_ button: JoypadButton, _ pressed: Bool) {
-        if directionState[button] == pressed { return }
-        directionState[button] = pressed
-        buttonSink?(button, pressed)
+    /// 合并后只在真正翻转时下发，避免高频回调把输入表刷爆
+    private func emitMergedDirections() {
+        for button in DirectionInputMerger.directions {
+            let pressed = directionMerger.merged(button)
+            if directionState[button] == pressed { continue }
+            directionState[button] = pressed
+            buttonSink?(button, pressed)
+        }
     }
 
     private func emit(_ button: JoypadButton, pressed: Bool) {
