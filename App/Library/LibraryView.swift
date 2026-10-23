@@ -1,5 +1,5 @@
-// LibraryView.swift — 游戏库主界面（M5）
-// 网格/列表切换、搜索、收藏、最近游玩、系统角标、封面
+// LibraryView.swift — 游戏库主界面
+// 网格/列表、搜索、收藏、批量选择删除、批量导入（文件/文件夹/远程）、封面
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -9,20 +9,34 @@ import UIKit
 
 struct LibraryView: View {
     @StateObject private var model = LibraryViewModel()
+
     @State private var searchText = ""
     @State private var showFavoritesOnly = false
     @State private var showGrid = true
     @State private var selectedROM: ROMEntry?
-    @State private var importMessage: String?
+
+    // 导入入口
     @State private var showRemoteImport = false
+    @State private var showFolderPicker = false
+    @State private var importProgress: (done: Int, total: Int)?
+
+    // 批量选择
+    @State private var isSelecting = false
+    @State private var selection = Set<UUID>()
+    @State private var confirmBatchDelete = false
     @State private var pendingDelete: ROMEntry?
+    @State private var actionMessage: String?
 
     private let columns = [GridItem(.adaptive(minimum: 140), spacing: 16)]
+
+    private var visibleROMs: [ROMEntry] {
+        model.filteredROMs(searchText: searchText, favoritesOnly: showFavoritesOnly)
+    }
 
     var body: some View {
         NavigationStack {
             Group {
-                if model.filteredROMs(searchText: searchText, favoritesOnly: showFavoritesOnly).isEmpty {
+                if visibleROMs.isEmpty {
                     emptyState
                 } else if showGrid {
                     gridView
@@ -39,6 +53,10 @@ struct LibraryView: View {
                     showRemoteImport = true
                     return
                 }
+                if argv.contains("-MRShowSelection") {
+                    isSelecting = true
+                    return
+                }
                 if let idx = argv.firstIndex(of: "-MRRemoteTest"), idx + 1 < argv.count,
                    let url = URL(string: argv[idx + 1]) {
                     runRemoteSelfTest(url)
@@ -46,7 +64,6 @@ struct LibraryView: View {
                 }
 
                 // 自动化/调试入口：-MRAutoPlayFirst 启动时自动打开第一款游戏
-                // （供模拟器/CI 验证渲染与运行链路；正常启动无任何影响）
                 let args = ProcessInfo.processInfo.arguments
                 let wantsAutoPlay = args.contains("-MRAutoPlayFirst")
                     || UserDefaults.standard.bool(forKey: "MRAutoPlayFirst")
@@ -59,65 +76,123 @@ struct LibraryView: View {
                     selectedROM = first
                 }
             }
-            .navigationTitle("游戏库")
+            .navigationTitle(isSelecting ? "已选 \(selection.count)" : "游戏库")
             .searchable(text: $searchText, prompt: "搜索 ROM")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        showFavoritesOnly.toggle()
-                    } label: {
-                        Image(systemName: showFavoritesOnly ? "star.fill" : "star")
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Button {
-                            showGrid = true
-                        } label: {
-                            Label("网格视图", systemImage: showGrid ? "checkmark" : "")
+                    if isSelecting {
+                        Button(selection.count == visibleROMs.count ? "取消全选" : "全选") {
+                            if selection.count == visibleROMs.count {
+                                selection.removeAll()
+                            } else {
+                                selection = Set(visibleROMs.map(\.id))
+                            }
                         }
+                        .disabled(visibleROMs.isEmpty)
+                    } else {
                         Button {
-                            showGrid = false
+                            showFavoritesOnly.toggle()
                         } label: {
-                            Label("列表视图", systemImage: !showGrid ? "checkmark" : "")
+                            Image(systemName: showFavoritesOnly ? "star.fill" : "star")
                         }
-                    } label: {
-                        Image(systemName: showGrid ? "square.grid.2x2" : "list.bullet")
+                        .accessibilityLabel(showFavoritesOnly ? "显示全部" : "只看收藏")
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showRemoteImport = true
-                    } label: {
-                        Image(systemName: "globe")
+
+                if isSelecting {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("完成") {
+                            isSelecting = false
+                            selection.removeAll()
+                        }
                     }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        model.showImporter = true
-                    } label: {
-                        Image(systemName: "plus")
+                } else {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Menu {
+                            Button {
+                                showGrid = true
+                            } label: {
+                                Label("网格视图", systemImage: showGrid ? "checkmark" : "square.grid.2x2")
+                            }
+                            Button {
+                                showGrid = false
+                            } label: {
+                                Label("列表视图", systemImage: !showGrid ? "checkmark" : "list.bullet")
+                            }
+                            Divider()
+                            Button {
+                                isSelecting = true
+                            } label: {
+                                Label("批量选择", systemImage: "checkmark.circle")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
+                        }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Menu {
+                            Button {
+                                model.showImporter = true
+                            } label: {
+                                Label("选择文件（可多选）", systemImage: "doc.on.doc")
+                            }
+                            Button {
+                                showFolderPicker = true
+                            } label: {
+                                Label("导入整个文件夹", systemImage: "folder")
+                            }
+                            Button {
+                                showRemoteImport = true
+                            } label: {
+                                Label("从直链 / WebDAV 导入", systemImage: "globe")
+                            }
+                        } label: {
+                            Image(systemName: "plus")
+                        }
                     }
                 }
             }
+            .safeAreaInset(edge: .bottom) {
+                if isSelecting { batchBar }
+            }
+            .overlay { importProgressOverlay }
             .fullScreenCover(item: $selectedROM) { rom in
                 GameView(rom: rom)
             }
             .sheet(isPresented: $model.showImporter) {
                 DocumentPicker { urls in
-                    model.importFiles(urls: urls)
+                    startImport(urls)
+                }
+            }
+            .sheet(isPresented: $showFolderPicker) {
+                FolderPicker { folderURL in
+                    importFolder(folderURL)
                 }
             }
             .sheet(isPresented: $showRemoteImport) {
                 RemoteImportView { localFile in
-                    // 下载到临时目录后走同一套导入流程（zip 会自动解压/拆街机包）
-                    let urls = [localFile]
                     Task { @MainActor in
                         try? await Task.sleep(nanoseconds: 300_000_000)
-                        model.importFiles(urls: urls)
+                        startImport([localFile])
                         try? FileManager.default.removeItem(at: localFile)
                     }
                 }
+            }
+            .alert("导入结果", isPresented: Binding(
+                get: { model.importSummary != nil },
+                set: { if !$0 { model.importSummary = nil } }
+            )) {
+                Button("好", role: .cancel) {}
+            } message: {
+                Text(model.importSummary ?? "")
+            }
+            .alert("已删除", isPresented: Binding(
+                get: { actionMessage != nil },
+                set: { if !$0 { actionMessage = nil } }
+            )) {
+                Button("好", role: .cancel) {}
+            } message: {
+                Text(actionMessage ?? "")
             }
             .confirmationDialog(
                 "移除「\(pendingDelete?.displayName ?? "")」？",
@@ -135,13 +210,17 @@ struct LibraryView: View {
             } message: {
                 Text("会同时删除 ROM 文件、这个游戏的即时存档与金手指记录，无法恢复。只是不想看到它的话，可以先加收藏。")
             }
-            .alert("导入结果", isPresented: Binding(
-                get: { model.importSummary != nil },
-                set: { if !$0 { model.importSummary = nil } }
-            )) {
-                Button("好", role: .cancel) {}
+            .confirmationDialog(
+                "删除选中的 \(selection.count) 款游戏？",
+                isPresented: $confirmBatchDelete,
+                titleVisibility: .visible
+            ) {
+                Button("删除 \(selection.count) 款（含存档）", role: .destructive) {
+                    deleteSelection()
+                }
+                Button("取消", role: .cancel) {}
             } message: {
-                Text(model.importSummary ?? "")
+                Text("每款游戏的 ROM 文件、即时存档、金手指记录都会被删除，无法恢复。")
             }
         }
     }
@@ -151,22 +230,31 @@ struct LibraryView: View {
     private var gridView: some View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(model.filteredROMs(searchText: searchText, favoritesOnly: showFavoritesOnly)) { rom in
+                ForEach(visibleROMs) { rom in
                     ROMCard(rom: rom, model: model)
+                        .overlay(alignment: .topLeading) { selectionBadge(rom) }
+                        .contentShape(Rectangle())
                         .onTapGesture {
-                            model.markPlayed(rom)
-                            selectedROM = rom
+                            if isSelecting {
+                                toggleSelection(rom)
+                            } else {
+                                model.markPlayed(rom)
+                                selectedROM = rom
+                            }
                         }
                         .contextMenu {
-                            Button {
-                                model.toggleFavorite(rom)
-                            } label: {
-                                Label(rom.isFavorite ? "取消收藏" : "收藏", systemImage: rom.isFavorite ? "star.slash" : "star")
-                            }
-                            Button(role: .destructive) {
-                                pendingDelete = rom
-                            } label: {
-                                Label("从库中移除", systemImage: "trash")
+                            if !isSelecting {
+                                Button {
+                                    model.toggleFavorite(rom)
+                                } label: {
+                                    Label(rom.isFavorite ? "取消收藏" : "收藏",
+                                          systemImage: rom.isFavorite ? "star.slash" : "star")
+                                }
+                                Button(role: .destructive) {
+                                    pendingDelete = rom
+                                } label: {
+                                    Label("从库中移除", systemImage: "trash")
+                                }
                             }
                         }
                 }
@@ -177,8 +265,12 @@ struct LibraryView: View {
 
     private var listView: some View {
         List {
-            ForEach(model.filteredROMs(searchText: searchText, favoritesOnly: showFavoritesOnly)) { rom in
+            ForEach(visibleROMs) { rom in
                 HStack {
+                    if isSelecting {
+                        Image(systemName: selection.contains(rom.id) ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(selection.contains(rom.id) ? Color.accentColor : .secondary)
+                    }
                     coverImage(for: rom)
                         .frame(width: 52, height: 52)
                         .cornerRadius(6)
@@ -200,9 +292,72 @@ struct LibraryView: View {
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    model.markPlayed(rom)
-                    selectedROM = rom
+                    if isSelecting {
+                        toggleSelection(rom)
+                    } else {
+                        model.markPlayed(rom)
+                        selectedROM = rom
+                    }
                 }
+                .contextMenu {
+                    if !isSelecting {
+                        Button(role: .destructive) {
+                            pendingDelete = rom
+                        } label: {
+                            Label("从库中移除", systemImage: "trash")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func selectionBadge(_ rom: ROMEntry) -> some View {
+        Group {
+            if isSelecting {
+                Image(systemName: selection.contains(rom.id) ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(.white, selection.contains(rom.id) ? Color.accentColor : Color.black.opacity(0.45))
+                    .padding(6)
+            }
+        }
+    }
+
+    private var batchBar: some View {
+        VStack(spacing: 6) {
+            HStack(spacing: 12) {
+                Text("已选 \(selection.count) 款")
+                    .font(.callout)
+                Spacer()
+                Button(role: .destructive) {
+                    confirmBatchDelete = true
+                } label: {
+                    Label("删除", systemImage: "trash")
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+                .disabled(selection.isEmpty)
+            }
+            HintText("点卡片选择；删除会连 ROM 文件、即时存档、金手指一起删掉，无法恢复。")
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(.bar)
+    }
+
+    private var importProgressOverlay: some View {
+        Group {
+            if let importProgress {
+                VStack(spacing: 8) {
+                    ProgressView(value: Double(importProgress.done),
+                                 total: Double(max(importProgress.total, 1)))
+                        .frame(width: 180)
+                    Text("正在导入 \(importProgress.done)/\(importProgress.total)")
+                        .font(.caption)
+                }
+                .padding(18)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
             }
         }
     }
@@ -221,19 +376,83 @@ struct LibraryView: View {
             · 金手指：.cht（存进金手指库，游戏内可套用）
             · 电池存档：.srm / .sav（按同名 ROM 归档）
 
-            也可以点右上角 🌐 从直链或 WebDAV 直接下载导入。
+            支持一次选多个文件，或「导入整个文件夹」批量添加；
+            也可以从直链 / WebDAV 直接下载导入。
             ROM 由你自行提供，本 App 不含任何游戏数据。
             """)
             .font(.callout)
-                .font(.callout)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
+            .foregroundColor(.secondary)
+            .multilineTextAlignment(.center)
         }
         .padding()
     }
 
     private func coverImage(for rom: ROMEntry) -> Image {
         Image(crossImage: model.coverImage(for: rom), placeholder: "gamecontroller")
+    }
+
+    // MARK: - 批量操作
+
+    private func toggleSelection(_ rom: ROMEntry) {
+        if selection.contains(rom.id) {
+            selection.remove(rom.id)
+        } else {
+            selection.insert(rom.id)
+        }
+    }
+
+    private func deleteSelection() {
+        let victims = model.roms.filter { selection.contains($0.id) }
+        let count = model.remove(victims)
+        selection.removeAll()
+        isSelecting = false
+        Haptics.success()
+        actionMessage = "已删除 \(count) 款游戏，同时清理了各自的存档与金手指。"
+    }
+
+    // MARK: - 导入
+
+    /// 统一入口：显示进度、调用模型、隐藏进度
+    private func startImport(_ urls: [URL]) {
+        guard !urls.isEmpty else { return }
+        importProgress = (0, urls.count)
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 100_000_000)
+            model.importFiles(urls: urls) { done, total in
+                Task { @MainActor in importProgress = (done, total) }
+            }
+            importProgress = nil
+        }
+    }
+
+    /// 文件夹导入：递归收集支持的文件后走同一条导入流水线
+    private func importFolder(_ folder: URL) {
+        let scoped = folder.startAccessingSecurityScopedResource()
+        defer { if scoped { folder.stopAccessingSecurityScopedResource() } }
+
+        let supported: Set<String> = [
+            "nes", "fds", "unf", "unif", "gb", "gbc", "gba",
+            "zip", "7z", "cht", "srm", "sav",
+        ]
+        var urls: [URL] = []
+        if let enumerator = FileManager.default.enumerator(
+            at: folder,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ) {
+            while let url = enumerator.nextObject() as? URL {
+                guard let values = try? url.resourceValues(forKeys: [.isRegularFileKey]),
+                      values.isRegularFile == true else { continue }
+                if supported.contains(url.pathExtension.lowercased()) {
+                    urls.append(url)
+                }
+            }
+        }
+        guard !urls.isEmpty else {
+            model.importSummary = "文件夹里没有可导入的文件（支持 .nes/.gb/.gba/.zip/.7z/.cht/.srm/.sav）"
+            return
+        }
+        startImport(urls)
     }
 
     /// 远程导入自测（-MRRemoteTest）：下载/列目录 → 走正常导入流程 → 打日志
@@ -260,8 +479,9 @@ struct LibraryView: View {
                               .joined(separator: " "))
                 } else {
                     let file = try await RemoteImportService.download(url: url) { _ in }
-                    let size = (try? FileManager.default.attributesOfItem(atPath: file.path)[.size] as? Int64) ?? 0
-                    NSLog("[MiniRetro] 下载自测：%@ (%lld 字节) → 开始导入", file.lastPathComponent, size ?? 0)
+                    let attrs = try? FileManager.default.attributesOfItem(atPath: file.path)
+                    let size = (attrs?[.size] as? NSNumber)?.int64Value ?? 0
+                    NSLog("[MiniRetro] 下载自测：%@ (%lld 字节) → 开始导入", file.lastPathComponent, size)
                     model.importFiles(urls: [file])
                     NSLog("[MiniRetro] 导入自测结果：%@", model.importSummary ?? "无")
                     try? FileManager.default.removeItem(at: file)
@@ -372,4 +592,33 @@ struct DocumentPicker: UIViewControllerRepresentable {
     }
 }
 
+/// 选择整个文件夹（递归导入，适合一次拷一堆 ROM 进来）
+struct FolderPicker: UIViewControllerRepresentable {
+    let onPicked: (URL) -> Void
+
+    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.folder], asCopy: false)
+        picker.allowsMultipleSelection = false
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIDocumentPickerViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onPicked: onPicked)
+    }
+
+    final class Coordinator: NSObject, UIDocumentPickerDelegate {
+        let onPicked: (URL) -> Void
+
+        init(onPicked: @escaping (URL) -> Void) {
+            self.onPicked = onPicked
+        }
+
+        func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+            if let first = urls.first { onPicked(first) }
+        }
+    }
+}
 #endif

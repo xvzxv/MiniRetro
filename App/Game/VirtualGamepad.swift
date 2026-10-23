@@ -175,7 +175,6 @@ final class GamepadCanvasView: UIView {
 
     private func rebuildButtons() {
         guard let layout = currentLayout, bounds.width > 0, bounds.height > 0 else { return }
-        let system = currentSystem
         let skin = currentSkin
         // 清理失效按键
         for (button, view) in buttons where layout.button(button) == nil {

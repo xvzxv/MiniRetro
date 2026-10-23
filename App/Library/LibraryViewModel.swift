@@ -54,7 +54,9 @@ final class LibraryViewModel: ObservableObject {
 
     // MARK: - 导入
 
-    func importFiles(urls: [URL]) {
+    /// 批量导入（选中多个文件 / 整个文件夹时走这里）
+    /// - Parameter progress: 每处理完一个文件回调一次（用于显示「3/20」进度）
+    func importFiles(urls: [URL], progress: ((Int, Int) -> Void)? = nil) {
         var summaryParts: [String] = []
         var totalImported = 0
         var totalFailed: [(String, String)] = []
@@ -63,7 +65,8 @@ final class LibraryViewModel: ObservableObject {
         var cheats: [String] = []
         var saves: [String] = []
 
-        for url in urls {
+        for (offset, url) in urls.enumerated() {
+            progress?(offset + 1, urls.count)
             let result = ROMImporter.importFile(from: url, into: &index)
             totalImported += result.imported.count
             duplicates += result.skippedDuplicates
@@ -100,23 +103,35 @@ final class LibraryViewModel: ObservableObject {
         }
     }
 
+    /// 批量删除：一次写盘，避免逐个 persist 卡顿
+    @discardableResult
+    func remove(_ roms: [ROMEntry]) -> Int {
+        guard !roms.isEmpty else { return 0 }
+        for rom in roms { deleteArtifacts(of: rom) }
+        index.roms.removeAll { rom in roms.contains { $0.id == rom.id } }
+        persist()
+        return roms.count
+    }
+
     func remove(_ rom: ROMEntry) {
         index.remove(id: rom.id)
-        // 同步删除 ROM 文件本体：只删索引的话，下次启动扫描会把文件重新加回库，
-        // 用户会看到「删不掉的条目」（旧版本「文件已损坏」删不干净就是这个原因）。
+        deleteArtifacts(of: rom)
+        persist()
+    }
+
+    /// 删除某款游戏在磁盘上的全部痕迹（ROM / 即时存档 / 金手指）
+    private func deleteArtifacts(of rom: ROMEntry) {
+        // 必须删 ROM 文件本体：只删索引的话，下次启动扫描会把文件重新加回库
         let fileURL = ROMImporter.romsDirectory.appendingPathComponent(rom.relativePath)
         try? FileManager.default.removeItem(at: fileURL)
-        // 同步删除存档目录
         let savesDir = FileManager.default.documentsDirectory
             .appendingPathComponent("Saves", isDirectory: true)
             .appendingPathComponent(rom.id.uuidString, isDirectory: true)
         try? FileManager.default.removeItem(at: savesDir)
-        // 同步删除金手指记录，避免 ID 复用时串味
         let cheatURL = FileManager.default.documentsDirectory
             .appendingPathComponent("Cheats", isDirectory: true)
             .appendingPathComponent("\(rom.id.uuidString).json")
         try? FileManager.default.removeItem(at: cheatURL)
-        persist()
     }
 
     func markPlayed(_ rom: ROMEntry) {

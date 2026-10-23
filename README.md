@@ -2,191 +2,119 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/iOS%20%7C%20iPadOS-17.0%2B-blue)
-![Swift](https://img.shields.io/badge/Swift-5.9-orange)
+![Version](https://img.shields.io/badge/version-2.0.0-brightgreen)
 
-一款面向 iPhone / iPad 的复古游戏模拟器：**SwiftUI + Metal** 自绘前端，**libretro** 内核驱动，
-支持 FC/NES、GB/GBC、GBA 以及街机（CPS1 / CPS2 / Neo Geo / PGM）。
+一个用 SwiftUI + Metal 写的 iOS/iPadOS 复古游戏模拟器，内核基于 libretro。
+支持 FC/NES、GB/GBC、GBA 和街机（CPS1/CPS2/Neo Geo/PGM），侧载安装，**不含任何 ROM**。
 
-侧载安装（自签名 ipa），不上 App Store。**仓库不含任何 ROM / BIOS**，游戏数据由使用者自行导入。
-
-| 游戏库 | 游戏内 |
-|---|---|
-| ![游戏库](docs/screenshots/12-library-v17-fixed.png) | ![游戏内](docs/screenshots/14-ingame-v17.png) |
+![游戏库](docs/screenshots/12-library-v17-fixed.png)
 
 ---
 
 ## 支持的平台
 
-| 平台 | 扩展名 | 内核 | 备注 |
-|---|---|---|---|
-| FC / NES | `.nes` `.unf` `.unif` | fceumm | 含早期汉化卡带的 UNIF 封装 |
-| Famicom Disk System | `.fds` | fceumm | |
-| Game Boy / Color | `.gb` `.gbc` | SameBoy | 原生 cheats 支持（构建期打补丁） |
-| Game Boy Advance | `.gba` | mGBA | |
-| 街机 | `.zip` `.7z` | FBNeo（可选） | CPS1/CPS2/Neo Geo/PGM，需自备 BIOS |
+| 平台 | 文件 | 说明 |
+|---|---|---|
+| FC / NES / FDS | `.nes` `.fds` `.unf` | 含早期汉化卡带的 UNIF 封装 |
+| GB / GBC | `.gb` `.gbc` | |
+| GBA | `.gba` | |
+| 街机 | `.zip` `.7z` | 整套 romset，需自备 BIOS |
 
-街机游戏（三国战纪、西游释厄传、拳皇等）需要整套 romset **原样导入**（不要解压），
-并把 `neogeo.zip` / `pgm.zip` 用同一个导入按钮装到 `System/` 目录——App 会自动识别。
-FBNeo 产物较大（49 MB/切片）未入库，首次构建会自动从上游浅克隆并编译。
+四个内核（fceumm / SameBoy / mGBA / FBNeo）**已随 App 打包**，装上就能用。
 
 ---
 
-## 特性
+## 安装
 
-- **虚拟按键**：左右分区 + 短边归一化坐标，iPad 4:3 与 iPhone 2.17:1 都保持对称与等间距；
-  全键位可拖动、可调透明度，布局按「系统 + 皮肤」持久化
-- **连发键**（A+/B+）与可调连发频率
-- **快进**：2× / 3× / 4× / 6× / 8× / 16×，快进时音频按倍率抽取，不静音也不爆音
-- **即时存档**：1 个自动槽 + 3 个手动槽，每槽保存当时的游戏画面作为封面；进游戏自动续上次进度
-- **金手指**：本地录入 + **社区库一键查找**（内置 5000+ 条游戏索引，离线搜索，命中后下载代码）
-- **游戏库**：导入 / 分类 / 收藏 / 封面；重复导入自动去重，旧索引自动自愈
-- **远程导入**：粘贴 http(s) 直链，或用 WebDAV（群晖、坚果云、Nextcloud、InfiniCLOUD）浏览下载，
-  下载后走同一套导入流程（压缩包自动解压、街机壳包自动拆）
-- **蓝牙手柄**：Xbox / PS / 标准 MFi 手柄，键位可重映射；方向可用十字键或左摇杆（可同时启用）；
-  **连接手柄时自动隐藏屏幕虚拟按键**（可关闭，HUD 右上角图标可临时调回，断开手柄自动恢复）
-- **画面**：保持原始宽高比（aspect-fit）或全屏拉伸；像素 / 平滑 / CRT / LCD 四种滤镜（Metal 运行时编译）
-- **中文与街机之外的细节**：中文 ROM 名识别、`-MRShowMenu` 等自动化验证入口
+下载 [Releases](https://github.com/xvzxv/MiniRetro/releases) 里的 `*-unsigned.ipa`，
+用 **Sideloadly / AltStore / 自签证书** 签名后安装。需要 iOS / iPadOS 17.0+。
 
----
-
-## 构建
-
-需要 macOS + Xcode 16 以上（开发验证于 Xcode 27.1 / iOS 27 SDK）。
-
-```bash
-# 依赖（一次）
-brew install xcodegen cmake rgbds
-
-# 一键：四个 core → xcframework → xcodebuild → 未签名 ipa
-./Tools/build.sh
-
-# 产物
-#   build/MiniRetro-<版本>-<build>-unsigned.ipa
-```
-
-| 参数 | 作用 |
-|---|---|
-| `--skip-cores` | 跳过内核编译（xcframework 已存在时加速；FBNeo 缺失会自动补建） |
-| `--adhoc` | 使用 ad-hoc 签名（部分签名工具不接受完全未签名 ipa） |
-| `MR_CLEAN_BUILD_DIR=1` | 彻底清空派生数据后重建 |
-
-只用某个内核：
-
-```bash
-./Cores/build_cores.sh fbneo        # 也可 mgba / sameboy / fceumm
-```
-
-### 不需要设备的自检
-
-```bash
-./Tools/run_romlib_test.sh   # 28 项：ROM 识别 / 导入去重 / 脏索引自愈 / 街机 zip / 金手指解析
-./Tools/run_e2e.sh           # macOS 端到端：真实加载 → 60fps → 抓帧 → 存档往返（三 core 各 15 项断言）
-./Tools/run_simulator.sh     # 模拟器安装、启动、截图
-```
-
----
-
-## 安装（侧载）
-
-**直接下载**：最新构建见 [Releases](https://github.com/xvzxv/MiniRetro/releases)
-（未签名 ipa，仍需自行签名）。
-
-仓库不内置签名脚本，签名由你自行管理：
-
-1. 用 **Sideloadly / AltStore / 自签证书** 对 `build/*.ipa` 或 Release 附件签名
-2. 免费 Apple ID 的签名 7 天过期，需重新签名
-3. 签名工具拒绝未签名 ipa 时，改用 `./Tools/build.sh --adhoc`
+免费 Apple ID 的签名 7 天过期，到期重新签一次即可。
 
 ---
 
 ## 使用
 
-1. 右上角 `+` 导入文件，**App 自动归类**：游戏（`.nes/.fds/.gb/.gbc/.gba`、街机 `.zip/.7z`）、
-   BIOS（`neogeo.zip`/`pgm.zip` → `System/`）、金手指（`.cht` → 金手指库）、电池存档（`.srm/.sav` → 按同名 ROM 归档）
-2. 点击卡片进入游戏（横屏）
-3. 左上角菜单：存档槽位 / 金手指 / 快进 / 滤镜 / 布局编辑 / 手柄键位 / 软复位
-   （每个开关都带一句话说明；软复位、退出、删除游戏等危险操作会二次确认）
+### 导入游戏
 
-**金手指**：菜单 → 金手指管理 → 「从社区金手指库查找」按游戏名搜索，勾选后一键导入并立即生效；
-也可手动录入 Game Genie / GameShark / Action Replay / CodeBreaker 或 `地址:值` 内存写入码。
+点右上角 `+`，三种方式：
 
-**存档**：退出游戏与进入后台都会写自动槽；手动槽可随时保存 / 读取 / 删除，删除同时清理文件。
+- **选择文件**：可一次选多个（游戏、BIOS、金手指、存档混着选也行，App 自动归类）
+- **导入整个文件夹**：递归扫描，适合一次拷一堆 ROM 进来
+- **从直链 / WebDAV 导入**：粘贴下载链接，或连群晖 / 坚果云 / Nextcloud 浏览下载
 
----
+会自动识别的东西：
 
-## 架构
-
-```
-App (SwiftUI)  ──  UIKit/Metal 渲染、输入、状态
-   │  ObjC bridging
-CoreBridge     ──  C/ObjC++ 唯一内核入口（RetroCore / FramePipeline / AudioRingBuffer / CoreRegistry）
-   │  dlopen
-libretro core  ──  *.framework（fceumm / SameBoy / mGBA / FBNeo）
-```
-
-设计约束（改代码前请先读）：
-
-- **只有 CoreBridge 能 `#import "libretro.h"`**，App 层不得直接调用内核
-- `retro_run()` 只在专用串行线程调用；其余 libretro API 由互斥锁串行化
-- 输入走「原子位掩码状态表」：虚拟按键 / 蓝牙手柄 → 位掩码 → `retro_input_state`
-- 帧缓冲、纹理、环形缓冲预分配，run 循环内零逐帧分配
-- 新系统 API 一律 `#available` 守卫；部署目标固定 17.0
-
-```
-App/              SwiftUI 源码（Library / Game / Settings / Models / Utilities）
-CoreBridge/       C/ObjC++ 桥接层
-Cores/
-  mgba/ sameboy/ fceumm/   上游源码快照（版本锁定见 .gitmodules 头部说明）
-  libretro.h               libretro API 头文件（固定版本）
-  artifacts/               编译产物 xcframework（FBNeo 除外）
-  build_cores.sh           交叉编译内核 → artifacts/*.xcframework
-Tools/
-  build.sh                 一键构建（core → xcframework → App → ipa）
-  package_ipa.sh           打包未签名 ipa
-  run_e2e.sh               macOS 端到端验证
-  run_romlib_test.sh       游戏库逻辑回归测试
-  run_simulator.sh         模拟器安装 / 启动 / 截图
-  make_xcframework.sh      纯 shell 打包 xcframework（xcodebuild 不可用时的回退）
-  gen_cheat_index.py       生成内置金手指索引
-Tests/                    XCTest 与命令行回归测试
-docs/                     架构决策（ADR）、维护指南、测试矩阵、进度日志、截图
-```
-
----
-
-## 文档
-
-| 文档 | 内容 |
+| 文件 | 处理 |
 |---|---|
-| [`docs/maintenance.md`](docs/maintenance.md) | 维护指南：目录职责、验证矩阵、发版清单、常见问题 |
-| [`docs/adr-log.md`](docs/adr-log.md) | 架构决策记录（含每次实测踩坑与修正） |
-| [`docs/testing.md`](docs/testing.md) | 测试用例表 |
-| [`docs/progress-log.md`](docs/progress-log.md) | 版本进度日志 |
+| `.nes/.fds/.gb/.gbc/.gba` | 识别平台后入库 |
+| `.zip` | 含主机 ROM → 解压分类；街机 romset / 整合包 → 拆包 |
+| `.7z` | 街机 romset 整包 |
+| `neogeo.zip` / `pgm.zip` | 识别为 BIOS，装进 `System/` |
+| `.cht` | 存进金手指库，游戏内可一键套用 |
+| `.srm` / `.sav` | 按同名 ROM 归档为电池存档 |
+
+重复导入同一款游戏会跳过，不会生成副本。
+
+### 批量删除
+
+右上角 `⋯` → **批量选择** → 点卡片勾选（支持「全选」）→ 底部「删除」。
+删除会同时清掉 ROM 文件、即时存档、金手指记录，并有二次确认。
+
+### 游戏内
+
+左上角菜单：
+
+- **存档**：1 个自动槽（进游戏自动读、退出自动写）+ 3 个手动槽，每槽带画面封面
+- **金手指**：手动录入 / 社区库搜索 / 套用导入的 `.cht`
+- **快进**：2×～16×，画面顶部也有快捷开关
+- **显示**：滤镜、FPS、音量、虚拟按键布局编辑、手柄键位
+- **软复位 / 退出**：都会二次确认
+
+### 街机
+
+1. 导入整套 romset（`.zip`/`.7z`，**不要解压**）
+2. 把 `pgm.zip`（PGM）或 `neogeo.zip`（Neo Geo）用同一个 `+` 导入 —— 它通常就在你的 romset 包里
+3. 缺 BIOS 时画面会显示内核的缺失清单，照着补即可
+
+> BIOS 属于厂商版权数据，App 不内置。
+
+### 手柄
+
+系统蓝牙配对后自动识别。设置里可选方向输入（十字键 / 左摇杆 / 两者）；
+连上手柄后虚拟按键自动隐藏，点画面右上角的手掌图标可临时调回。
 
 ---
 
-## 已知限制
+## 版本号规则
 
-- **不含 ROM**：仓库不提交任何有版权 ROM / BIOS；测试用 homebrew 作品请自行准备
-- **街机**：需要自备 romset 与 BIOS（`pgm.zip` / `neogeo.zip`，App 不内置）；支持整合包（外层 zip 里套 romset）自动拆分；
-  不支持 CHD 镜像
-- **街机金手指**：社区库不提供街机归档，只能手动录入
-- **远程导入**：只支持直链与 WebDAV；不集成网盘私有接口（夸克/百度等无公开 API，逆向 Cookie 接口易失效且有账号风险）
-- **联机**：`specs/online-play-design.md` 仅为设计文档，未实现
-- **签名**：仓库不承担签名 / 重签，只产出未签名 ipa
+`主版本.次版本.修订号`：
+
+- **修订号**（`2.0.x`）：修 bug、小调整
+- **次版本**（`2.x.0`）：加新功能、较大改动
+- **主版本**（`x.0.0`）：重构或重大更新
+
+---
+
+## 构建
+
+需要 macOS + Xcode 16 以上：
+
+```bash
+brew install xcodegen cmake rgbds
+./Tools/build.sh                 # 产出 build/MiniRetro-<版本>-<build>-unsigned.ipa
+./Tools/build.sh --skip-cores    # 只编译 App（内核已构建过）
+./Tools/run_romlib_test.sh       # 逻辑回归测试，不需要设备
+```
+
+开发细节见 [`docs/maintenance.md`](docs/maintenance.md) 与 [`docs/adr-log.md`](docs/adr-log.md)。
 
 ---
 
 ## 许可
 
-- 本项目自有代码：**MIT**，见 [LICENSE](LICENSE)
-- 第三方内核：fceumm（GPL-2.0）、SameBoy（Expat/MIT）、mGBA（MPL-2.0）、FBNeo（禁止商业使用）
-  各自的许可证原文保留在 `Cores/` 对应目录，汇总见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)
+自有代码 **MIT**（见 [LICENSE](LICENSE)）。
+第三方内核：fceumm（GPL-2.0）、SameBoy（Expat/MIT）、mGBA（MPL-2.0）、FBNeo（禁止商业使用），
+详见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
 
-再分发二进制时请同时满足上述许可证条款。**请勿将本仓库用于任何商业用途的街机内核分发。**
-
-## 致谢
-
-[fceumm](https://github.com/libretro/libretro-fceumm) · [SameBoy](https://github.com/LIJI32/SameBoy) ·
-[mGBA](https://github.com/mgba-emu/mgba) · [FBNeo](https://github.com/libretro/fbneo) ·
-[libretro](https://www.libretro.com/) · [XcodeGen](https://github.com/yonaskolb/XcodeGen)
+**本仓库不包含任何 ROM / BIOS。** 请使用你自己合法拥有的游戏备份或 homebrew 作品。

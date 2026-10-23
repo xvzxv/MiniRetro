@@ -54,8 +54,10 @@ targets:
         CLANG_CXX_LANGUAGE_STANDARD: c++17
         SWIFT_OBJC_INTERFACE_HEADER_NAME: MiniRetro-Swift.h
         GENERATE_INFOPLIST_FILE: NO
-        MARKETING_VERSION: "1.10"
-        CURRENT_PROJECT_VERSION: "11"
+        # 版本号规则（语义化）：修订号=bug/小调整；次版本=新功能/较大改动；主版本=重构或重大更新
+        # 每次发版必须同时改这两行，并在 docs/progress-log.md 追加记录
+        MARKETING_VERSION: "2.0.0"
+        CURRENT_PROJECT_VERSION: "12"
         TARGETED_DEVICE_FAMILY: "1,2"
         SWIFT_STRICT_CONCURRENCY: minimal
         ENABLE_USER_SCRIPT_SANDBOXING: NO

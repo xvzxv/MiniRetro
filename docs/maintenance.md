@@ -181,3 +181,15 @@ python3 Tools/gen_app_icon.py     # 产出 App/Resources/Assets.xcassets/AppIcon
    旧上限 512×512 会让每帧被静默丢弃 → 加载成功但永久黑屏。现在上限 1024×1024，超限会打日志。
 
 日志抓取：`xcrun simctl spawn booted log show --last 3m --predicate 'process == "MiniRetro"' | grep -E "core:INFO|FramePipeline"`
+
+## 版本号规则（v2.0.0 起，必须遵守）
+
+`主版本.次版本.修订号`（`MARKETING_VERSION`），`CURRENT_PROJECT_VERSION` 是递增的 build 号：
+
+| 改动性质 | 改哪一位 | 例子 |
+|---|---|---|
+| 修 bug、文案、小调整 | **修订号 +1** | 2.0.0 → 2.0.1 |
+| 增加功能、较大改动 | **次版本 +1，修订号归零** | 2.0.1 → 2.1.0 |
+| 重构、重大更新 | **主版本 +1，后两位归零** | 2.1.3 → 3.0.0 |
+
+发版动作固定三步：改 `project.yml` 两个版本字段 → `docs/progress-log.md` 追加一条 → 打 tag + Release。
