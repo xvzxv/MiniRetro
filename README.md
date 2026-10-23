@@ -101,9 +101,11 @@ brew install xcodegen cmake rgbds
 
 ## 使用
 
-1. 右上角 `+` 导入 ROM；含主机 ROM 的 `.zip` 会自动解压并按平台分类
+1. 右上角 `+` 导入文件，**App 自动归类**：游戏（`.nes/.fds/.gb/.gbc/.gba`、街机 `.zip/.7z`）、
+   BIOS（`neogeo.zip`/`pgm.zip` → `System/`）、金手指（`.cht` → 金手指库）、电池存档（`.srm/.sav` → 按同名 ROM 归档）
 2. 点击卡片进入游戏（横屏）
 3. 左上角菜单：存档槽位 / 金手指 / 快进 / 滤镜 / 布局编辑 / 手柄键位 / 软复位
+   （每个开关都带一句话说明；软复位、退出、删除游戏等危险操作会二次确认）
 
 **金手指**：菜单 → 金手指管理 → 「从社区金手指库查找」按游戏名搜索，勾选后一键导入并立即生效；
 也可手动录入 Game Genie / GameShark / Action Replay / CodeBreaker 或 `地址:值` 内存写入码。

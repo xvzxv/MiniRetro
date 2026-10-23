@@ -5,10 +5,12 @@
 // 这里只做「是否装了」的展示，不参与加载逻辑。
 import Foundation
 
-struct ArcadeBIOSStatus {
+struct ArcadeBIOSStatus: Identifiable {
     let fileName: String
     let title: String
     let installed: Bool
+
+    var id: String { fileName }
 }
 
 enum ArcadeSupport {

@@ -99,6 +99,7 @@ struct RemoteImportView: View {
 
     private var directSection: some View {
         Section("文件直链") {
+            HintText("支持任意 http(s) 直链，也支持网盘的「直链/下载链接」。链接要以 .zip/.7z/.nes/.gb/.gba/.cht/.srm 结尾，或服务器能正确返回文件名。")
             TextField("https://example.com/game.zip", text: $directURL)
                 .keyboardType(.URL)
                 .textInputAutocapitalization(.never)
@@ -122,6 +123,7 @@ struct RemoteImportView: View {
     private var webdavSection: some View {
         Group {
             Section("服务器") {
+                HintText("填 WebDAV 根地址：群晖 https://NAS:5006/、坚果云 https://dav.jianguoyun.com/dav/、Nextcloud https://域名/remote.php/dav/files/用户名/。")
                 TextField("https://dav.example.com/dav", text: $server)
                     .keyboardType(.URL)
                     .textInputAutocapitalization(.never)
@@ -130,6 +132,7 @@ struct RemoteImportView: View {
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                 SecureField("密码 / 应用密码", text: $password)
+                HintText("坚果云、群晖建议用「应用密码」而不是登录密码；密码只存本机钥匙串。")
                 Button(connected ? "重新连接" : "连接") { connect() }
                     .disabled(server.isEmpty || isBusy)
             }

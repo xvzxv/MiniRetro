@@ -60,6 +60,8 @@ final class LibraryViewModel: ObservableObject {
         var totalFailed: [(String, String)] = []
         var duplicates = 0
         var bios: [String] = []
+        var cheats: [String] = []
+        var saves: [String] = []
 
         for url in urls {
             let result = ROMImporter.importFile(from: url, into: &index)
@@ -67,6 +69,8 @@ final class LibraryViewModel: ObservableObject {
             duplicates += result.skippedDuplicates
             totalFailed.append(contentsOf: result.failed)
             bios.append(contentsOf: result.biosInstalled)
+            cheats.append(contentsOf: result.cheatsImported)
+            saves.append(contentsOf: result.savesImported)
         }
         persist()
 
@@ -74,6 +78,12 @@ final class LibraryViewModel: ObservableObject {
         if duplicates > 0 { summaryParts.append("跳过重复 \(duplicates) 款") }
         if !bios.isEmpty {
             summaryParts.append("已安装 BIOS：\(bios.joined(separator: "、"))")
+        }
+        if !cheats.isEmpty {
+            summaryParts.append("已存入金手指库：\(cheats.joined(separator: "、"))（游戏内金手指页可套用）")
+        }
+        if !saves.isEmpty {
+            summaryParts.append("已归档电池存档：\(saves.joined(separator: "、"))")
         }
         for (name, reason) in totalFailed.prefix(3) {
             summaryParts.append("\(name)：\(reason)")

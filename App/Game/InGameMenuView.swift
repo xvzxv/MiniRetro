@@ -11,13 +11,15 @@ struct InGameMenuView: View {
     @State private var showCheatEditor = false
     @State private var showLayoutEditor = false
     @State private var showKeyRemap = false
+    @State private var confirmReset = false
+    @State private var confirmExit = false
 
     @ObservedObject private var settings = SettingsStore.shared
 
     var body: some View {
         NavigationStack {
             List {
-                Section("存档") {
+                Section {
                     ForEach(states) { state in
                         HStack(spacing: 10) {
                             // 封面：存档时抓取的游戏画面
@@ -86,9 +88,15 @@ struct InGameMenuView: View {
                         }
                         .padding(.vertical, 2)
                     }
+                } header: {
+                    Text("存档")
+                } footer: {
+                    HintText("自动槽：进游戏时自动载入、退出/切后台时自动写入。手动槽 3 个，可随时存/读/删；删除同时清掉存档文件与封面。")
                 }
-                Section("游戏") {
+
+                Section {
                     Button("金手指管理") { showCheatEditor = true }
+                    HintText("支持手动录入、从社区库搜索，以及导入外部 .cht 文件。修改后立即生效。")
                     Toggle("快进（\(settings.fastForwardMultiplier)×）", isOn: fastForwardBinding)
                     Picker("快进倍率", selection: $settings.fastForwardMultiplier) {
                         Text("2×").tag(2)
@@ -98,34 +106,42 @@ struct InGameMenuView: View {
                         Text("8×").tag(8)
                         Text("16×").tag(16)
                     }
-                    Button("软复位") { viewModel.resetGame() }
+                    HintText("软复位 = 按主机 Reset，不读档、不清存档；存档里的进度仍然保留。")
+                    Button("软复位") { confirmReset = true }
                     Button("保存电池存档") {
                         viewModel.flushBatterySave()
                         message = "电池存档已保存"
                     }
+                    HintText("电池存档（.sav/.srm）是游戏自己的进度存档，和即时存档不同：游戏内正常保存后，这里可强制立刻写盘。")
+                } footer: {
+                    HintText("快进倍率越大越省时间，但画面更新会跟不上（声音已按倍率抽取，不会静音）。")
                 }
 
-                Section("显示与操作") {
+                Section {
                     Picker("滤镜", selection: $settings.filterMode) {
                         ForEach(FilterMode.allCases) { mode in
                             Text(mode.displayName).tag(mode)
                         }
                     }
+                    HintText("CRT/LCD 滤镜在老机型上会掉帧，卡就切回「像素」。")
                     Toggle("显示 FPS", isOn: $settings.showFPS)
                     Toggle("按键震动", isOn: $settings.hapticsEnabled)
                     Slider(value: $settings.volume, in: 0...1) {
                         Text("音量")
                     }
+                    HintText("App 内部音量，与系统音量叠加。")
                     Button("虚拟按键布局编辑") { showLayoutEditor = true }
+                    HintText("拖动按键改位置，松手自动保存；每个系统一套，可随时恢复默认。")
                     Button("手柄键位设置") { showKeyRemap = true }
+                    HintText("改物理按键映射，方向键与摇杆的取舍在设置页「方向输入」里。")
                     Toggle("连接手柄时隐藏虚拟按键", isOn: $settings.autoHideControlsOnController)
-                    Text("开启后，检测到蓝牙手柄连接会自动隐藏虚拟按键（HUD 右上角可临时调回）；断开手柄自动恢复。")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    HintText("连上手柄后屏幕按键消失；想临时调回点画面右上角的手掌图标。")
+                } header: {
+                    Text("显示与操作")
                 }
 
-                Section("关于本机") {
-                    LabeledContent("核心", value: viewModel.rom.system.coreName)
+                Section {
+                    LabeledContent("内核", value: viewModel.rom.system.coreName)
                     LabeledContent("分辨率", value: "\(Int(viewModel.retroCore.videoBaseSize.width))×\(Int(viewModel.retroCore.videoBaseSize.height))")
                     LabeledContent("音频延迟", value: String(format: "%.1f ms", viewModel.audioLatencyMs))
                     if GameControllerManager.shared.isConnected {
@@ -134,6 +150,10 @@ struct InGameMenuView: View {
                         Text("未检测到蓝牙手柄")
                             .foregroundColor(.secondary)
                     }
+                } header: {
+                    Text("关于本机")
+                } footer: {
+                    HintText("分辨率是内核输出的画面尺寸（不是屏幕分辨率）。街机若显示 640×480 但画面不动，多半是缺 BIOS。")
                 }
             }
             .navigationTitle("菜单")
@@ -144,10 +164,24 @@ struct InGameMenuView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("退出游戏", role: .destructive) {
-                        isPresented = false
-                        viewModel.exitGame?()
+                        confirmExit = true
                     }
                 }
+            }
+            .alert("软复位？", isPresented: $confirmReset) {
+                Button("取消", role: .cancel) {}
+                Button("复位", role: .destructive) { viewModel.resetGame() }
+            } message: {
+                Text("相当于按主机 Reset：未保存的游戏进度会丢失，即时存档不受影响。")
+            }
+            .alert("退出游戏？", isPresented: $confirmExit) {
+                Button("取消", role: .cancel) {}
+                Button("退出", role: .destructive) {
+                    isPresented = false
+                    viewModel.exitGame?()
+                }
+            } message: {
+                Text("会自动写一次自动存档，下次进来可以接着玩。")
             }
             .alert("提示", isPresented: Binding(
                 get: { message != nil },

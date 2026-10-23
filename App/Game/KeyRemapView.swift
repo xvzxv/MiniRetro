@@ -5,6 +5,7 @@ struct KeyRemapView: View {
     @ObservedObject private var manager = GameControllerManager.shared
     @Environment(\.dismiss) private var dismiss
 
+    @State private var confirmReset = false
     @State private var remapping: GameControllerMapping.PhysicalButton?
 
     var body: some View {
@@ -42,18 +43,24 @@ struct KeyRemapView: View {
                 } header: {
                     Text("物理按键 → 模拟器按键")
                 } footer: {
-                    Text("点击某一行进入重映射，然后在上方预览中按下目标模拟器按键。")
+                    HintText("点某一行进入重映射，再在下方按键盘里选目标按键。方向键建议保留默认——方向由设置页「方向输入」统一控制，改这里不会影响摇杆。")
                 }
             }
             .navigationTitle("手柄键位")
             
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("恢复默认") { manager.resetRemap() }
+                    Button("恢复默认") { confirmReset = true }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("完成") { dismiss() }
                 }
+            }
+            .alert("恢复默认键位？", isPresented: $confirmReset) {
+                Button("取消", role: .cancel) {}
+                Button("恢复", role: .destructive) { manager.resetRemap() }
+            } message: {
+                Text("会清掉你自定义的所有映射，恢复成 Xbox/PS 标准布局。")
             }
             .overlay(alignment: .bottom) {
                 if remapping != nil {

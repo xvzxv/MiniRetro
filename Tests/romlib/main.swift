@@ -161,6 +161,46 @@ if let pkg = ProcessInfo.processInfo.environment["ARCADE_PACKAGE"], !pkg.isEmpty
     print("  ⏳ 跳过（未提供 ARCADE_PACKAGE）")
 }
 
+print("[10] 非 ROM 文件自动识别（金手指 / 电池存档）")
+do {
+    var idx = LibraryIndex()
+    let importedEntry = ROMImporter.importFile(from: romSource, into: &idx).imported.first
+    // store() 遇到重名会写 x-1.nes，用实际入库名构造存档名才符合真实场景
+    let base = ((importedEntry?.fileName ?? romSource.lastPathComponent) as NSString)
+        .deletingPathExtension
+
+    // 金手指 .cht
+    let cht = docs.appendingPathComponent("\(base).cht")
+    try? """
+    cheats = 2
+    cheat0_desc = "Infinite Lives"
+    cheat0_code = "SXIOPO"
+    cheat1_desc = "Invincible"
+    cheat1_code = "00AE:41"
+    """.write(to: cht, atomically: true, encoding: .utf8)
+    let chtResult = ROMImporter.importFile(from: cht, into: &idx)
+    check(chtResult.cheatsImported == [cht.lastPathComponent], "识别 .cht 为金手指文件（\(chtResult.cheatsImported)）")
+    check(chtResult.imported.isEmpty, ".cht 不会污染游戏库")
+    let stored = CheatFileStore.list().first { $0.name == cht.lastPathComponent }
+    check(stored != nil, "金手指文件已存入 CheatFileStore")
+    if let stored {
+        let parsed = CheatFileStore.parse(stored, system: .fc)
+        check(parsed.count == 2, "解析出 2 条代码（实际 \(parsed.count)）")
+    }
+
+    // 电池存档 .srm（同名）
+    let srm = docs.appendingPathComponent("\(base).srm")
+    try? Data(repeating: 0x42, count: 8192).write(to: srm)
+    let srmResult = ROMImporter.importFile(from: srm, into: &idx)
+    check(srmResult.savesImported.count == 1, "同名 .srm 归档到该游戏（\(srmResult.savesImported)）")
+
+    // 无同名 ROM 的存档应给出失败原因而不是静默丢弃
+    let orphan = docs.appendingPathComponent("不存在的游戏.srm")
+    try? Data(repeating: 0x01, count: 1024).write(to: orphan)
+    let orphanResult = ROMImporter.importFile(from: orphan, into: &idx)
+    check(orphanResult.failed.count == 1, "无同名 ROM 的存档给出失败原因")
+}
+
 print("[9] 手柄方向合并（十字键 + 摇杆同时开启）")
 do {
     var merger = DirectionInputMerger()

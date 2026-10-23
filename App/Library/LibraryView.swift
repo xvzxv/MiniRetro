@@ -15,6 +15,7 @@ struct LibraryView: View {
     @State private var selectedROM: ROMEntry?
     @State private var importMessage: String?
     @State private var showRemoteImport = false
+    @State private var pendingDelete: ROMEntry?
 
     private let columns = [GridItem(.adaptive(minimum: 140), spacing: 16)]
 
@@ -118,6 +119,22 @@ struct LibraryView: View {
                     }
                 }
             }
+            .confirmationDialog(
+                "移除「\(pendingDelete?.displayName ?? "")」？",
+                isPresented: Binding(
+                    get: { pendingDelete != nil },
+                    set: { if !$0 { pendingDelete = nil } }
+                ),
+                titleVisibility: .visible
+            ) {
+                Button("删除游戏文件与存档", role: .destructive) {
+                    if let rom = pendingDelete { model.remove(rom) }
+                    pendingDelete = nil
+                }
+                Button("取消", role: .cancel) { pendingDelete = nil }
+            } message: {
+                Text("会同时删除 ROM 文件、这个游戏的即时存档与金手指记录，无法恢复。只是不想看到它的话，可以先加收藏。")
+            }
             .alert("导入结果", isPresented: Binding(
                 get: { model.importSummary != nil },
                 set: { if !$0 { model.importSummary = nil } }
@@ -147,7 +164,7 @@ struct LibraryView: View {
                                 Label(rom.isFavorite ? "取消收藏" : "收藏", systemImage: rom.isFavorite ? "star.slash" : "star")
                             }
                             Button(role: .destructive) {
-                                model.remove(rom)
+                                pendingDelete = rom
                             } label: {
                                 Label("从库中移除", systemImage: "trash")
                             }
@@ -197,7 +214,17 @@ struct LibraryView: View {
                 .foregroundColor(.secondary)
             Text("还没有游戏")
                 .font(.title2)
-            Text("点击右上角 + 导入 ROM\nFC/NES(.nes/.fds) · GB/GBC(.gb/.gbc) · GBA(.gba) · 街机(.zip/.7z)\n街机 BIOS（neogeo.zip / pgm.zip）也走同一个 + 导入，会自动装到 System 目录\nROM 由你自行提供，本 App 不含任何游戏数据")
+            Text("""
+            点右上角 + 选择文件，App 会自动归类：
+            · 游戏：.nes .fds .gb .gbc .gba，街机整套 .zip / .7z
+            · BIOS：neogeo.zip / pgm.zip（自动装到 System）
+            · 金手指：.cht（存进金手指库，游戏内可套用）
+            · 电池存档：.srm / .sav（按同名 ROM 归档）
+
+            也可以点右上角 🌐 从直链或 WebDAV 直接下载导入。
+            ROM 由你自行提供，本 App 不含任何游戏数据。
+            """)
+            .font(.callout)
                 .font(.callout)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -313,6 +340,10 @@ struct DocumentPicker: UIViewControllerRepresentable {
             UTType(filenameExtension: "fds") ?? .data,
             // 街机 romset（西游释厄传/三国战纪/拳皇等，整套 zip 原样交给 FBNeo）
             UTType(filenameExtension: "7z") ?? .data,
+            // 金手指文件（libretro .cht）与电池存档（.srm/.sav）：导入时自动识别归类
+            UTType(filenameExtension: "cht") ?? .data,
+            UTType(filenameExtension: "srm") ?? .data,
+            UTType(filenameExtension: "sav") ?? .data,
             UTType.zip,
             .data,
         ]

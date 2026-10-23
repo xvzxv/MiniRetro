@@ -8,6 +8,10 @@ struct ImportResult {
     var skippedDuplicates = 0
     /// 识别为 BIOS 并安装到 System/ 的文件名（街机 core 依赖）
     var biosInstalled: [String] = []
+    /// 识别为金手指文件（.cht）并存入金手指库的名字
+    var cheatsImported: [String] = []
+    /// 识别为电池存档（.srm/.sav）并归档的名字
+    var savesImported: [String] = []
 }
 
 enum ROMImporter {
@@ -61,6 +65,48 @@ enum ROMImporter {
         let fileName = sourceURL.lastPathComponent
         guard let data = FileManager.default.contents(atPath: sourceURL.path) else {
             result.failed.append((fileName, "无法读取文件"))
+            return result
+        }
+
+        let ext = (fileName as NSString).pathExtension.lowercased()
+
+        // 金手指文件：libretro .cht（社区库/自制的标准格式），存进金手指库供游戏内取用
+        if ext == "cht" {
+            let dir = CheatFileStore.directory
+            FileManager.default.ensureDirectory(dir)
+            let dest = dir.appendingPathComponent(fileName)
+            do {
+                try data.write(to: dest, options: .atomic)
+                result.cheatsImported.append(fileName)
+            } catch {
+                result.failed.append((fileName, "金手指写入失败：\(error.localizedDescription)"))
+            }
+            return result
+        }
+
+        // 电池存档：.srm / .sav，按同名 ROM 归档到 Saves/<romID>/
+        if ext == "srm" || ext == "sav" {
+            let base = (fileName as NSString).deletingPathExtension
+            // 兼容「同名被重命名」的情况：store() 遇到重名会写 x-1.nes，
+            // 用户手里的存档仍叫 x.srm，这里两种都要能对上
+            if let rom = index.roms.first(where: {
+                let stem = ($0.fileName as NSString).deletingPathExtension
+                return stem == base || stem.hasPrefix(base + "-")
+            }) {
+                let dir = FileManager.default.documentsDirectory
+                    .appendingPathComponent("Saves", isDirectory: true)
+                    .appendingPathComponent(rom.id.uuidString, isDirectory: true)
+                FileManager.default.ensureDirectory(dir)
+                let dest = dir.appendingPathComponent(fileName)
+                do {
+                    try data.write(to: dest, options: .atomic)
+                    result.savesImported.append("\(fileName) → \(rom.displayName)")
+                } catch {
+                    result.failed.append((fileName, "存档写入失败：\(error.localizedDescription)"))
+                }
+            } else {
+                result.failed.append((fileName, "没有找到同名 ROM（存档需与游戏同名的 .srm/.sav）"))
+            }
             return result
         }
 

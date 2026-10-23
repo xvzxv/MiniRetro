@@ -42,9 +42,11 @@
 		9DE6FA919C54194ECE06E41A /* CoreRegistry.c in Sources */ = {isa = PBXBuildFile; fileRef = 83F15A8CB8AAF20F72143ADF /* CoreRegistry.c */; };
 		A7A3949FB7442ED4AF1BE054 /* VideoShaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A9539DFC246F6D387B054E2 /* VideoShaders.swift */; };
 		AB03501B5FEC48B961BA300B /* fbneo-core.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 977758C0B74497D7CED2F293 /* fbneo-core.xcframework */; };
+		B0CAA71E1A9F9EE68BE5295F /* Hints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486BEC1CEE8AF4F466CF5A4D /* Hints.swift */; };
 		B17BC2DB4E06A5F678B58BA1 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B27DB966190AE2267EF5054 /* RootView.swift */; };
 		B3C7336EB0AE9BF82BBFB438 /* GameDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40F95AE84989D66C5A55C4A /* GameDisplayView.swift */; };
 		B9D8A8CEFD3C6062173924EB /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEEB8A9C0BA8AD9068642606 /* GameView.swift */; };
+		C822A1E28371309E1EC05810 /* CheatFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA4ACB91EC6762EEA895794 /* CheatFileStore.swift */; };
 		CC70C0879F728DFC10E63551 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF9A1098814BA9E5CDA70FA /* LibraryView.swift */; };
 		CE49C1E948652AB5AC327B33 /* CommunityCheatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F430F77DB801D52F896312E /* CommunityCheatService.swift */; };
 		D182BB2FC8007D46190E5B84 /* ROMImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE02FEA81B1176A0D737302 /* ROMImporter.swift */; };
@@ -101,7 +103,9 @@
 		3A3FC0EAD50329BDD1B39170 /* sameboy-core.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = "sameboy-core.xcframework"; path = "Cores/artifacts/sameboy-core.xcframework"; sourceTree = "<group>"; };
 		3CF9A1098814BA9E5CDA70FA /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		3FD8E3CE6A10A5795FB61C2F /* VirtualGamepad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualGamepad.swift; sourceTree = "<group>"; };
+		486BEC1CEE8AF4F466CF5A4D /* Hints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hints.swift; sourceTree = "<group>"; };
 		5CB3410028850C85D429A95D /* FramePipeline.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = FramePipeline.mm; sourceTree = "<group>"; };
+		5DA4ACB91EC6762EEA895794 /* CheatFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheatFileStore.swift; sourceTree = "<group>"; };
 		63647189A416CF934C9EEEF5 /* MiniRetro.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MiniRetro.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6B3877084D82ED1EB40CECE8 /* ZipArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipArchive.swift; sourceTree = "<group>"; };
 		6D2EFF7695A73F4C2ABC1C32 /* LayoutStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutStoreTests.swift; sourceTree = "<group>"; };
@@ -183,6 +187,14 @@
 			path = Utilities;
 			sourceTree = "<group>";
 		};
+		496661448C1BADF6E7382A6C /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				486BEC1CEE8AF4F466CF5A4D /* Hints.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		51675405E1E9DECC1FC4BE50 /* CoreBridge */ = {
 			isa = PBXGroup;
 			children = (
@@ -229,6 +241,7 @@
 				178BA2F3E58347AE96913549 /* Resources */,
 				CCC8F8BCE466F1914D9BA9FE /* Settings */,
 				3754312B46AA33BAFAB4AEA8 /* Utilities */,
+				496661448C1BADF6E7382A6C /* Views */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -289,6 +302,7 @@
 			isa = PBXGroup;
 			children = (
 				D86A9BEA77B72BAA2DBB0FB2 /* CheatEditorView.swift */,
+				5DA4ACB91EC6762EEA895794 /* CheatFileStore.swift */,
 				C62AD5C3B1ECFEFB75361505 /* CheatManager.swift */,
 				7F430F77DB801D52F896312E /* CommunityCheatService.swift */,
 				8CA4A679820507B215B02305 /* CommunityCheatView.swift */,
@@ -424,6 +438,7 @@
 				60286C5BFE4127CE5C21A5FF /* ArcadeSupport.swift in Sources */,
 				570815F1EA6C3E30ABDDA587 /* AudioRingBuffer.mm in Sources */,
 				34EAC7ADB797279DEC4AC923 /* CheatEditorView.swift in Sources */,
+				C822A1E28371309E1EC05810 /* CheatFileStore.swift in Sources */,
 				7E1544B536720A893E1C38FC /* CheatManager.swift in Sources */,
 				CE49C1E948652AB5AC327B33 /* CommunityCheatService.swift in Sources */,
 				18790DF37D3B406ACA22328C /* CommunityCheatView.swift in Sources */,
@@ -438,6 +453,7 @@
 				B3C7336EB0AE9BF82BBFB438 /* GameDisplayView.swift in Sources */,
 				B9D8A8CEFD3C6062173924EB /* GameView.swift in Sources */,
 				08C963295AE08347FB026C5D /* Haptics.swift in Sources */,
+				B0CAA71E1A9F9EE68BE5295F /* Hints.swift in Sources */,
 				E33AD9C6CFDA6A44B2ADD5B8 /* InGameMenuView.swift in Sources */,
 				49B432812B2F96993DA67F92 /* KeyRemapView.swift in Sources */,
 				73B91186266D04FBFE51B88A /* LayoutEditorView.swift in Sources */,
@@ -480,7 +496,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGN_IDENTITY = "";
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -497,7 +513,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.9;
+				MARKETING_VERSION = 1.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.miniretro.app;
 				PRODUCT_NAME = MiniRetro;
 				SDKROOT = iphoneos;
@@ -560,7 +576,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGN_IDENTITY = "";
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -577,7 +593,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.9;
+				MARKETING_VERSION = 1.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.miniretro.app;
 				PRODUCT_NAME = MiniRetro;
 				SDKROOT = iphoneos;

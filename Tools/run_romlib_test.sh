@@ -73,6 +73,7 @@ echo "[test] 编译 Swift 测试 ..."
     "$ROOT/App/Library/ZipArchive.swift" \
     "$ROOT/App/Library/ROMImporter.swift" \
     "$ROOT/App/Game/CommunityCheatService.swift" \
+    "$ROOT/App/Game/CheatFileStore.swift" \
     "$ROOT/App/Game/DirectionInputMerger.swift" \
     "$ROOT/Tests/romlib/main.swift" \
     "$WORK/CoreRegistry.o" \

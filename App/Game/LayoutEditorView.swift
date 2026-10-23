@@ -8,6 +8,7 @@ struct LayoutEditorView: View {
     @State private var selectedButton: JoypadButton?
     @State private var editingSize: CGFloat = 0.11
     @State private var editingOpacity: CGFloat = 0.85
+    @State private var confirmReset = false
 
     @ObservedObject private var settings = SettingsStore.shared
 
@@ -31,6 +32,14 @@ struct LayoutEditorView: View {
                 .cornerRadius(12)
                 .padding(.horizontal)
                 .frame(maxHeight: .infinity)
+                .overlay(alignment: .top) {
+                    Text("直接拖动按键改位置 · 松手自动保存 · 每个系统各一套")
+                        .font(.caption)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(.ultraThinMaterial, in: Capsule())
+                        .padding(.top, 6)
+                }
 
                 // 属性编辑
                 Form {
@@ -45,18 +54,26 @@ struct LayoutEditorView: View {
                         Slider(value: opacityBinding(for: selectedButton), in: 0.2...1.0) {
                             Text("透明度")
                         }
+                        HintText("数值是相对屏幕短边的比例：110 ≈ 短边的 11%。改完立即生效。")
+                    } else {
+                        HintText("先在上方点一个按键，或在「调整按键」里选一个，才能调大小和透明度。")
                     }
                 }
-                .frame(height: 170)
+                .frame(height: 190)
             }
             .navigationTitle("按键布局")
-            
+            .alert("恢复默认布局？", isPresented: $confirmReset) {
+                Button("取消", role: .cancel) {}
+                Button("恢复", role: .destructive) {
+                    layout = ControlLayouts.default(system: rom.system, skin: settings.skin)
+                    LayoutStore.save(layout)
+                }
+            } message: {
+                Text("只会重置当前系统（\(rom.system.displayName)）的布局，其他系统不受影响。")
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("恢复默认") {
-                        layout = ControlLayouts.default(system: rom.system, skin: settings.skin)
-                        LayoutStore.save(layout)
-                    }
+                    Button("恢复默认") { confirmReset = true }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("完成") {
